@@ -1,0 +1,245 @@
+<?php
+
+namespace App\Filament\Organization\Settings\Pages;
+
+use App\Facades\OrganizationService;
+use App\Models\Organization;
+use App\Providers\Filament\OrganizationPanelProvider;
+use Filament\Actions\Action;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+
+class GeneralSettings extends Page
+{
+    protected static ?string $slug = 'general';
+
+    protected static ?int $navigationSort = 0;
+
+    protected string $view = 'filament.organization.settings.pages.general-settings';
+
+    public ?Organization $organization = null;
+
+    /**
+     * @var array<string, mixed>
+     */
+    public ?array $data = [];
+
+    public static function getNavigationLabel(): string
+    {
+        return __('settings.general.navigation_label');
+    }
+
+    public function getTitle(): string
+    {
+        return __('settings.general.title');
+    }
+
+    public function mount(): void
+    {
+        $organization = OrganizationService::current();
+
+        abort_unless($organization instanceof Organization, 404);
+
+        $this->organization = $organization;
+
+        $this->form->fill($organization->attributesToArray());
+        $this->form->loadStateFromRelationships(shouldHydrate: true);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getBreadcrumbs(): array
+    {
+        return [
+            __('settings.breadcrumb'),
+            __('settings.general.navigation_label'),
+        ];
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->record($this->organization)
+            ->statePath('data')
+            ->components([
+                $this->avatarSection(),
+                $this->nameSection(),
+                $this->urlSection(),
+                $this->leaveSection(),
+                $this->deleteSection(),
+            ]);
+    }
+
+    protected function nameSection(): Section
+    {
+        return Section::make(__('settings.general.name.heading'))
+            ->description(__('settings.general.name.description'))
+            ->schema([
+                TextInput::make('name')
+                    ->label(__('settings.general.name.field'))
+                    ->required()
+                    ->maxLength(255),
+            ])
+            ->footerActions([
+                Action::make('saveName')
+                    ->label(__('settings.general.name.action'))
+                    ->action(fn () => $this->saveName()),
+            ]);
+    }
+
+    protected function avatarSection(): Section
+    {
+        return Section::make(__('settings.general.avatar.heading'))
+            ->description(__('settings.general.avatar.description'))
+            ->schema([
+                SpatieMediaLibraryFileUpload::make('avatar')
+                    ->hiddenLabel()
+                    ->collection('avatar')
+                    ->conversion('thumb')
+                    ->avatar()
+                    ->image()
+                    ->imageEditor()
+                    ->circleCropper(),
+            ])
+            ->footerActions([
+                Action::make('saveAvatar')
+                    ->label(__('settings.general.avatar.action'))
+                    ->action(fn () => $this->saveAvatar()),
+            ]);
+    }
+
+    protected function urlSection(): Section
+    {
+        return Section::make(__('settings.general.url.heading'))
+            ->description(__('settings.general.url.description'))
+            ->schema([
+                TextInput::make('slug')
+                    ->label(__('settings.general.url.field'))
+                    ->required()
+                    ->alphaDash()
+                    ->maxLength(255)
+                    ->unique(Organization::class, 'slug', ignoreRecord: true)
+                    ->prefix(parse_url(config('app.url'), PHP_URL_HOST).'/'),
+            ])
+            ->footerActions([
+                Action::make('saveUrl')
+                    ->label(__('settings.general.url.action'))
+                    ->action(fn () => $this->saveUrl()),
+            ]);
+    }
+
+    protected function leaveSection(): Section
+    {
+        return Section::make(__('settings.general.leave.heading'))
+            ->description(__('settings.general.leave.description'))
+            ->footerActions([
+                Action::make('leave')
+                    ->label(__('settings.general.leave.action'))
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->action(fn () => $this->leave()),
+            ]);
+    }
+
+    protected function deleteSection(): Section
+    {
+        return Section::make(__('settings.general.delete.heading'))
+            ->description(__('settings.general.delete.description'))
+            ->footerActions([
+                Action::make('delete')
+                    ->label(__('settings.general.delete.action'))
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->action(fn () => $this->delete()),
+            ]);
+    }
+
+    public function saveName(): void
+    {
+        $data = $this->form->getState();
+
+        $this->organization->update(['name' => $data['name']]);
+
+        Notification::make()
+            ->title(__('settings.general.name.saved'))
+            ->success()
+            ->send();
+    }
+
+    public function saveAvatar(): void
+    {
+        $this->form->getState();
+        $this->form->saveRelationships();
+
+        Notification::make()
+            ->title(__('settings.general.avatar.saved'))
+            ->success()
+            ->send();
+    }
+
+    public function saveUrl(): void
+    {
+        $data = $this->form->getState();
+
+        $this->organization->update(['slug' => $data['slug']]);
+
+        Notification::make()
+            ->title(__('settings.general.url.saved'))
+            ->success()
+            ->send();
+
+        $this->redirect(static::getUrl(['organization' => $this->organization->slug]));
+    }
+
+    public function leave(): void
+    {
+        if ($this->organization->users()->count() <= 1) {
+            Notification::make()
+                ->title(__('settings.general.leave.only_member_title'))
+                ->body(__('settings.general.leave.only_member_body'))
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $this->organization->users()->detach(Filament::auth()->id());
+
+        OrganizationService::forget();
+
+        Notification::make()
+            ->title(__('settings.general.leave.saved'))
+            ->success()
+            ->send();
+
+        $this->redirect($this->organizationPanelUrl());
+    }
+
+    public function delete(): void
+    {
+        $organization = $this->organization;
+
+        $organization->users()->detach();
+        $organization->delete();
+
+        OrganizationService::forget();
+
+        Notification::make()
+            ->title(__('settings.general.delete.saved'))
+            ->success()
+            ->send();
+
+        $this->redirect($this->organizationPanelUrl());
+    }
+
+    protected function organizationPanelUrl(): string
+    {
+        return Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getUrl() ?? '/';
+    }
+}
