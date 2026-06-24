@@ -4,6 +4,7 @@ namespace App\Filament\Organization\Settings\Pages;
 
 use App\Enums\OrganizationRole;
 use App\Facades\OrganizationService;
+use App\Mail\OrganizationInvitation;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
@@ -23,6 +24,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class Users extends Page implements HasTable
@@ -129,6 +131,13 @@ class Users extends Page implements HasTable
             'is_admin' => $role === OrganizationRole::Admin,
         ]);
 
+        Mail::to($user->email)->queue(new OrganizationInvitation(
+            $this->organization,
+            $user,
+            $role,
+            auth()->user(),
+        ));
+
         ActivityLog::record(
             $this->organization,
             "Invited {$user->email} as {$role->getLabel()}",
@@ -137,7 +146,7 @@ class Users extends Page implements HasTable
             data: ['email' => $user->email, 'role' => $role->value],
         );
 
-        Notification::make()->title('Member added')->success()->send();
+        Notification::make()->title('Invitation sent')->success()->send();
 
         $this->inviteForm->fill(['role' => OrganizationRole::Member->value]);
     }

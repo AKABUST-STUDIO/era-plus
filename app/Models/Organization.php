@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Cashier\Billable;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -26,7 +28,22 @@ class Organization extends Model implements HasAvatar, HasMedia
     use HasFactory;
     use HasSlug;
     use InteractsWithMedia;
+    use LogsActivity;
     use SoftDeletes;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'slug', 'subscription_tier', 'enforce_two_factor', 'enforce_email_verification', 'tax_id'])
+            ->logOnlyDirty()
+            ->useLogName('organization')
+            ->dontLogEmptyChanges();
+    }
+
+    public function tapActivity(\Spatie\Activitylog\Contracts\Activity $activity, string $eventName): void
+    {
+        $activity->organization_id = $this->id;
+    }
 
     protected $fillable = [
         'name',

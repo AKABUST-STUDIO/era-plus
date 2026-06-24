@@ -22,6 +22,14 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'stripe' => [
+        'prices' => [
+            'pro' => env('STRIPE_PRICE_PRO'),
+            'premium' => env('STRIPE_PRICE_PREMIUM'),
+            'extra_project_seat' => env('STRIPE_PRICE_EXTRA_PROJECT_SEAT'),
+        ],
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

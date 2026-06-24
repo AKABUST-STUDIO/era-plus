@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -21,6 +23,22 @@ class Project extends Model
     use HasFactory;
 
     use HasSlug;
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'slug', 'beginning_date', 'end_date', 'project_type', 'description'])
+            ->logOnlyDirty()
+            ->useLogName('project')
+            ->dontLogEmptyChanges();
+    }
+
+    public function tapActivity(\Spatie\Activitylog\Contracts\Activity $activity, string $eventName): void
+    {
+        $activity->organization_id = $this->organization_id;
+        $activity->project_id = $this->id;
+    }
 
     protected $fillable = [
         'organization_id',

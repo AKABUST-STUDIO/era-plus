@@ -95,17 +95,20 @@ class Billing extends Page
                 SubscriptionTier::Premium => __('settings.billing.plan.premium_active'),
             })
             ->footerActions([
-                Action::make('upgrade')
-                    ->label(__('settings.billing.plan.upgrade'))
+                Action::make('checkoutPro')
+                    ->label('Upgrade to Pro')
                     ->color('primary')
-                    ->visible($isFree)
-                    ->disabled()
-                    ->tooltip('Stripe checkout coming soon'),
+                    ->visible(fn (): bool => $isFree && filled(config('services.stripe.prices.pro')))
+                    ->action(fn () => $this->checkout(config('services.stripe.prices.pro'))),
+                Action::make('checkoutPremium')
+                    ->label('Upgrade to Premium')
+                    ->color('warning')
+                    ->visible(fn (): bool => $isFree && filled(config('services.stripe.prices.premium')))
+                    ->action(fn () => $this->checkout(config('services.stripe.prices.premium'))),
                 Action::make('manage')
                     ->label(__('settings.billing.plan.manage'))
                     ->visible(! $isFree)
-                    ->disabled()
-                    ->tooltip('Stripe customer portal coming soon'),
+                    ->action(fn () => $this->billingPortal()),
             ]);
     }
 
@@ -235,5 +238,26 @@ class Billing extends Page
             ->title(__('settings.billing.tax.saved'))
             ->success()
             ->send();
+    }
+
+    public function checkout(?string $priceId): \Symfony\Component\HttpFoundation\RedirectResponse
+    {
+        abort_unless($priceId, 400, 'Stripe price ID not configured.');
+
+        $checkout = $this->organization
+            ->newSubscription('default', $priceId)
+            ->checkout([
+                'success_url' => static::getUrl(['tenant' => $this->organization]),
+                'cancel_url' => static::getUrl(['tenant' => $this->organization]),
+            ]);
+
+        return redirect()->away($checkout->url);
+    }
+
+    public function billingPortal(): \Symfony\Component\HttpFoundation\RedirectResponse
+    {
+        return redirect()->away(
+            $this->organization->billingPortalUrl(static::getUrl(['tenant' => $this->organization]))
+        );
     }
 }

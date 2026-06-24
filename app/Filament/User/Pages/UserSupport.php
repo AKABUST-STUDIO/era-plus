@@ -3,6 +3,7 @@
 namespace App\Filament\User\Pages;
 
 use App\Enums\SupportRequestStatus;
+use App\Mail\SupportRequestReceived;
 use App\Models\SupportRequest;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -20,6 +21,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
 
 class UserSupport extends Page implements HasTable
 {
@@ -78,13 +80,15 @@ class UserSupport extends Page implements HasTable
     {
         $data = $this->createForm->getState();
 
-        SupportRequest::create([
+        $request = SupportRequest::create([
             'user_id' => auth()->id(),
             'subject' => $data['subject'],
             'body' => $data['body'],
             'priority' => $data['priority'] ?? 'normal',
             'status' => SupportRequestStatus::Open->value,
         ]);
+
+        Mail::to(auth()->user()->email)->queue(new SupportRequestReceived($request));
 
         $this->createForm->fill(['priority' => 'normal']);
 
