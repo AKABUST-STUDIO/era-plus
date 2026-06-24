@@ -60,6 +60,10 @@ abstract class BasePanelProvider extends PanelProvider
             ->userMenu(false)
             ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
             ->renderHook(
+                PanelsRenderHook::SIDEBAR_LOGO_AFTER,
+                fn (): View => view('livewire.sidebar-brand-wrapper'),
+            )
+            ->renderHook(
                 PanelsRenderHook::SIDEBAR_FOOTER,
                 fn (): View => view('livewire.user-footer-wrapper'),
             )
