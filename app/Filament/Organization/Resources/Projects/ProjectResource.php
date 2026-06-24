@@ -7,8 +7,10 @@ use App\Filament\Organization\Resources\Projects\Pages\EditProject;
 use App\Filament\Organization\Resources\Projects\Pages\ListProjects;
 use App\Filament\Organization\Resources\Projects\Schemas\ProjectForm;
 use App\Filament\Organization\Resources\Projects\Tables\ProjectsTable;
+use App\Models\Organization;
 use App\Models\Project;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -19,6 +21,13 @@ class ProjectResource extends Resource
     protected static ?string $model = Project::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    public static function canCreate(): bool
+    {
+        $organization = Filament::getTenant();
+
+        return $organization instanceof Organization && $organization->canCreateProject();
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -32,9 +41,7 @@ class ProjectResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

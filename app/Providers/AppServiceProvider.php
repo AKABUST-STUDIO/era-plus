@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Organization;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Cashier\Cashier;
 use Livewire\Livewire;
 use Livewire\Mechanisms\HandleRequests\EndpointResolver;
 
@@ -17,6 +18,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Cashier::useCustomerModel(Organization::class);
+
         $this->registerRouteBindings();
 
         $this->registerLivewireScriptRoute();
