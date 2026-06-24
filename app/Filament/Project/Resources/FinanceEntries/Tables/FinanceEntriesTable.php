@@ -11,8 +11,10 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 class FinanceEntriesTable
@@ -21,6 +23,14 @@ class FinanceEntriesTable
     {
         return $table
             ->defaultSort('occurred_at', 'desc')
+            ->groups([
+                Group::make('cost_category')
+                    ->label('Category')
+                    ->getTitleFromRecordUsing(fn (FinanceEntry $r): string => $r->cost_category?->getLabel() ?? 'Uncategorised'),
+                Group::make('operation')
+                    ->label('Operation')
+                    ->getTitleFromRecordUsing(fn (FinanceEntry $r): string => $r->operation->getLabel()),
+            ])
             ->columns([
                 TextColumn::make('occurred_at')
                     ->label('Date')
@@ -37,7 +47,8 @@ class FinanceEntriesTable
                     ->toggleable(),
                 TextColumn::make('amount')
                     ->money('EUR')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(Sum::make()->money('EUR')->label('Total')),
                 IconColumn::make('flagged')
                     ->label('Flag')
                     ->state(fn (FinanceEntry $record): bool => $record->isFlagged())
