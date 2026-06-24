@@ -9,6 +9,8 @@ return [
         ],
         'actions' => [
             'open' => 'Open',
+            'view' => 'View',
+            'manage' => 'Manage',
         ],
         'create' => [
             'heading' => 'Need another organization?',

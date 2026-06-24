@@ -5,12 +5,13 @@ namespace App\Filament\User\Pages;
 use App\Enums\OrganizationRole;
 use App\Models\Organization;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
-use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -51,9 +52,8 @@ class Organizations extends Page implements HasTable
                 ->whereHas('users', fn (Builder $q) => $q->whereKey(auth()->id())))
             ->columns([
                 Split::make([
-                    SpatieMediaLibraryImageColumn::make('avatar')
-                        ->collection('avatar')
-                        ->conversion('thumb')
+                    ImageColumn::make('avatar')
+                        ->getStateUsing(fn (Organization $r): string => $r->getAvatarUrl())
                         ->circular()
                         ->grow(false),
                     Stack::make([
@@ -73,10 +73,16 @@ class Organizations extends Page implements HasTable
                 ]),
             ])
             ->recordActions([
-                Action::make('open')
-                    ->label(__('user.organizations.actions.open'))
-                    ->icon('lucide-arrow-right')
-                    ->url(fn (Organization $r): string => route('filament.organization.pages.dashboard', ['tenant' => $r->slug])),
+                ActionGroup::make([
+                    Action::make('view')
+                        ->label(__('user.organizations.actions.view'))
+                        ->icon('lucide-eye')
+                        ->url(fn (Organization $r): string => route('filament.organization.pages.dashboard', ['tenant' => $r->slug])),
+                    Action::make('manage')
+                        ->label(__('user.organizations.actions.manage'))
+                        ->icon('lucide-settings')
+                        ->url(fn (Organization $r): string => route('filament.organization-settings.pages.general', ['organization' => $r->slug])),
+                ]),
             ])
             ->defaultSort('name');
     }
