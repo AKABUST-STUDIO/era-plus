@@ -2,12 +2,16 @@
 
 namespace App\Filament\Project\Resources\FinanceEntries\Pages;
 
+use App\Exports\FinanceEntriesExport;
 use App\Filament\Project\Resources\FinanceEntries\FinanceEntryResource;
 use App\Models\Project;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ListFinanceEntries extends ListRecords
 {
@@ -30,6 +34,20 @@ class ListFinanceEntries extends ListRecords
     {
         return [
             CreateAction::make(),
+            Action::make('exportExcel')
+                ->label('Export Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->action(fn (): BinaryFileResponse => $this->exportExcel()),
         ];
+    }
+
+    public function exportExcel(): BinaryFileResponse
+    {
+        $project = Filament::getTenant();
+        abort_unless($project instanceof Project, 404);
+
+        $filename = sprintf('finance-%s-%s.xlsx', $project->slug, now()->format('Y-m-d'));
+
+        return Excel::download(new FinanceEntriesExport($project), $filename);
     }
 }
