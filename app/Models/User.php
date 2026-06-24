@@ -73,7 +73,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'organization' => $this->organizations()->exists(),
+            'organization' => true,
             'project' => $this->projects()->exists(),
             default => false,
         };

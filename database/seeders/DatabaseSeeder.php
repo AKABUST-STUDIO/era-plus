@@ -19,7 +19,8 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@erasmus.test',
-            'password' => app()->environment('local') ? 'password' : Str::random(),
+            'password' => 'password',
+            // 'password' => app()->environment('local') ? 'password' : Str::random(),
         ]);
     }
 }
