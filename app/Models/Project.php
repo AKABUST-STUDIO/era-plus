@@ -93,6 +93,14 @@ class Project extends Model
         return $this->hasMany(ProjectCountry::class);
     }
 
+    /**
+     * @return HasMany<Participant, $this>
+     */
+    public function participants(): HasMany
+    {
+        return $this->hasMany(Participant::class);
+    }
+
     public function financeTotal(): string
     {
         $query = $this->financeEntries()
