@@ -41,7 +41,7 @@ class ProjectWizardTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user);
+        $this->organization->users()->attach($this->user, ['role' => \App\Enums\OrganizationRole::Admin->value, 'is_admin' => true]);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('organization'));

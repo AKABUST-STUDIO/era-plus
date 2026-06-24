@@ -21,11 +21,11 @@ class ProjectMembersTable
             ->defaultSort('id')
             ->columns([
                 TextColumn::make('user.name')
-                    ->label('Name')
+                    ->label(__('forms.common.name'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.email')
-                    ->label('Email')
+                    ->label(__('forms.common.email'))
                     ->searchable()
                     ->toggleable(),
                 TextColumn::make('role')

@@ -18,6 +18,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\IconPosition;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -79,10 +80,12 @@ abstract class BasePanelProvider extends PanelProvider
             'account' => Action::make('account')
                 ->label('Your account')
                 ->icon('lucide-user')
+                ->iconPosition(IconPosition::Before)
                 ->url(fn (): string => Settings::getUrl(panel: UserPanelProvider::PANEL_ID)),
             'upgrade' => Action::make('upgrade')
                 ->label('Upgrade to Pro')
                 ->icon('lucide-sparkles')
+                ->iconPosition(IconPosition::After)
                 ->visible(fn (): bool => $this->shouldShowUpgradeCta())
                 ->url(fn (): ?string => $this->upgradeUrl()),
         ];

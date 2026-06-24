@@ -134,21 +134,21 @@ class Settings extends Page
         $this->form->getState();
         $this->form->saveRelationships();
 
-        Notification::make()->title('Avatar saved')->success()->send();
+        Notification::make()->title(__('notifications.avatar_saved'))->success()->send();
     }
 
     public function saveProfile(): void
     {
         $this->user->update(['name' => $this->form->getState()['name']]);
 
-        Notification::make()->title('Profile saved')->success()->send();
+        Notification::make()->title(__('notifications.profile_saved'))->success()->send();
     }
 
     public function saveEmail(): void
     {
         $this->user->update(['email' => $this->form->getState()['email']]);
 
-        Notification::make()->title('Email saved')->success()->send();
+        Notification::make()->title(__('notifications.email_saved'))->success()->send();
     }
 
     public function saveDefaultOrganization(): void
@@ -157,7 +157,7 @@ class Settings extends Page
 
         $this->user->update(['default_organization_id' => $orgId]);
 
-        Notification::make()->title('Default organization saved')->success()->send();
+        Notification::make()->title(__('notifications.default_org_saved'))->success()->send();
     }
 
     public function deleteAccount(): void

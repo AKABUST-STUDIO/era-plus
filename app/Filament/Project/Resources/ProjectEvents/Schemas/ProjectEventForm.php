@@ -15,9 +15,9 @@ class ProjectEventForm
         return $schema
             ->components([
                 TextInput::make('title')->required()->maxLength(255),
-                DateTimePicker::make('starts_at')->label('Starts')->required(),
-                DateTimePicker::make('ends_at')->label('Ends')->after('starts_at'),
-                Toggle::make('all_day')->label('All day'),
+                DateTimePicker::make('starts_at')->label(__('forms.common.starts'))->required(),
+                DateTimePicker::make('ends_at')->label(__('forms.common.ends'))->after('starts_at'),
+                Toggle::make('all_day')->label(__('forms.common.all_day')),
                 TextInput::make('location')->maxLength(255),
                 Textarea::make('description')
                     ->maxLength(2000)

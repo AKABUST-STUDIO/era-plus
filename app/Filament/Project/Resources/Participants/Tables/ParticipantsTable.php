@@ -22,25 +22,25 @@ class ParticipantsTable
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('country'))
             ->defaultGroup(
                 Group::make('country.name')
-                    ->label('Country')
+                    ->label(__('forms.common.country'))
                     ->titlePrefixedWithLabel(false),
             )
             ->columns([
                 TextColumn::make('full_name')
-                    ->label('Name')
+                    ->label(__('forms.common.name'))
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(['last_name']),
                 TextColumn::make('email')
                     ->searchable()
                     ->toggleable(),
                 TextColumn::make('country.name')
-                    ->label('Country')
+                    ->label(__('forms.common.country'))
                     ->sortable()
                     ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('country_id')
-                    ->label('Country')
+                    ->label(__('forms.common.country'))
                     ->options(fn (): array => self::countryFilterOptions()),
             ])
             ->recordActions([

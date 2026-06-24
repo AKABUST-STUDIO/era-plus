@@ -22,7 +22,7 @@ class ProjectTaskForm
                     ->required()
                     ->maxLength(255),
                 Select::make('assigned_to')
-                    ->label('Assigned to')
+                    ->label(__('forms.common.assigned_to'))
                     ->options(fn (): Arrayable => self::projectMemberOptions())
                     ->required()
                     ->searchable(),
@@ -30,7 +30,7 @@ class ProjectTaskForm
                     ->options(ProjectTaskStatus::class)
                     ->default(ProjectTaskStatus::Open)
                     ->required(),
-                DatePicker::make('due_date')->label('Due date'),
+                DatePicker::make('due_date')->label(__('forms.common.due_date')),
                 Textarea::make('description')
                     ->maxLength(2000)
                     ->rows(3)

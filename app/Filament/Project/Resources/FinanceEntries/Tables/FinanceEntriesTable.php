@@ -24,22 +24,22 @@ class FinanceEntriesTable
             ->defaultSort('occurred_at', 'desc')
             ->groups([
                 Group::make('cost_category')
-                    ->label('Category')
+                    ->label(__('forms.common.category'))
                     ->getTitleFromRecordUsing(fn (FinanceEntry $r): string => $r->cost_category?->getLabel() ?? 'Uncategorised'),
                 Group::make('operation')
-                    ->label('Operation')
+                    ->label(__('forms.finance.operation'))
                     ->getTitleFromRecordUsing(fn (FinanceEntry $r): string => $r->operation->getLabel()),
             ])
             ->columns([
                 TextColumn::make('occurred_at')
-                    ->label('Date')
+                    ->label(__('forms.common.date'))
                     ->date()
                     ->sortable(),
                 TextColumn::make('operation')
                     ->badge()
                     ->sortable(),
                 TextColumn::make('cost_category')
-                    ->label('Category')
+                    ->label(__('forms.common.category'))
                     ->badge()
                     ->placeholder('—')
                     ->sortable()
@@ -49,7 +49,7 @@ class FinanceEntriesTable
                     ->sortable()
                     ->summarize(Sum::make()->money('EUR')->label('Total')),
                 IconColumn::make('flagged')
-                    ->label('Flag')
+                    ->label(__('forms.common.flagged'))
                     ->state(fn (FinanceEntry $record): bool => $record->isFlagged())
                     ->icon('lucide-triangle-alert')
                     ->color('danger')
@@ -66,7 +66,7 @@ class FinanceEntriesTable
                 SelectFilter::make('operation')
                     ->options(FinanceOperation::class),
                 SelectFilter::make('cost_category')
-                    ->label('Category')
+                    ->label(__('forms.common.category'))
                     ->options(BudgetCategory::class),
             ])
             ->recordActions([

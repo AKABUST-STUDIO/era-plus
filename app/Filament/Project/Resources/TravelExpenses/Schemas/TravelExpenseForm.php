@@ -21,7 +21,7 @@ class TravelExpenseForm
         return $schema
             ->components([
                 Select::make('participant_id')
-                    ->label('Participant')
+                    ->label(__('forms.travel.participant'))
                     ->options(fn (): Arrayable => self::participantOptions())
                     ->searchable()
                     ->required(),
@@ -32,7 +32,7 @@ class TravelExpenseForm
                     ->step(0.01)
                     ->prefix('€'),
                 DatePicker::make('occurred_at')
-                    ->label('Date')
+                    ->label(__('forms.common.date'))
                     ->required()
                     ->default(now()),
                 Textarea::make('description')
@@ -40,7 +40,7 @@ class TravelExpenseForm
                     ->rows(2)
                     ->columnSpanFull(),
                 SpatieMediaLibraryFileUpload::make('documents')
-                    ->label('Receipts / tickets')
+                    ->label(__('forms.travel.documents'))
                     ->collection(TravelExpense::DOCUMENTS_COLLECTION)
                     ->multiple()
                     ->reorderable()

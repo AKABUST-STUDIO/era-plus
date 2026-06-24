@@ -35,9 +35,11 @@ class ProjectTaskTest extends TestCase
         $this->user = User::factory()->create(['name' => 'Coordinator']);
         $this->assignee = User::factory()->create(['name' => 'Anne']);
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach([$this->user->id, $this->assignee->id]);
+        $this->organization->users()->attach($this->user->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'is_admin' => true]);
+        $this->organization->users()->attach($this->assignee->id);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->project->users()->attach([$this->user->id, $this->assignee->id]);
+        $this->project->users()->attach($this->user->id, ['role' => \App\Enums\ProjectRole::Coordinator->value]);
+        $this->project->users()->attach($this->assignee->id);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));

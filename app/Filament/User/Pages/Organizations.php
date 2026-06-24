@@ -23,6 +23,8 @@ class Organizations extends Page implements HasTable
 
     protected static ?int $navigationSort = 10;
 
+    protected string $view = 'filament.user.pages.organizations';
+
     public function getTitle(): string
     {
         return __('user.organizations.title');

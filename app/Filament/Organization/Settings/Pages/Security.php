@@ -105,7 +105,7 @@ class Security extends Page
             target: $this->organization,
         );
 
-        Notification::make()->title('2FA setting saved')->success()->send();
+        Notification::make()->title(__('notifications.two_factor_saved'))->success()->send();
     }
 
     public function saveEmailVerification(): void
@@ -121,6 +121,6 @@ class Security extends Page
             target: $this->organization,
         );
 
-        Notification::make()->title('Email verification setting saved')->success()->send();
+        Notification::make()->title(__('notifications.email_verification_saved'))->success()->send();
     }
 }

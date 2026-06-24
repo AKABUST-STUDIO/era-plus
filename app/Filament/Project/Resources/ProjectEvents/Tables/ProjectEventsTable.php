@@ -34,7 +34,7 @@ class ProjectEventsTable
             ->recordActions([
                 EditAction::make(),
                 Action::make('share_to_google')
-                    ->label('Google Calendar')
+                    ->label(__('forms.event.share_to_google'))
                     ->icon('lucide-calendar')
                     ->openUrlInNewTab()
                     ->url(fn (ProjectEvent $r): string => $r->googleCalendarUrl()),

@@ -89,7 +89,7 @@ class CreateOrganization extends Page
         }
 
         Notification::make()
-            ->title('Organization created')
+            ->title(__('notifications.organization_created'))
             ->success()
             ->send();
 

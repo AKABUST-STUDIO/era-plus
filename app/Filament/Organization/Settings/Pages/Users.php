@@ -116,7 +116,7 @@ class Users extends Page implements HasTable
         }
 
         if ($this->organization->users()->whereKey($user->id)->exists()) {
-            Notification::make()->title('User is already a member')->warning()->send();
+            Notification::make()->title(__('notifications.already_member'))->warning()->send();
 
             return;
         }
@@ -146,7 +146,7 @@ class Users extends Page implements HasTable
             data: ['email' => $user->email, 'role' => $role->value],
         );
 
-        Notification::make()->title('Invitation sent')->success()->send();
+        Notification::make()->title(__('notifications.invitation_sent'))->success()->send();
 
         $this->inviteForm->fill(['role' => OrganizationRole::Member->value]);
     }
@@ -167,7 +167,7 @@ class Users extends Page implements HasTable
                         : $state)
                     ->color(fn (User $r): string => $r->is($this->authUser()) ? 'primary' : 'gray'),
                 TextColumn::make('pivot.role')
-                    ->label('Role')
+                    ->label(__('forms.common.role'))
                     ->badge()
                     ->formatStateUsing(fn (?string $state): string => OrganizationRole::tryFrom((string) $state)?->getLabel() ?? '—')
                     ->color(fn (?string $state): string => OrganizationRole::tryFrom((string) $state)?->getColor() ?? 'gray'),
@@ -230,7 +230,7 @@ class Users extends Page implements HasTable
             data: ['role' => $role->value],
         );
 
-        Notification::make()->title('Role updated')->success()->send();
+        Notification::make()->title(__('notifications.role_updated'))->success()->send();
     }
 
     public function removeMember(User $user): void
@@ -241,7 +241,7 @@ class Users extends Page implements HasTable
 
         if ($user->isOrgAdmin($this->organization) && $this->organization->admins()->count() <= 1) {
             Notification::make()
-                ->title('Cannot remove the last Organization Admin')
+                ->title(__('notifications.cannot_remove_last_admin'))
                 ->danger()
                 ->send();
 

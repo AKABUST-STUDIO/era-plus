@@ -19,9 +19,9 @@ class ProjectForm
                     ->maxLength(255)
                     ->autofocus(),
                 DatePicker::make('beginning_date')
-                    ->label('Beginning date'),
+                    ->label(__('forms.common.beginning_date')),
                 DatePicker::make('end_date')
-                    ->label('End date')
+                    ->label(__('forms.common.end_date'))
                     ->afterOrEqual('beginning_date'),
                 Select::make('project_type')
                     ->options([

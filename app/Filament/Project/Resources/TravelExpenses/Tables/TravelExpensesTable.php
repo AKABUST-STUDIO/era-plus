@@ -23,23 +23,23 @@ class TravelExpensesTable
             ->defaultSort('occurred_at', 'desc')
             ->defaultGroup(
                 Group::make('participant.country.name')
-                    ->label('Country')
+                    ->label(__('forms.common.country'))
                     ->titlePrefixedWithLabel(false),
             )
             ->columns([
                 TextColumn::make('occurred_at')
-                    ->label('Date')
+                    ->label(__('forms.common.date'))
                     ->date()
                     ->sortable(),
                 TextColumn::make('participant.full_name')
-                    ->label('Participant')
+                    ->label(__('forms.travel.participant'))
                     ->searchable(['participants.first_name', 'participants.last_name']),
                 TextColumn::make('amount')
                     ->money('EUR')
                     ->sortable()
                     ->summarize(Sum::make()->money('EUR')->label('Total')),
                 IconColumn::make('over_limit')
-                    ->label('Over limit')
+                    ->label(__('forms.common.over_limit'))
                     ->state(fn (TravelExpense $record): bool => $record->exceedsCountryLimit())
                     ->trueIcon('lucide-triangle-alert')
                     ->falseIcon(null)

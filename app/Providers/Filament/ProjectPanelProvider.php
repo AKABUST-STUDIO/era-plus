@@ -36,6 +36,7 @@ class ProjectPanelProvider extends BasePanelProvider
             ->widgets([
                 \App\Filament\Project\Widgets\ProjectInfoOverview::class,
                 \App\Filament\Project\Widgets\FinanceOverviewStats::class,
+                \App\Filament\Project\Widgets\ProjectCalendar::class,
             ])
             ->authMiddleware([
                 RedirectToOrganizationLogin::class,

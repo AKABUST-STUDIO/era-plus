@@ -55,14 +55,14 @@ class ProjectActivityLog extends Page implements HasTable
                     ->getTitleFromRecordUsing(fn (ActivityLog $r): string => $r->created_at?->format('F Y') ?? '—')
             )
             ->columns([
-                TextColumn::make('created_at')->label('When')->dateTime()->sortable(),
-                TextColumn::make('user.name')->label('User')->placeholder('System')->searchable(),
-                TextColumn::make('event')->label('Type')->badge()->toggleable(),
+                TextColumn::make('created_at')->label(__('forms.common.when'))->dateTime()->sortable(),
+                TextColumn::make('user.name')->label(__('forms.common.user'))->placeholder('System')->searchable(),
+                TextColumn::make('event')->label(__('forms.common.type'))->badge()->toggleable(),
                 TextColumn::make('description')->label('Action')->searchable()->wrap(),
             ])
             ->filters([
                 SelectFilter::make('user_id')
-                    ->label('User')
+                    ->label(__('forms.common.user'))
                     ->relationship('user', 'name'),
                 Filter::make('last_3_days')
                     ->label('Last 3 days')

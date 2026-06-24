@@ -24,14 +24,14 @@ class ListTravelExpenses extends ListRecords
         return [
             CreateAction::make(),
             Action::make('editCountryLimits')
-                ->label('Country limits')
+                ->label(__('forms.travel.country_limits'))
                 ->icon('lucide-globe')
                 ->modalHeading('Per-country default travel expense limits')
                 ->fillForm(fn (): array => $this->countryLimitsForm())
                 ->form(fn (): array => $this->countryLimitFields())
                 ->action(fn (array $data) => $this->saveCountryLimits($data)),
             Action::make('exportExcel')
-                ->label('Export Excel')
+                ->label(__('forms.finance.export_excel'))
                 ->icon('lucide-download')
                 ->action(fn (): BinaryFileResponse => $this->exportExcel()),
         ];
@@ -104,7 +104,7 @@ class ListTravelExpenses extends ListRecords
         }
 
         Notification::make()
-            ->title('Country travel limits updated')
+            ->title(__('notifications.country_limits_saved'))
             ->success()
             ->send();
     }

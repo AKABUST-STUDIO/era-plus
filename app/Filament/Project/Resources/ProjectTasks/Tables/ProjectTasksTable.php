@@ -23,7 +23,7 @@ class ProjectTasksTable
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('assignedTo'))
             ->defaultGroup(
                 Group::make('assignedTo.name')
-                    ->label('Assigned to')
+                    ->label(__('forms.common.assigned_to'))
                     ->titlePrefixedWithLabel(false),
             )
             ->defaultSort('due_date')
@@ -32,17 +32,17 @@ class ProjectTasksTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('assignedTo.name')
-                    ->label('Assigned to')
+                    ->label(__('forms.common.assigned_to'))
                     ->searchable(),
                 TextColumn::make('status')
                     ->badge()
                     ->sortable(),
                 TextColumn::make('due_date')
-                    ->label('Due')
+                    ->label(__('forms.common.due'))
                     ->date()
                     ->sortable(),
                 IconColumn::make('overdue')
-                    ->label('Overdue')
+                    ->label(__('forms.common.overdue'))
                     ->state(fn (ProjectTask $r): bool => $r->isOverdue())
                     ->trueIcon('lucide-triangle-alert')
                     ->falseIcon(null)

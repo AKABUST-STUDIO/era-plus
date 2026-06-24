@@ -122,7 +122,7 @@ class ProjectSettings extends Page
             'description' => $data['description'] ?? null,
         ]);
 
-        Notification::make()->title('Project details saved')->success()->send();
+        Notification::make()->title(__('notifications.project_details_saved'))->success()->send();
     }
 
     public function saveDates(): void
@@ -134,7 +134,7 @@ class ProjectSettings extends Page
             'end_date' => $data['end_date'] ?? null,
         ]);
 
-        Notification::make()->title('Project dates saved')->success()->send();
+        Notification::make()->title(__('notifications.project_dates_saved'))->success()->send();
     }
 
     public function deleteProject(): void
@@ -144,7 +144,7 @@ class ProjectSettings extends Page
 
         $project->delete();
 
-        Notification::make()->title('Project deleted')->success()->send();
+        Notification::make()->title(__('notifications.project_deleted'))->success()->send();
 
         $this->redirect(
             Filament::getPanel('organization')->getUrl(tenant: $organization) ?? '/'

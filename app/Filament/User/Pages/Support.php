@@ -88,7 +88,7 @@ class Support extends Page implements HasTable
 
         $this->createForm->fill(['priority' => 'normal']);
 
-        Notification::make()->title('Support request submitted')->success()->send();
+        Notification::make()->title(__('notifications.support_submitted'))->success()->send();
     }
 
     public function table(Table $table): Table

@@ -37,9 +37,9 @@ class CreateProject extends CreateRecord
                         ->maxLength(255)
                         ->autofocus(),
                     DatePicker::make('beginning_date')
-                        ->label('Beginning date'),
+                        ->label(__('forms.common.beginning_date')),
                     DatePicker::make('end_date')
-                        ->label('End date')
+                        ->label(__('forms.common.end_date'))
                         ->afterOrEqual('beginning_date'),
                     Select::make('project_type')
                         ->options([
@@ -63,7 +63,7 @@ class CreateProject extends CreateRecord
                         ->addActionLabel('Add country')
                         ->schema([
                             Select::make('country_id')
-                                ->label('Country')
+                                ->label(__('forms.common.country'))
                                 ->options(fn (): array => Country::query()
                                     ->orderBy('name')
                                     ->pluck('name', 'id')
@@ -72,7 +72,7 @@ class CreateProject extends CreateRecord
                                 ->required()
                                 ->distinct(),
                             TextInput::make('default_travel_expense_limit')
-                                ->label('Travel limit')
+                                ->label(__('forms.common.travel_limit'))
                                 ->numeric()
                                 ->minValue(0)
                                 ->step(0.01)

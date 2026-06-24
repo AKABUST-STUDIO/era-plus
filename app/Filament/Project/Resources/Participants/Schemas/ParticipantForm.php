@@ -16,7 +16,7 @@ class ParticipantForm
         return $schema
             ->components([
                 Select::make('country_id')
-                    ->label('Country')
+                    ->label(__('forms.common.country'))
                     ->options(fn (): Arrayable => self::projectCountryOptions())
                     ->required()
                     ->searchable(),

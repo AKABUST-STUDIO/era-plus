@@ -47,9 +47,9 @@ class ParticipantPageTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user);
+        $this->organization->users()->attach($this->user, ['role' => \App\Enums\OrganizationRole::Admin->value, 'is_admin' => true]);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->project->users()->attach($this->user);
+        $this->project->users()->attach($this->user, ['role' => \App\Enums\ProjectRole::Coordinator->value]);
 
         ProjectCountry::create(['project_id' => $this->project->id, 'country_id' => $this->estonia->id]);
         ProjectCountry::create(['project_id' => $this->project->id, 'country_id' => $this->germany->id]);

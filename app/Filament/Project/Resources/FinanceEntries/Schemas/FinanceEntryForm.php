@@ -24,7 +24,7 @@ class FinanceEntryForm
                     ->live()
                     ->required(),
                 Select::make('cost_category')
-                    ->label('EU cost category')
+                    ->label(__('forms.finance.category'))
                     ->options(BudgetCategory::class)
                     ->required(fn (callable $get): bool => $get('operation') === FinanceOperation::Subtract->value
                         || $get('operation') === FinanceOperation::Subtract)
@@ -36,7 +36,7 @@ class FinanceEntryForm
                     ->step(0.01)
                     ->prefix('€'),
                 DatePicker::make('occurred_at')
-                    ->label('Date')
+                    ->label(__('forms.common.date'))
                     ->required()
                     ->default(now()),
                 Textarea::make('description')
@@ -44,7 +44,7 @@ class FinanceEntryForm
                     ->rows(2)
                     ->columnSpanFull(),
                 SpatieMediaLibraryFileUpload::make('documents')
-                    ->label('Supporting documents')
+                    ->label(__('forms.finance.documents'))
                     ->helperText('Invoices, receipts, bank statements. PDF or image.')
                     ->collection(FinanceEntry::DOCUMENTS_COLLECTION)
                     ->multiple()
