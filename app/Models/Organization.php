@@ -31,6 +31,18 @@ class Organization extends Model implements HasAvatar, HasMedia
         'slug',
         'subscription_tier',
         'extra_project_seats',
+        'billing_address',
+        'invoice_language',
+        'tax_id',
+    ];
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'subscription_tier' => 'free',
+        'extra_project_seats' => 0,
+        'invoice_language' => 'en',
     ];
 
     /**
@@ -42,6 +54,7 @@ class Organization extends Model implements HasAvatar, HasMedia
             'subscription_tier' => SubscriptionTier::class,
             'extra_project_seats' => 'integer',
             'trial_ends_at' => 'datetime',
+            'billing_address' => 'array',
         ];
     }
 

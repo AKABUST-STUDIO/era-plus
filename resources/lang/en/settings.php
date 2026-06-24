@@ -91,6 +91,53 @@ return [
     'billing' => [
         'navigation_label' => 'Billing',
         'title' => 'Billing',
+
+        'plan' => [
+            'heading' => 'Plan',
+            'current_label' => 'Current plan',
+            'free_pitch' => 'Upgrade to Pro for unlimited projects, advanced reporting, and priority support.',
+            'upgrade' => 'Upgrade plan',
+            'manage' => 'Manage subscription',
+            'pro_active' => 'You are on the Pro plan. Unlimited projects.',
+            'premium_active' => 'You are on the Premium plan. Everything in Pro, plus white-labeling, dedicated deployment, and custom integrations.',
+        ],
+
+        'payment_method' => [
+            'heading' => 'Payment method',
+            'description' => 'Card details used for subscription charges.',
+            'none' => 'No payment method on file.',
+            'card_on_file' => ':type ending in :last4',
+            'manage' => 'Manage payment method',
+        ],
+
+        'address' => [
+            'heading' => 'Billing address',
+            'description' => 'Used on invoices and for tax determination.',
+            'line1' => 'Address line 1',
+            'line2' => 'Address line 2',
+            'city' => 'City',
+            'state' => 'State or region',
+            'postal_code' => 'Postal code',
+            'country' => 'Country',
+            'action' => 'Save billing address',
+            'saved' => 'Billing address updated',
+        ],
+
+        'language' => [
+            'heading' => 'Invoice language',
+            'description' => 'Language used on invoice PDFs and billing emails.',
+            'field' => 'Language',
+            'action' => 'Save language',
+            'saved' => 'Invoice language updated',
+        ],
+
+        'tax' => [
+            'heading' => 'Tax ID',
+            'description' => 'VAT or tax identification number printed on invoices.',
+            'field' => 'Tax ID',
+            'action' => 'Save tax ID',
+            'saved' => 'Tax ID updated',
+        ],
     ],
 
     'activity' => [
