@@ -4,11 +4,11 @@ namespace App\Filament\User\Pages;
 
 use Filament\Pages\Page;
 
-class UserAuthentication extends Page
+class Authentication extends Page
 {
     protected static ?int $navigationSort = 40;
 
-    protected string $view = 'filament.user.pages.user-authentication';
+    protected string $view = 'filament.user.pages.authentication';
 
     public function getTitle(): string
     {

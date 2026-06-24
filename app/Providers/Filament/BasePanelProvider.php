@@ -4,7 +4,9 @@ namespace App\Providers\Filament;
 
 use App\Enums\SubscriptionTier;
 use App\Facades\OrganizationService;
+use App\Filament\User\Pages\Settings;
 use App\Models\Organization;
+use Filament\Actions\Action;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Enums\DatabaseNotificationsPosition;
 use Filament\Enums\GlobalSearchPosition;
@@ -13,7 +15,6 @@ use Filament\Facades\Filament;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -53,7 +54,6 @@ abstract class BasePanelProvider extends PanelProvider
 
             ->revealablePasswords()
             ->passwordReset(RequestPasswordReset::class)
-            ->simpleProfilePage(true)
 
             ->brandName(config('app.name'))
             ->viteTheme('resources/css/filament/app/theme.css')
@@ -71,24 +71,21 @@ abstract class BasePanelProvider extends PanelProvider
     }
 
     /**
-     * @return array<string, MenuItem>
+     * @return array<string, Action>
      */
     protected function buildUserMenuItems(): array
     {
-        $items = [
-            'account' => MenuItem::make()
+        return [
+            'account' => Action::make('account')
                 ->label('Your account')
                 ->icon('lucide-user')
-                ->url(fn (): string => route('filament.user.pages.dashboard')),
+                ->url(fn (): string => Settings::getUrl(panel: UserPanelProvider::PANEL_ID)),
+            'upgrade' => Action::make('upgrade')
+                ->label('Upgrade to Pro')
+                ->icon('lucide-sparkles')
+                ->visible(fn (): bool => $this->shouldShowUpgradeCta())
+                ->url(fn (): ?string => $this->upgradeUrl()),
         ];
-
-        $items['upgrade'] = MenuItem::make()
-            ->label('Upgrade to Pro')
-            ->icon('lucide-sparkles')
-            ->visible(fn (): bool => $this->shouldShowUpgradeCta())
-            ->url(fn (): ?string => $this->upgradeUrl());
-
-        return $items;
     }
 
     protected function shouldShowUpgradeCta(): bool

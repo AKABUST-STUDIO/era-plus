@@ -21,13 +21,13 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 
-class UserSupport extends Page implements HasTable
+class Support extends Page implements HasTable
 {
     use InteractsWithTable;
 
     protected static ?int $navigationSort = 30;
 
-    protected string $view = 'filament.user.pages.user-support';
+    protected string $view = 'filament.user.pages.support';
 
     /**
      * @var array<string, mixed>

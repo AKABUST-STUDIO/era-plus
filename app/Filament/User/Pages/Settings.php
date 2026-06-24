@@ -12,11 +12,11 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class UserSettings extends Page
+class Settings extends Page
 {
     protected static ?int $navigationSort = 0;
 
-    protected string $view = 'filament.user.pages.user-settings';
+    protected string $view = 'filament.user.pages.settings';
 
     public ?User $user = null;
 

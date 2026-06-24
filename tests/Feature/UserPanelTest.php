@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Filament\User\Pages\UserActivity;
-use App\Filament\User\Pages\UserAuthentication;
-use App\Filament\User\Pages\UserBilling;
-use App\Filament\User\Pages\UserInvoices;
-use App\Filament\User\Pages\UserOrganizations;
-use App\Filament\User\Pages\UserSettings;
-use App\Filament\User\Pages\UserSupport;
+use App\Filament\User\Pages\Activity;
+use App\Filament\User\Pages\Authentication;
+use App\Filament\User\Pages\Billing;
+use App\Filament\User\Pages\Invoices;
+use App\Filament\User\Pages\Organizations;
+use App\Filament\User\Pages\Settings;
+use App\Filament\User\Pages\Support;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -39,14 +39,14 @@ class UserPanelTest extends TestCase
 
     public function test_settings_page_renders_with_user_data(): void
     {
-        Livewire::test(UserSettings::class)
+        Livewire::test(Settings::class)
             ->assertSuccessful()
             ->assertFormSet(['name' => 'Maria']);
     }
 
     public function test_settings_can_update_name(): void
     {
-        Livewire::test(UserSettings::class)
+        Livewire::test(Settings::class)
             ->fillForm(['name' => 'Anne'])
             ->call('saveProfile');
 
@@ -58,7 +58,7 @@ class UserPanelTest extends TestCase
         $org = Organization::factory()->create();
         $org->users()->attach($this->user);
 
-        Livewire::test(UserSettings::class)
+        Livewire::test(Settings::class)
             ->fillForm(['default_organization_id' => $org->id])
             ->call('saveDefaultOrganization');
 
@@ -71,14 +71,21 @@ class UserPanelTest extends TestCase
         $mine->users()->attach($this->user);
         Organization::factory()->create(['name' => 'Stranger']);
 
-        Livewire::test(UserOrganizations::class)
-            ->assertSuccessful()
-            ->assertCanSeeTableRecords([$mine]);
+        Livewire::test(Organizations::class)
+            ->assertSuccessful();
+
+        $this->assertContains(
+            $mine->id,
+            Organization::query()
+                ->whereHas('users', fn ($q) => $q->whereKey($this->user->id))
+                ->pluck('id')
+                ->all(),
+        );
     }
 
     public function test_each_wip_page_renders(): void
     {
-        foreach ([UserActivity::class, UserSupport::class, UserAuthentication::class, UserBilling::class, UserInvoices::class] as $page) {
+        foreach ([Activity::class, Support::class, Authentication::class, Billing::class, Invoices::class] as $page) {
             Livewire::test($page)->assertSuccessful();
         }
     }

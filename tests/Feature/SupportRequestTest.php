@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\SupportRequestStatus;
-use App\Filament\User\Pages\UserSupport;
+use App\Filament\User\Pages\Support;
 use App\Models\SupportRequest;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -29,12 +29,12 @@ class SupportRequestTest extends TestCase
 
     public function test_support_page_renders(): void
     {
-        Livewire::test(UserSupport::class)->assertSuccessful();
+        Livewire::test(Support::class)->assertSuccessful();
     }
 
     public function test_user_can_submit_support_request(): void
     {
-        Livewire::test(UserSupport::class)
+        Livewire::test(Support::class)
             ->fillForm([
                 'subject' => 'Cannot upload PDF',
                 'priority' => 'high',
@@ -52,7 +52,7 @@ class SupportRequestTest extends TestCase
 
     public function test_subject_and_body_are_required(): void
     {
-        Livewire::test(UserSupport::class)
+        Livewire::test(Support::class)
             ->fillForm(['subject' => null, 'body' => null], 'createForm')
             ->call('submit')
             ->assertHasFormErrors(['subject', 'body'], 'createForm');
@@ -73,7 +73,7 @@ class SupportRequestTest extends TestCase
             'body' => 'y',
         ]);
 
-        Livewire::test(UserSupport::class)
+        Livewire::test(Support::class)
             ->assertCanSeeTableRecords(
                 SupportRequest::query()->where('user_id', $this->user->id)->get()
             )

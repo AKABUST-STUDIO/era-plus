@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Http\Middleware\RedirectToOrganizationLogin;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 
 class UserPanelProvider extends BasePanelProvider
@@ -27,9 +26,6 @@ class UserPanelProvider extends BasePanelProvider
                 in: app_path('Filament/User/Widgets'),
                 for: 'App\\Filament\\User\\Widgets',
             )
-            ->pages([
-                Dashboard::class,
-            ])
             ->authMiddleware([
                 RedirectToOrganizationLogin::class,
             ]);

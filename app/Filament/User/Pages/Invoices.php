@@ -4,11 +4,11 @@ namespace App\Filament\User\Pages;
 
 use Filament\Pages\Page;
 
-class UserInvoices extends Page
+class Invoices extends Page
 {
     protected static ?int $navigationSort = 60;
 
-    protected string $view = 'filament.user.pages.user-invoices';
+    protected string $view = 'filament.user.pages.invoices';
 
     public function getTitle(): string
     {
