@@ -4,10 +4,8 @@ namespace App\Filament\Project\Pages;
 
 use App\Models\ActivityLog;
 use App\Models\Project;
-use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -20,8 +18,6 @@ use Illuminate\Database\Eloquent\Builder;
 class ProjectActivityLog extends Page implements HasTable
 {
     use InteractsWithTable;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     protected static ?string $navigationLabel = 'Activity log';
 

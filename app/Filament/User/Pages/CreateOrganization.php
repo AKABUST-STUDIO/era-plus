@@ -5,7 +5,6 @@ namespace App\Filament\User\Pages;
 use App\Enums\OrganizationRole;
 use App\Enums\SubscriptionTier;
 use App\Models\Organization;
-use BackedEnum;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -13,13 +12,10 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 
 class CreateOrganization extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPlusCircle;
-
     protected static bool $shouldRegisterNavigation = false;
 
     protected string $view = 'filament.user.pages.create-organization';

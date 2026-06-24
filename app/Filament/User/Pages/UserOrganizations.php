@@ -3,11 +3,9 @@
 namespace App\Filament\User\Pages;
 
 use App\Models\Organization;
-use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Pages\Concerns\InteractsWithHeaderActions;
 use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -18,8 +16,6 @@ class UserOrganizations extends Page implements HasTable
 {
     use InteractsWithHeaderActions;
     use InteractsWithTable;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
 
     protected static ?int $navigationSort = 10;
 
@@ -35,7 +31,7 @@ class UserOrganizations extends Page implements HasTable
         return [
             Action::make('create')
                 ->label('Create organization')
-                ->icon('heroicon-o-plus')
+                ->icon('lucide-plus')
                 ->url(fn (): string => CreateOrganization::getUrl()),
         ];
     }

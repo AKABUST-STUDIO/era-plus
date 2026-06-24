@@ -27,6 +27,31 @@ class AppServiceProvider extends ServiceProvider
         $this->registerRouteBindings();
         $this->registerLivewireScriptRoute();
         $this->registerProjectAccessGates();
+
+        // Org Admin (AKA-36) and Project Coordinator (AKA-53) bypass Shield's
+        // generated permission checks. Falls through to project policies for
+        // Leader / Participant.
+        Gate::before(function (User $user, string $ability) {
+            $tenant = \Filament\Facades\Filament::getTenant();
+            $organization = match (true) {
+                $tenant instanceof Organization => $tenant,
+                $tenant instanceof Project => $tenant->organization,
+                default => null,
+            };
+
+            if ($organization && $user->isOrgAdmin($organization)) {
+                return true;
+            }
+
+            if ($tenant instanceof Project) {
+                $role = app(ProjectAccess::class)->projectRole($user, $tenant);
+                if ($role === \App\Enums\ProjectRole::Coordinator) {
+                    return true;
+                }
+            }
+
+            return null;
+        });
     }
 
     protected function registerProjectAccessGates(): void

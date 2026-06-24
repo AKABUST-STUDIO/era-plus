@@ -3,7 +3,6 @@
 namespace App\Filament\User\Pages;
 
 use App\Models\User;
-use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -12,12 +11,9 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class UserSettings extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUser;
-
     protected static ?int $navigationSort = 0;
 
     protected string $view = 'filament.user.pages.user-settings';

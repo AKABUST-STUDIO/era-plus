@@ -8,17 +8,13 @@ use App\Filament\Project\Resources\ProjectEvents\Pages\ListProjectEvents;
 use App\Filament\Project\Resources\ProjectEvents\Schemas\ProjectEventForm;
 use App\Filament\Project\Resources\ProjectEvents\Tables\ProjectEventsTable;
 use App\Models\ProjectEvent;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class ProjectEventResource extends Resource
 {
     protected static ?string $model = ProjectEvent::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
     protected static ?string $navigationLabel = 'Activities';
 

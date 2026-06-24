@@ -37,11 +37,11 @@ class ListFinanceEntries extends ListRecords
             CreateAction::make(),
             Action::make('exportExcel')
                 ->label('Export Excel')
-                ->icon('heroicon-o-arrow-down-tray')
+                ->icon('lucide-download')
                 ->action(fn (): BinaryFileResponse => $this->exportExcel()),
             Action::make('exportAudit')
                 ->label('Audit-ready export')
-                ->icon('heroicon-o-document-check')
+                ->icon('lucide-file-check')
                 ->color('warning')
                 ->action(fn (): BinaryFileResponse => $this->exportAudit()),
         ];

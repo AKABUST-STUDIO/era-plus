@@ -6,6 +6,6 @@
     :name="__('menu.project.select')"
     :groups="[
         $items,
-        $createUrl ? [['url' => $createUrl, 'name' => __('menu.project.create'), 'icon' => 'heroicon-m-plus']] : [],
+        $createUrl ? [['url' => $createUrl, 'name' => __('menu.project.create'), 'icon' => 'lucide-plus']] : [],
     ]"
 />

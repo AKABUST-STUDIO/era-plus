@@ -9,7 +9,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
@@ -52,9 +51,9 @@ class FinanceEntriesTable
                 IconColumn::make('flagged')
                     ->label('Flag')
                     ->state(fn (FinanceEntry $record): bool => $record->isFlagged())
-                    ->icon(Heroicon::OutlinedExclamationTriangle)
+                    ->icon('lucide-triangle-alert')
                     ->color('danger')
-                    ->trueIcon(Heroicon::OutlinedExclamationTriangle)
+                    ->trueIcon('lucide-triangle-alert')
                     ->falseIcon(null)
                     ->tooltip(fn (FinanceEntry $record): ?string => $record->isFlagged()
                         ? 'Subtract entry missing a category'

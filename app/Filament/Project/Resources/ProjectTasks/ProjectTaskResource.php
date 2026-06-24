@@ -8,17 +8,13 @@ use App\Filament\Project\Resources\ProjectTasks\Pages\ListProjectTasks;
 use App\Filament\Project\Resources\ProjectTasks\Schemas\ProjectTaskForm;
 use App\Filament\Project\Resources\ProjectTasks\Tables\ProjectTasksTable;
 use App\Models\ProjectTask;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class ProjectTaskResource extends Resource
 {
     protected static ?string $model = ProjectTask::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;
 
     protected static ?string $navigationLabel = 'Tasks';
 

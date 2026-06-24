@@ -3,7 +3,6 @@
 namespace App\Filament\Project\Pages;
 
 use App\Models\Project;
-use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
@@ -14,12 +13,9 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 
 class ProjectSettings extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
-
     protected string $view = 'filament.project.pages.project-settings';
 
     protected static ?string $navigationLabel = 'Settings';

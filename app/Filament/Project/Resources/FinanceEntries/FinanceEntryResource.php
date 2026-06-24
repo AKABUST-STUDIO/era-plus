@@ -10,19 +10,15 @@ use App\Filament\Project\Resources\FinanceEntries\Tables\FinanceEntriesTable;
 use App\Models\FinanceEntry;
 use App\Models\Project;
 use App\Services\ProjectAccess;
-use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
 class FinanceEntryResource extends Resource
 {
     protected static ?string $model = FinanceEntry::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
     protected static ?string $recordTitleAttribute = 'description';
 

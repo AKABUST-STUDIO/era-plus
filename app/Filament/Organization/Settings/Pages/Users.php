@@ -185,7 +185,7 @@ class Users extends Page implements HasTable
             ->recordActions([
                 Action::make('changeRole')
                     ->label('Change role')
-                    ->icon('heroicon-o-arrow-path')
+                    ->icon('lucide-refresh-cw')
                     ->visible(fn (User $r): bool => ! $r->is($this->authUser()))
                     ->form([
                         Select::make('role')
@@ -196,7 +196,7 @@ class Users extends Page implements HasTable
                     ->action(fn (User $r, array $data) => $this->changeRole($r, OrganizationRole::from($data['role']))),
                 Action::make('remove')
                     ->label('Remove')
-                    ->icon('heroicon-o-trash')
+                    ->icon('lucide-trash-2')
                     ->color('danger')
                     ->requiresConfirmation()
                     ->visible(fn (User $r): bool => ! $r->is($this->authUser()))

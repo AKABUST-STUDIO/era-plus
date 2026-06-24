@@ -78,13 +78,13 @@ abstract class BasePanelProvider extends PanelProvider
         $items = [
             'account' => MenuItem::make()
                 ->label('Your account')
-                ->icon('heroicon-o-user-circle')
+                ->icon('lucide-user')
                 ->url(fn (): string => route('filament.user.pages.dashboard')),
         ];
 
         $items['upgrade'] = MenuItem::make()
             ->label('Upgrade to Pro')
-            ->icon('heroicon-o-sparkles')
+            ->icon('lucide-sparkles')
             ->visible(fn (): bool => $this->shouldShowUpgradeCta())
             ->url(fn (): ?string => $this->upgradeUrl());
 

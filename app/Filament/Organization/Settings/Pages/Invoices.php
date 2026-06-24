@@ -4,17 +4,13 @@ namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
 use App\Models\Organization;
-use BackedEnum;
 use Filament\Pages\Page;
-use Filament\Support\Icons\Heroicon;
 
 class Invoices extends Page
 {
     protected static ?string $slug = 'invoices';
 
     protected static ?int $navigationSort = 50;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected string $view = 'filament.organization.settings.pages.invoices';
 

@@ -14,7 +14,7 @@ class UserPanelProvider extends BasePanelProvider
     {
         return parent::panel($panel)
             ->id(self::PANEL_ID)
-            ->path('me')
+            ->path('profile')
             ->discoverResources(
                 in: app_path('Filament/User/Resources'),
                 for: 'App\\Filament\\User\\Resources',

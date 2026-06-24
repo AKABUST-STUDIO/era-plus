@@ -7,7 +7,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
@@ -42,7 +41,7 @@ class TravelExpensesTable
                 IconColumn::make('over_limit')
                     ->label('Over limit')
                     ->state(fn (TravelExpense $record): bool => $record->exceedsCountryLimit())
-                    ->trueIcon(Heroicon::OutlinedExclamationTriangle)
+                    ->trueIcon('lucide-triangle-alert')
                     ->falseIcon(null)
                     ->color('danger'),
                 TextColumn::make('description')

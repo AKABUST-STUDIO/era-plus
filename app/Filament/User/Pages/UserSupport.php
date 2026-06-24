@@ -5,7 +5,6 @@ namespace App\Filament\User\Pages;
 use App\Enums\SupportRequestStatus;
 use App\Mail\SupportRequestReceived;
 use App\Models\SupportRequest;
-use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -14,7 +13,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -26,8 +24,6 @@ use Illuminate\Support\Facades\Mail;
 class UserSupport extends Page implements HasTable
 {
     use InteractsWithTable;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLifebuoy;
 
     protected static ?int $navigationSort = 30;
 

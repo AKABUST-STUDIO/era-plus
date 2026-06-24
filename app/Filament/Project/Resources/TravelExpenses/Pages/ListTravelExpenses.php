@@ -25,14 +25,14 @@ class ListTravelExpenses extends ListRecords
             CreateAction::make(),
             Action::make('editCountryLimits')
                 ->label('Country limits')
-                ->icon('heroicon-o-globe-europe-africa')
+                ->icon('lucide-globe')
                 ->modalHeading('Per-country default travel expense limits')
                 ->fillForm(fn (): array => $this->countryLimitsForm())
                 ->form(fn (): array => $this->countryLimitFields())
                 ->action(fn (array $data) => $this->saveCountryLimits($data)),
             Action::make('exportExcel')
                 ->label('Export Excel')
-                ->icon('heroicon-o-arrow-down-tray')
+                ->icon('lucide-download')
                 ->action(fn (): BinaryFileResponse => $this->exportExcel()),
         ];
     }

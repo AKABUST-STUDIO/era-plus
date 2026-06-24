@@ -9,18 +9,14 @@ use App\Filament\Organization\Resources\Projects\Schemas\ProjectForm;
 use App\Filament\Organization\Resources\Projects\Tables\ProjectsTable;
 use App\Models\Organization;
 use App\Models\Project;
-use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function canCreate(): bool
     {

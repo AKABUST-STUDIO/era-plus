@@ -35,7 +35,7 @@ class ProjectEventsTable
                 EditAction::make(),
                 Action::make('share_to_google')
                     ->label('Google Calendar')
-                    ->icon('heroicon-o-calendar-days')
+                    ->icon('lucide-calendar')
                     ->openUrlInNewTab()
                     ->url(fn (ProjectEvent $r): string => $r->googleCalendarUrl()),
                 DeleteAction::make(),
