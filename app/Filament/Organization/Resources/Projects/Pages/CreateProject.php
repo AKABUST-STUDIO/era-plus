@@ -2,6 +2,7 @@
 
 namespace App\Filament\Organization\Resources\Projects\Pages;
 
+use App\Enums\ProjectRole;
 use App\Filament\Organization\Resources\Projects\ProjectResource;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -11,6 +12,8 @@ class CreateProject extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $this->record->users()->attach(auth()->id());
+        $this->record->users()->attach(auth()->id(), [
+            'role' => ProjectRole::Coordinator->value,
+        ]);
     }
 }
