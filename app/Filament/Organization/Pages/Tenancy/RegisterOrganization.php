@@ -2,6 +2,7 @@
 
 namespace App\Filament\Organization\Pages\Tenancy;
 
+use App\Enums\OrganizationRole;
 use App\Models\Organization;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Tenancy\RegisterTenant;
@@ -29,7 +30,10 @@ class RegisterOrganization extends RegisterTenant
     {
         $organization = Organization::create($data);
 
-        $organization->users()->attach(auth()->user());
+        $organization->users()->attach(auth()->user(), [
+            'role' => OrganizationRole::Admin->value,
+            'is_admin' => true,
+        ]);
 
         return $organization;
     }

@@ -70,7 +70,7 @@ class SettingsUsersTest extends TestCase
             ->assertHasFormErrors(['email' => 'required'], 'inviteForm');
     }
 
-    public function test_invite_is_work_in_progress(): void
+    public function test_invite_attaches_member(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
@@ -81,6 +81,6 @@ class SettingsUsersTest extends TestCase
             ->assertHasNoFormErrors()
             ->assertNotified();
 
-        $this->assertSame(1, $organization->users()->count());
+        $this->assertSame(2, $organization->users()->count());
     }
 }

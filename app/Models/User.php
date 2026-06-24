@@ -64,7 +64,15 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'organization_user')
+            ->withPivot('role', 'is_admin')
             ->withTimestamps();
+    }
+
+    public function isOrgAdmin(Organization $organization): bool
+    {
+        $pivot = $this->organizations()->whereKey($organization->id)->first()?->pivot;
+
+        return (bool) ($pivot?->is_admin);
     }
 
     /**

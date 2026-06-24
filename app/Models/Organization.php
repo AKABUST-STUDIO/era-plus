@@ -36,6 +36,8 @@ class Organization extends Model implements HasAvatar, HasMedia
         'billing_address',
         'invoice_language',
         'tax_id',
+        'enforce_two_factor',
+        'enforce_email_verification',
     ];
 
     /**
@@ -57,6 +59,8 @@ class Organization extends Model implements HasAvatar, HasMedia
             'extra_project_seats' => 'integer',
             'trial_ends_at' => 'datetime',
             'billing_address' => 'array',
+            'enforce_two_factor' => 'boolean',
+            'enforce_email_verification' => 'boolean',
         ];
     }
 

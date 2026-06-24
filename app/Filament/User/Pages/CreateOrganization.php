@@ -2,6 +2,7 @@
 
 namespace App\Filament\User\Pages;
 
+use App\Enums\OrganizationRole;
 use App\Enums\SubscriptionTier;
 use App\Models\Organization;
 use BackedEnum;
@@ -82,7 +83,10 @@ class CreateOrganization extends Page
             'subscription_tier' => $data['subscription_tier'] ?? SubscriptionTier::Free->value,
         ]);
 
-        $organization->users()->attach(auth()->id());
+        $organization->users()->attach(auth()->id(), [
+            'role' => OrganizationRole::Admin->value,
+            'is_admin' => true,
+        ]);
 
         if (SchemaFacade::hasColumn('users', 'default_organization_id') && auth()->user()->default_organization_id === null) {
             auth()->user()->update(['default_organization_id' => $organization->id]);
