@@ -26,7 +26,22 @@ class Project extends Model
         'organization_id',
         'name',
         'slug',
+        'beginning_date',
+        'end_date',
+        'project_type',
+        'description',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'beginning_date' => 'date',
+            'end_date' => 'date',
+        ];
+    }
 
     public function getSlugOptions(): SlugOptions
     {
