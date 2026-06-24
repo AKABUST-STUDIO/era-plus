@@ -65,7 +65,7 @@ class Organizations extends Page implements HasTable
                             TextColumn::make('subscription_tier')
                                 ->badge()
                                 ->grow(false),
-                        ])->from('md'),
+                        ])->grow(false)->from('md'),
                         TextColumn::make('role')
                             ->state(fn (Organization $r): string => $this->roleLabelFor($r))
                             ->color('gray'),

@@ -3,6 +3,7 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Actions\Action;
@@ -16,6 +17,8 @@ use Filament\Schemas\Schema;
 
 class GeneralSettings extends Page
 {
+    use HasOrgSettingsBreadcrumbs;
+
     protected static ?string $slug = 'general';
 
     protected static ?int $navigationSort = 0;
@@ -49,17 +52,6 @@ class GeneralSettings extends Page
 
         $this->form->fill($organization->attributesToArray());
         $this->form->loadStateFromRelationships(shouldHydrate: true);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [
-            __('settings.breadcrumb'),
-            __('settings.general.navigation_label'),
-        ];
     }
 
     public function form(Schema $schema): Schema

@@ -4,6 +4,7 @@ namespace App\Filament\Organization\Settings\Pages;
 
 use App\Enums\OrganizationRole;
 use App\Facades\OrganizationService;
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Mail\OrganizationInvitation;
 use App\Models\ActivityLog;
 use App\Models\Organization;
@@ -29,6 +30,7 @@ use Illuminate\Support\Str;
 
 class Users extends Page implements HasTable
 {
+    use HasOrgSettingsBreadcrumbs;
     use InteractsWithTable;
 
     protected static ?string $slug = 'users';
@@ -54,17 +56,6 @@ class Users extends Page implements HasTable
         return __('settings.users.title');
     }
 
-    /**
-     * @return array<int, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [
-            __('settings.breadcrumb'),
-            __('settings.users.navigation_label'),
-        ];
-    }
-
     public function mount(): void
     {
         $organization = OrganizationService::current();
@@ -83,6 +74,7 @@ class Users extends Page implements HasTable
             ->components([
                 Section::make(__('settings.users.invite.heading'))
                     ->description(__('settings.users.invite.description'))
+                    ->columns(3)
                     ->schema([
                         TextInput::make('email')
                             ->label(__('settings.users.invite.email'))

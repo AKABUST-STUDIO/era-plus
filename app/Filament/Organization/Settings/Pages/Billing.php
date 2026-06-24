@@ -4,6 +4,7 @@ namespace App\Filament\Organization\Settings\Pages;
 
 use App\Enums\SubscriptionTier;
 use App\Facades\OrganizationService;
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -15,6 +16,8 @@ use Filament\Schemas\Schema;
 
 class Billing extends Page
 {
+    use HasOrgSettingsBreadcrumbs;
+
     protected static ?string $slug = 'billing';
 
     protected static ?int $navigationSort = 40;
@@ -58,17 +61,6 @@ class Billing extends Page
             'invoice_language' => $organization->invoice_language,
             'tax_id' => $organization->tax_id,
         ]);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [
-            __('settings.breadcrumb'),
-            __('settings.billing.navigation_label'),
-        ];
     }
 
     public function form(Schema $schema): Schema

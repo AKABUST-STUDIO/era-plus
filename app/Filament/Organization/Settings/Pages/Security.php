@@ -3,6 +3,7 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use Filament\Actions\Action;
@@ -14,6 +15,8 @@ use Filament\Schemas\Schema;
 
 class Security extends Page
 {
+    use HasOrgSettingsBreadcrumbs;
+
     protected static ?string $slug = 'security';
 
     protected static ?int $navigationSort = 30;
@@ -35,17 +38,6 @@ class Security extends Page
     public function getTitle(): string
     {
         return __('settings.security.title');
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [
-            __('settings.breadcrumb'),
-            __('settings.security.navigation_label'),
-        ];
     }
 
     public function mount(): void

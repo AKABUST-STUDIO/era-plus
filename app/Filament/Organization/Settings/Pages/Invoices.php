@@ -3,11 +3,14 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use Filament\Pages\Page;
 
 class Invoices extends Page
 {
+    use HasOrgSettingsBreadcrumbs;
+
     protected static ?string $slug = 'invoices';
 
     protected static ?int $navigationSort = 50;
@@ -33,17 +36,6 @@ class Invoices extends Page
     public static function getNavigationLabel(): string
     {
         return 'Invoices';
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [
-            __('settings.breadcrumb'),
-            'Invoices',
-        ];
     }
 
     /**

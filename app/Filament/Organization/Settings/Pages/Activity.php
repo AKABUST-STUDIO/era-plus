@@ -3,6 +3,7 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use Filament\Pages\Page;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Activity extends Page implements HasTable
 {
+    use HasOrgSettingsBreadcrumbs;
     use InteractsWithTable;
 
     protected static ?string $slug = 'activity';
@@ -44,17 +46,6 @@ class Activity extends Page implements HasTable
     public function getTitle(): string
     {
         return __('settings.activity.title');
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [
-            __('settings.breadcrumb'),
-            __('settings.activity.navigation_label'),
-        ];
     }
 
     public function table(Table $table): Table

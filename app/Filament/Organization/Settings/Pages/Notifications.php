@@ -2,10 +2,13 @@
 
 namespace App\Filament\Organization\Settings\Pages;
 
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use Filament\Pages\Page;
 
 class Notifications extends Page
 {
+    use HasOrgSettingsBreadcrumbs;
+
     protected static ?string $slug = 'notifications';
 
     protected static ?int $navigationSort = 20;
@@ -20,16 +23,5 @@ class Notifications extends Page
     public function getTitle(): string
     {
         return __('settings.notifications.title');
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [
-            __('settings.breadcrumb'),
-            __('settings.notifications.navigation_label'),
-        ];
     }
 }
