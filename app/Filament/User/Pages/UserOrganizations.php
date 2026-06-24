@@ -36,7 +36,7 @@ class UserOrganizations extends Page implements HasTable
             Action::make('create')
                 ->label('Create organization')
                 ->icon('heroicon-o-plus')
-                ->url(fn (): string => url('/new-organization')),
+                ->url(fn (): string => CreateOrganization::getUrl()),
         ];
     }
 
