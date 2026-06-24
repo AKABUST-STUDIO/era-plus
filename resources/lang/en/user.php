@@ -43,6 +43,31 @@ return [
 
     'support' => [
         'title' => 'Support',
+        'subject' => 'Subject',
+        'priority' => 'Priority',
+        'body' => 'Message',
+        'status' => 'Status',
+        'opened' => 'Opened',
+        'submit' => 'Submit',
+        'unread' => 'Unread',
+        'new' => [
+            'heading' => 'New support request',
+        ],
+        'priorities' => [
+            'low' => 'Low',
+            'normal' => 'Normal',
+            'high' => 'High',
+            'urgent' => 'Urgent',
+        ],
+        'actions' => [
+            'reply' => 'Reply',
+            'reply_to' => 'Reply to: :subject',
+            'reply_sent' => 'Reply sent',
+            'resolve' => 'Mark resolved',
+            'resolved_sent' => 'Marked as resolved',
+            'reopen' => 'Reopen',
+            'reopened_sent' => 'Reopened',
+        ],
     ],
 
     'authentication' => [

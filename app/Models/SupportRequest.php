@@ -6,6 +6,7 @@ use App\Enums\SupportRequestStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SupportRequest extends Model
 {
@@ -47,5 +48,37 @@ class SupportRequest extends Model
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * @return HasMany<SupportRequestMessage, $this>
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(SupportRequestMessage::class)->latest('created_at');
+    }
+
+    public function markResolved(): void
+    {
+        $this->update([
+            'status' => SupportRequestStatus::Resolved,
+            'resolved_at' => now(),
+        ]);
+    }
+
+    public function reopen(): void
+    {
+        $this->update([
+            'status' => SupportRequestStatus::Open,
+            'resolved_at' => null,
+        ]);
+    }
+
+    public function hasUnreadStaffReply(): bool
+    {
+        return $this->messages()
+            ->where('is_staff_reply', true)
+            ->whereNull('read_at')
+            ->exists();
     }
 }
