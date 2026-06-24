@@ -47,7 +47,7 @@ class FinanceEntriesExportTest extends TestCase
         $export = new FinanceEntriesExport($this->project);
 
         $this->assertSame(
-            ['Date', 'Operation', 'Amount', 'Signed amount', 'Description', 'Created by', 'Created at'],
+            ['Date', 'Operation', 'Category', 'Amount', 'Signed amount', 'Description', 'Created by', 'Created at'],
             $export->headings(),
         );
     }
@@ -58,6 +58,7 @@ class FinanceEntriesExportTest extends TestCase
             'amount' => 125.50,
             'occurred_at' => '2026-04-10',
             'description' => 'Conference fee',
+            'cost_category' => \App\Enums\BudgetCategory::Travel,
             'created_by' => $this->user->id,
         ]);
 
@@ -65,10 +66,11 @@ class FinanceEntriesExportTest extends TestCase
 
         $this->assertSame('2026-04-10', $row[0]);
         $this->assertSame('Subtract', $row[1]);
-        $this->assertSame('125.50', $row[2]);
-        $this->assertSame('-125.50', $row[3]);
-        $this->assertSame('Conference fee', $row[4]);
-        $this->assertSame($this->user->name, $row[5]);
+        $this->assertSame('Travel', $row[2]);
+        $this->assertSame('125.50', $row[3]);
+        $this->assertSame('-125.50', $row[4]);
+        $this->assertSame('Conference fee', $row[5]);
+        $this->assertSame($this->user->name, $row[6]);
     }
 
     public function test_export_collection_only_includes_current_project_entries(): void

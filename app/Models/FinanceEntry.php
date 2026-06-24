@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BudgetCategory;
 use App\Enums\FinanceOperation;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\BelongsToProject;
@@ -21,6 +22,7 @@ class FinanceEntry extends Model
         'organization_id',
         'project_id',
         'operation',
+        'cost_category',
         'amount',
         'description',
         'occurred_at',
@@ -35,8 +37,15 @@ class FinanceEntry extends Model
         return [
             'amount' => 'decimal:2',
             'operation' => FinanceOperation::class,
+            'cost_category' => BudgetCategory::class,
             'occurred_at' => 'date',
         ];
+    }
+
+    public function isFlagged(): bool
+    {
+        return $this->operation === FinanceOperation::Subtract
+            && $this->cost_category === null;
     }
 
     /**

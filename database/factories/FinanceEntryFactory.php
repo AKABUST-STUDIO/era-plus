@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\BudgetCategory;
 use App\Enums\FinanceOperation;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -22,6 +23,7 @@ class FinanceEntryFactory extends Factory
             'organization_id' => $project->organization_id,
             'project_id' => $project->id,
             'operation' => fake()->randomElement(FinanceOperation::cases()),
+            'cost_category' => fake()->randomElement(BudgetCategory::cases()),
             'amount' => fake()->randomFloat(2, 1, 9999),
             'description' => fake()->optional()->sentence(),
             'occurred_at' => fake()->dateTimeBetween('-1 year')->format('Y-m-d'),

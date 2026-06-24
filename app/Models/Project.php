@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BudgetCategory;
 use App\Enums\FinanceOperation;
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Scopes\ProjectScope;
@@ -98,5 +99,31 @@ class Project extends Model
             ->sum('amount');
 
         return bcsub($added ?: '0', $subtracted ?: '0', 2);
+    }
+
+    /**
+     * @return array<string, string> Category value => signed total
+     */
+    public function financeTotalsByCategory(): array
+    {
+        $totals = [];
+
+        foreach (BudgetCategory::cases() as $category) {
+            $query = $this->financeEntries()
+                ->withoutGlobalScopes([OrganizationScope::class, ProjectScope::class])
+                ->where('cost_category', $category->value);
+
+            $added = (string) (clone $query)
+                ->where('operation', FinanceOperation::Add->value)
+                ->sum('amount');
+
+            $subtracted = (string) (clone $query)
+                ->where('operation', FinanceOperation::Subtract->value)
+                ->sum('amount');
+
+            $totals[$category->value] = bcsub($added ?: '0', $subtracted ?: '0', 2);
+        }
+
+        return $totals;
     }
 }
