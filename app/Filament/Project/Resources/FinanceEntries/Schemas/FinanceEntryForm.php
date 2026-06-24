@@ -4,8 +4,10 @@ namespace App\Filament\Project\Resources\FinanceEntries\Schemas;
 
 use App\Enums\BudgetCategory;
 use App\Enums\FinanceOperation;
+use App\Models\FinanceEntry;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -40,6 +42,17 @@ class FinanceEntryForm
                 Textarea::make('description')
                     ->maxLength(255)
                     ->rows(2)
+                    ->columnSpanFull(),
+                SpatieMediaLibraryFileUpload::make('documents')
+                    ->label('Supporting documents')
+                    ->helperText('Invoices, receipts, bank statements. PDF or image.')
+                    ->collection(FinanceEntry::DOCUMENTS_COLLECTION)
+                    ->multiple()
+                    ->reorderable()
+                    ->openable()
+                    ->downloadable()
+                    ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(20480)
                     ->columnSpanFull(),
             ]);
     }

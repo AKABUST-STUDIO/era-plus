@@ -9,14 +9,19 @@ use App\Models\Concerns\BelongsToProject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class FinanceEntry extends Model
+class FinanceEntry extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\FinanceEntryFactory> */
     use BelongsToOrganization;
 
     use BelongsToProject;
     use HasFactory;
+    use InteractsWithMedia;
+
+    public const DOCUMENTS_COLLECTION = 'documents';
 
     protected $fillable = [
         'organization_id',
@@ -40,6 +45,11 @@ class FinanceEntry extends Model
             'cost_category' => BudgetCategory::class,
             'occurred_at' => 'date',
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::DOCUMENTS_COLLECTION);
     }
 
     public function isFlagged(): bool
