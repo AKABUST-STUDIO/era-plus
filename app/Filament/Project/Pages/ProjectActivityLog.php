@@ -58,8 +58,8 @@ class ProjectActivityLog extends Page implements HasTable
             ->columns([
                 TextColumn::make('created_at')->label('When')->dateTime()->sortable(),
                 TextColumn::make('user.name')->label('User')->placeholder('System')->searchable(),
-                TextColumn::make('event_type')->label('Type')->badge()->toggleable(),
-                TextColumn::make('label')->searchable()->wrap(),
+                TextColumn::make('event')->label('Type')->badge()->toggleable(),
+                TextColumn::make('description')->label('Action')->searchable()->wrap(),
             ])
             ->filters([
                 SelectFilter::make('user_id')

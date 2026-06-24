@@ -49,9 +49,9 @@ class ActivityLogTest extends TestCase
         );
 
         $this->assertSame($this->organization->id, $entry->organization_id);
-        $this->assertSame($this->user->id, $entry->user_id);
-        $this->assertSame('organization.updated', $entry->event_type);
-        $this->assertSame(['from' => 'old', 'to' => 'new'], $entry->fresh()->data);
+        $this->assertSame($this->user->id, $entry->causer_id);
+        $this->assertSame('organization.updated', $entry->event);
+        $this->assertSame(['from' => 'old', 'to' => 'new'], $entry->fresh()->properties->toArray());
     }
 
     public function test_org_activity_page_lists_org_entries_only(): void

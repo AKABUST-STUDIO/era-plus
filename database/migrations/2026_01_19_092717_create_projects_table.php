@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('projects', function (Blueprint $table) {
@@ -16,15 +13,16 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
+            $table->date('beginning_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->string('project_type', 64)->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
 
             $table->unique(['organization_id', 'slug']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('projects');

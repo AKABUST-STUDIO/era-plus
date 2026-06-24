@@ -79,7 +79,7 @@ abstract class BasePanelProvider extends PanelProvider
             'account' => MenuItem::make()
                 ->label('Your account')
                 ->icon('heroicon-o-user-circle')
-                ->url(fn (): string => Filament::getPanel(\App\Providers\Filament\UserPanelProvider::PANEL_ID)?->getUrl() ?? '/me'),
+                ->url(fn (): string => route('filament.user.pages.dashboard')),
         ];
 
         $items['upgrade'] = MenuItem::make()
@@ -108,10 +108,13 @@ abstract class BasePanelProvider extends PanelProvider
         }
 
         try {
-            return Filament::getPanel(\App\Providers\Filament\Organization\SettingsPanelProvider::PANEL_ID)
-                ?->getUrl(tenant: $organization);
+            return route('filament.organization-settings.resources.billing.index', ['tenant' => $organization]);
         } catch (\Throwable) {
-            return null;
+            try {
+                return route('filament.organization-settings.pages.billing', ['tenant' => $organization]);
+            } catch (\Throwable) {
+                return null;
+            }
         }
     }
 

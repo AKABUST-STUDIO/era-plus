@@ -73,8 +73,8 @@ class Activity extends Page implements HasTable
                 TextColumn::make('created_at')->label('When')->dateTime()->sortable(),
                 TextColumn::make('user.name')->label('User')->placeholder('System')->searchable(),
                 TextColumn::make('project.name')->label('Project')->placeholder('—')->toggleable(),
-                TextColumn::make('event_type')->label('Type')->badge()->toggleable(),
-                TextColumn::make('label')->searchable()->wrap(),
+                TextColumn::make('event')->label('Type')->badge()->toggleable(),
+                TextColumn::make('description')->label('Action')->searchable()->wrap(),
             ])
             ->filters([
                 SelectFilter::make('user_id')
@@ -83,13 +83,13 @@ class Activity extends Page implements HasTable
                 SelectFilter::make('project_id')
                     ->label('Project')
                     ->relationship('project', 'name'),
-                SelectFilter::make('event_type')
+                SelectFilter::make('event')
                     ->label('Event type')
                     ->options(fn (): array => ActivityLog::query()
                         ->where('organization_id', $this->organization->id)
-                        ->whereNotNull('event_type')
+                        ->whereNotNull('event')
                         ->distinct()
-                        ->pluck('event_type', 'event_type')
+                        ->pluck('event', 'event')
                         ->all()),
                 Filter::make('last_3_days')
                     ->label('Last 3 days')

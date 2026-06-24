@@ -62,9 +62,9 @@ class SecurityPageTest extends TestCase
             ->fillForm(['enforce_two_factor' => true])
             ->call('saveTwoFactor');
 
-        $this->assertDatabaseHas('activity_logs', [
+        $this->assertDatabaseHas('activity_log', [
             'organization_id' => $this->organization->id,
-            'event_type' => 'organization.security.two_factor',
+            'event' => 'organization.security.two_factor',
         ]);
     }
 }

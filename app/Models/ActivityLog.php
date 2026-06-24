@@ -2,30 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Models\Activity;
 
-class ActivityLog extends Model
+class ActivityLog extends Activity
 {
-    /** @use HasFactory<\Database\Factories\ActivityLogFactory> */
-    use BelongsToOrganization;
-
-    use HasFactory;
-
-    public const UPDATED_AT = null;
-
-    protected $fillable = [
-        'organization_id',
-        'project_id',
-        'user_id',
-        'event_type',
-        'label',
-        'target_type',
-        'target_id',
-        'data',
-    ];
+    public $guarded = ['id'];
 
     /**
      * @return array<string, string>
@@ -33,17 +16,36 @@ class ActivityLog extends Model
     protected function casts(): array
     {
         return [
-            'data' => 'array',
-            'created_at' => 'datetime',
+            'properties' => 'collection',
+            'attribute_changes' => 'collection',
         ];
     }
 
     /**
+     * Backwards-compatible accessor for the description field.
+     */
+    public function getLabelAttribute(): string
+    {
+        return (string) $this->description;
+    }
+
+    /**
+     * Backwards-compatible accessor for the event field.
+     */
+    public function getEventTypeAttribute(): ?string
+    {
+        return $this->event;
+    }
+
+    /**
+     * Convenience accessor for the causer cast to User.
+     *
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'causer_id')
+            ->where('causer_type', User::class);
     }
 
     /**
@@ -52,6 +54,14 @@ class ActivityLog extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<Organization, $this>
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     /**
@@ -65,16 +75,28 @@ class ActivityLog extends Model
         ?Model $target = null,
         array $data = [],
     ): self {
-        return self::create([
+        $builder = activity()->withProperties($data);
+
+        if ($eventType !== null) {
+            $builder = $builder->event($eventType);
+        }
+
+        if ($causer = auth()->user()) {
+            $builder = $builder->causedBy($causer);
+        }
+
+        if ($target !== null) {
+            $builder = $builder->performedOn($target);
+        }
+
+        $log = $builder->log($label);
+
+        $entry = self::query()->findOrFail($log->id);
+        $entry->forceFill([
             'organization_id' => $organization->id,
             'project_id' => $project?->id,
-            'user_id' => auth()->id(),
-            'event_type' => $eventType,
-            'label' => $label,
-            'target_type' => $target ? $target::class : null,
-            'target_id' => $target?->getKey(),
-            'data' => $data ?: null,
-            'created_at' => now(),
-        ]);
+        ])->save();
+
+        return $entry;
     }
 }
