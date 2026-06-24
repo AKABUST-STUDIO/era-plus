@@ -3,6 +3,10 @@
 namespace App\Filament\User\Pages;
 
 use App\Models\ActivityLog;
+use App\Models\Organization;
+use App\Models\Project;
+use App\Providers\Filament\OrganizationPanelProvider;
+use App\Providers\Filament\ProjectPanelProvider;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -10,6 +14,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class Activity extends Page implements HasTable
 {
@@ -22,6 +27,75 @@ class Activity extends Page implements HasTable
     public function getTitle(): string
     {
         return __('user.activity.title');
+    }
+
+    /**
+     * Organizations the user belongs to — each gets a link to its
+     * org-settings Activity page.
+     *
+     * @return Collection<int, Organization>
+     */
+    public function getOrganizations(): Collection
+    {
+        /** @var Collection<int, Organization> $orgs */
+        $orgs = Organization::query()
+            ->whereHas('users', fn (Builder $q) => $q->whereKey(auth()->id()))
+            ->orderBy('name')
+            ->get();
+
+        return $orgs;
+    }
+
+    /**
+     * Projects the user belongs to — each gets a link to its
+     * project-panel Activity log page.
+     *
+     * @return Collection<int, Project>
+     */
+    public function getProjects(): Collection
+    {
+        /** @var Collection<int, Project> $projects */
+        $projects = Project::query()
+            ->whereHas('users', fn (Builder $q) => $q->whereKey(auth()->id()))
+            ->with('organization')
+            ->orderBy('name')
+            ->get();
+
+        return $projects;
+    }
+
+    public function organizationActivityUrl(Organization $organization): ?string
+    {
+        try {
+            return route('filament.organization-settings.pages.activity', [
+                'organization' => $organization->slug,
+            ]);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    public function projectActivityUrl(Project $project): ?string
+    {
+        try {
+            return route('filament.'.ProjectPanelProvider::PANEL_ID.'.pages.project-activity-log', [
+                'organization' => $project->organization?->slug,
+                'tenant' => $project->slug,
+            ]);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    public function organizationDashboardUrl(Organization $organization): ?string
+    {
+        try {
+            return route('filament.'.OrganizationPanelProvider::PANEL_ID.'.pages.dashboard', [
+                'tenant' => $organization->slug,
+            ]);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public function table(Table $table): Table

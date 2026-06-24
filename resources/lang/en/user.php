@@ -29,6 +29,16 @@ return [
         'subject' => 'Subject',
         'last_7_days' => 'Last 7 days',
         'last_30_days' => 'Last 30 days',
+        'organizations' => [
+            'heading' => 'Organizations',
+            'description' => 'Jump into the activity log for each organization you belong to.',
+            'view' => 'View activity →',
+        ],
+        'projects' => [
+            'heading' => 'Projects',
+            'description' => 'Jump into the activity log for each project you\'re a member of.',
+            'view' => 'View activity →',
+        ],
     ],
 
     'support' => [

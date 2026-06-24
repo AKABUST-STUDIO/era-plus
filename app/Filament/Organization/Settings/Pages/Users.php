@@ -74,7 +74,6 @@ class Users extends Page implements HasTable
             ->components([
                 Section::make(__('settings.users.invite.heading'))
                     ->description(__('settings.users.invite.description'))
-                    ->columns(3)
                     ->schema([
                         TextInput::make('email')
                             ->label(__('settings.users.invite.email'))
