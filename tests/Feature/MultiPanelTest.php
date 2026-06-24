@@ -90,7 +90,7 @@ class MultiPanelTest extends TestCase
             ->assertSuccessful();
     }
 
-    public function test_settings_panel_serves_work_in_progress_page_to_member(): void
+    public function test_settings_panel_serves_activity_page_to_member(): void
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
@@ -99,8 +99,7 @@ class MultiPanelTest extends TestCase
         $this->actingAs($user)
             ->get($this->url('/'.$organization->slug.'/settings/activity'))
             ->assertSuccessful()
-            ->assertSee(__('settings.activity.title'))
-            ->assertSee(__('settings.work_in_progress.heading'));
+            ->assertSee(__('settings.activity.title'));
     }
 
     public function test_project_panel_404s_when_org_slug_unknown(): void

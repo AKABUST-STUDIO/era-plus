@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Filament\Organization\Settings\Pages;
+namespace App\Filament\Project\Pages;
 
-use App\Facades\OrganizationService;
 use App\Models\ActivityLog;
-use App\Models\Organization;
+use App\Models\Project;
+use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Pages\Page;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -15,54 +17,38 @@ use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class Activity extends Page implements HasTable
+class ProjectActivityLog extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $slug = 'activity';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static ?int $navigationSort = 50;
+    protected static ?string $navigationLabel = 'Activity log';
 
-    protected string $view = 'filament.organization.settings.pages.activity';
+    protected static ?int $navigationSort = 90;
 
-    public ?Organization $organization = null;
+    protected string $view = 'filament.project.pages.project-activity-log';
+
+    public ?Project $project = null;
 
     public function mount(): void
     {
-        $organization = OrganizationService::current();
-
-        abort_unless($organization instanceof Organization, 404);
-
-        $this->organization = $organization;
-    }
-
-    public static function getNavigationLabel(): string
-    {
-        return __('settings.activity.navigation_label');
+        $tenant = Filament::getTenant();
+        abort_unless($tenant instanceof Project, 404);
+        $this->project = $tenant;
     }
 
     public function getTitle(): string
     {
-        return __('settings.activity.title');
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [
-            __('settings.breadcrumb'),
-            __('settings.activity.navigation_label'),
-        ];
+        return 'Project activity log';
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->query(fn (): Builder => ActivityLog::query()
-                ->where('organization_id', $this->organization->id)
-                ->with(['user', 'project']))
+                ->where('project_id', $this->project->id)
+                ->with('user'))
             ->defaultSort('created_at', 'desc')
             ->defaultGroup(
                 Group::make('created_at')
@@ -72,7 +58,6 @@ class Activity extends Page implements HasTable
             ->columns([
                 TextColumn::make('created_at')->label('When')->dateTime()->sortable(),
                 TextColumn::make('user.name')->label('User')->placeholder('System')->searchable(),
-                TextColumn::make('project.name')->label('Project')->placeholder('—')->toggleable(),
                 TextColumn::make('event_type')->label('Type')->badge()->toggleable(),
                 TextColumn::make('label')->searchable()->wrap(),
             ])
@@ -80,17 +65,6 @@ class Activity extends Page implements HasTable
                 SelectFilter::make('user_id')
                     ->label('User')
                     ->relationship('user', 'name'),
-                SelectFilter::make('project_id')
-                    ->label('Project')
-                    ->relationship('project', 'name'),
-                SelectFilter::make('event_type')
-                    ->label('Event type')
-                    ->options(fn (): array => ActivityLog::query()
-                        ->where('organization_id', $this->organization->id)
-                        ->whereNotNull('event_type')
-                        ->distinct()
-                        ->pluck('event_type', 'event_type')
-                        ->all()),
                 Filter::make('last_3_days')
                     ->label('Last 3 days')
                     ->query(fn (Builder $q): Builder => $q->where('created_at', '>=', now()->subDays(3))),
