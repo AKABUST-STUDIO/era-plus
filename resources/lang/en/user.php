@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'menu' => [
+        'account' => 'Your account',
+        'upgrade' => 'Upgrade to Pro',
+        'logout' => 'Sign out',
+    ],
+
     'organizations' => [
         'title' => 'Organizations',
         'role' => [

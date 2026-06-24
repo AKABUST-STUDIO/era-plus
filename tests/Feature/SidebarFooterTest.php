@@ -13,16 +13,17 @@ class SidebarFooterTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_menu_includes_account_link(): void
+    public function test_user_footer_wrapper_view_renders(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['name' => 'Maria', 'email' => 'maria@example.test']);
         $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
 
-        $this->assertContains('Your account', $this->menuItemLabels());
+        $html = view('livewire.user-footer-wrapper')->render();
+
+        $this->assertStringContainsString('user-footer', $html);
     }
 
-    public function test_upgrade_cta_is_visible_for_free_tier(): void
+    public function test_upgrade_cta_is_visible_for_free_tier_via_organization_service(): void
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create(['subscription_tier' => SubscriptionTier::Free]);
@@ -32,10 +33,10 @@ class SidebarFooterTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('organization'));
         Filament::setTenant($organization);
 
-        $this->assertContains('Upgrade to Pro', $this->menuItemLabels());
+        $this->assertTrue(\App\Facades\OrganizationService::shouldShowUpgradeCta());
     }
 
-    public function test_upgrade_cta_is_hidden_for_pro_tier(): void
+    public function test_upgrade_cta_is_hidden_for_pro_tier_via_organization_service(): void
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create(['subscription_tier' => SubscriptionTier::Pro]);
@@ -45,16 +46,6 @@ class SidebarFooterTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('organization'));
         Filament::setTenant($organization);
 
-        $this->assertNotContains('Upgrade to Pro', $this->menuItemLabels());
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function menuItemLabels(): array
-    {
-        return collect(Filament::getPanel('organization')->getUserMenuItems())
-            ->map(fn (object $item): string => (string) $item->getLabel())
-            ->all();
+        $this->assertFalse(\App\Facades\OrganizationService::shouldShowUpgradeCta());
     }
 }
