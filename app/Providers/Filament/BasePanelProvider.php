@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Enums\SubscriptionTier;
 use App\Facades\OrganizationService;
 use App\Filament\User\Pages\Settings;
 use App\Models\Organization;
@@ -58,7 +57,7 @@ abstract class BasePanelProvider extends PanelProvider
 
             ->brandName(config('app.name'))
             ->viteTheme('resources/css/filament/app/theme.css')
-            // ->darkMode(false)
+
             ->colors([
                 'primary' => Color::Zinc,
             ])
@@ -93,10 +92,7 @@ abstract class BasePanelProvider extends PanelProvider
 
     protected function shouldShowUpgradeCta(): bool
     {
-        $organization = $this->resolveOrganization();
-
-        return $organization instanceof Organization
-            && $organization->subscription_tier === SubscriptionTier::Free;
+        return OrganizationService::shouldShowUpgradeCta();
     }
 
     protected function upgradeUrl(): ?string

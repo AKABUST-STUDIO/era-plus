@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,11 +15,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
+        $this->call([
+            ShieldPermissionsSeeder::class,
+        ]);
+
+        $admin = User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@erasmus.test',
             'password' => 'password',
-            // 'password' => app()->environment('local') ? 'password' : Str::random(),
         ]);
+
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            $admin->assignRole('super_admin');
+        }
     }
 }

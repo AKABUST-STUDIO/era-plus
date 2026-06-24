@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\SubscriptionTier;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
@@ -62,5 +63,13 @@ class OrganizationService
     public function forget(): void
     {
         session()->forget(self::SESSION_KEY);
+    }
+
+    public function shouldShowUpgradeCta(): bool
+    {
+        $organization = $this->current();
+
+        return $organization instanceof Organization
+            && $organization->subscription_tier === SubscriptionTier::Free;
     }
 }
