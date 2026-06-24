@@ -2,6 +2,7 @@
 
 namespace App\Filament\Project\Resources\FinanceEntries\Pages;
 
+use App\Exports\AuditFinanceExport;
 use App\Exports\FinanceEntriesExport;
 use App\Filament\Project\Resources\FinanceEntries\FinanceEntryResource;
 use App\Models\Project;
@@ -38,6 +39,11 @@ class ListFinanceEntries extends ListRecords
                 ->label('Export Excel')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->action(fn (): BinaryFileResponse => $this->exportExcel()),
+            Action::make('exportAudit')
+                ->label('Audit-ready export')
+                ->icon('heroicon-o-document-check')
+                ->color('warning')
+                ->action(fn (): BinaryFileResponse => $this->exportAudit()),
         ];
     }
 
@@ -49,5 +55,15 @@ class ListFinanceEntries extends ListRecords
         $filename = sprintf('finance-%s-%s.xlsx', $project->slug, now()->format('Y-m-d'));
 
         return Excel::download(new FinanceEntriesExport($project), $filename);
+    }
+
+    public function exportAudit(): BinaryFileResponse
+    {
+        $project = Filament::getTenant();
+        abort_unless($project instanceof Project, 404);
+
+        $filename = sprintf('audit-finance-%s-%s.xlsx', $project->slug, now()->format('Y-m-d'));
+
+        return Excel::download(new AuditFinanceExport($project), $filename);
     }
 }
