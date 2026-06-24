@@ -33,6 +33,9 @@ class ProjectPanelProvider extends BasePanelProvider
             ->pages([
                 Dashboard::class,
             ])
+            ->widgets([
+                \App\Filament\Project\Widgets\FinanceOverviewStats::class,
+            ])
             ->authMiddleware([
                 RedirectToOrganizationLogin::class,
             ])
