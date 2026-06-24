@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Http\Middleware\Authenticate;
+use App\Http\Middleware\RedirectToOrganizationLogin;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 
@@ -31,7 +31,7 @@ class UserPanelProvider extends BasePanelProvider
                 Dashboard::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                RedirectToOrganizationLogin::class,
             ]);
     }
 }
