@@ -6,6 +6,7 @@ use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -32,7 +33,8 @@ class UserSettings extends Page
     {
         $this->user = auth()->user();
 
-        $this->form->fill($this->user->only(['name', 'email']));
+        $this->form->fill($this->user->only(['name', 'email', 'default_organization_id']));
+        $this->form->loadStateFromRelationships(shouldHydrate: true);
     }
 
     public function getTitle(): string
@@ -46,10 +48,30 @@ class UserSettings extends Page
             ->record($this->user)
             ->statePath('data')
             ->components([
+                $this->avatarSection(),
                 $this->profileSection(),
                 $this->emailSection(),
                 $this->defaultOrganizationSection(),
                 $this->deleteSection(),
+            ]);
+    }
+
+    protected function avatarSection(): Section
+    {
+        return Section::make('Avatar')
+            ->description('Your face across organizations.')
+            ->schema([
+                SpatieMediaLibraryFileUpload::make('avatar')
+                    ->hiddenLabel()
+                    ->collection('avatar')
+                    ->conversion('thumb')
+                    ->avatar()
+                    ->image()
+                    ->imageEditor()
+                    ->circleCropper(),
+            ])
+            ->footerActions([
+                Action::make('saveAvatar')->label('Save avatar')->action(fn () => $this->saveAvatar()),
             ]);
     }
 
@@ -109,6 +131,14 @@ class UserSettings extends Page
                     ->requiresConfirmation()
                     ->action(fn () => $this->deleteAccount()),
             ]);
+    }
+
+    public function saveAvatar(): void
+    {
+        $this->form->getState();
+        $this->form->saveRelationships();
+
+        Notification::make()->title('Avatar saved')->success()->send();
     }
 
     public function saveProfile(): void

@@ -161,6 +161,6 @@ class GeneralSettingsTest extends TestCase
             ->assertNotified()
             ->assertRedirect();
 
-        $this->assertDatabaseMissing('organizations', ['id' => $organization->id]);
+        $this->assertSoftDeleted('organizations', ['id' => $organization->id]);
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Cashier\Billable;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -25,6 +26,7 @@ class Organization extends Model implements HasAvatar, HasMedia
     use HasFactory;
     use HasSlug;
     use InteractsWithMedia;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
