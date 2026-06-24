@@ -8,11 +8,15 @@ use App\Filament\Project\Resources\FinanceEntries\Pages\ListFinanceEntries;
 use App\Filament\Project\Resources\FinanceEntries\Schemas\FinanceEntryForm;
 use App\Filament\Project\Resources\FinanceEntries\Tables\FinanceEntriesTable;
 use App\Models\FinanceEntry;
+use App\Models\Project;
+use App\Services\ProjectAccess;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class FinanceEntryResource extends Resource
 {
@@ -27,6 +31,26 @@ class FinanceEntryResource extends Resource
     protected static ?string $modelLabel = 'finance entry';
 
     protected static ?string $pluralModelLabel = 'finance entries';
+
+    public static function canViewAny(): bool
+    {
+        return self::userCan(ProjectAccess::ABILITY_VIEW_FINANCE);
+    }
+
+    public static function canCreate(): bool
+    {
+        return self::userCan(ProjectAccess::ABILITY_MANAGE_FINANCE);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return self::userCan(ProjectAccess::ABILITY_MANAGE_FINANCE);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return self::userCan(ProjectAccess::ABILITY_MANAGE_FINANCE);
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -50,5 +74,17 @@ class FinanceEntryResource extends Resource
             'create' => CreateFinanceEntry::route('/create'),
             'edit' => EditFinanceEntry::route('/{record}/edit'),
         ];
+    }
+
+    private static function userCan(string $ability): bool
+    {
+        $project = Filament::getTenant();
+        $user = auth()->user();
+
+        if (! $project instanceof Project || $user === null) {
+            return false;
+        }
+
+        return $user->can($ability, $project);
     }
 }
