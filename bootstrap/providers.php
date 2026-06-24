@@ -5,4 +5,5 @@ return [
     App\Providers\Filament\OrganizationPanelProvider::class,
     App\Providers\Filament\Organization\SettingsPanelProvider::class,
     App\Providers\Filament\ProjectPanelProvider::class,
+    App\Providers\Filament\UserPanelProvider::class,
 ];

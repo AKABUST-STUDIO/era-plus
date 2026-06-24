@@ -28,6 +28,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'name',
         'email',
         'password',
+        'default_organization_id',
     ];
 
     /**
@@ -75,6 +76,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         return match ($panel->getId()) {
             'organization' => true,
             'project' => $this->projects()->exists(),
+            'user' => true,
             default => false,
         };
     }
