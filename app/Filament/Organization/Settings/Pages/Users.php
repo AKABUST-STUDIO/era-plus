@@ -18,6 +18,9 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -147,24 +150,42 @@ class Users extends Page implements HasTable
         return $table
             ->query(fn (): BelongsToMany => $this->organization->users())
             ->columns([
-                TextColumn::make('name')
-                    ->label(__('settings.users.table.name'))
-                    ->description(fn (User $r): ?string => $r->email)
-                    ->searchable(['name', 'email'])
-                    ->sortable()
-                    ->badge()
-                    ->formatStateUsing(fn (User $r, string $state): string => $r->is($this->authUser())
-                        ? $state.' (YOU)'
-                        : $state)
-                    ->color(fn (User $r): string => $r->is($this->authUser()) ? 'primary' : 'gray'),
-                TextColumn::make('pivot.role')
-                    ->label(__('forms.common.role'))
-                    ->badge()
-                    ->formatStateUsing(fn (?string $state): string => OrganizationRole::tryFrom((string) $state)?->getLabel() ?? '—')
-                    ->color(fn (?string $state): string => OrganizationRole::tryFrom((string) $state)?->getColor() ?? 'gray'),
-                TextColumn::make('pivot.created_at')
-                    ->label(__('settings.users.table.joined'))
-                    ->dateTime(),
+                Split::make([
+                    ImageColumn::make('avatar')
+                        ->getStateUsing(fn (User $r): string => $r->getFilamentAvatarUrl()
+                            ?? 'https://ui-avatars.com/api/?name='.urlencode($r->name).'&size=128')
+                        ->circular()
+                        ->grow(false),
+                    Stack::make([
+                        TextColumn::make('name')
+                            ->label(__('settings.users.table.name'))
+                            ->weight('bold')
+                            ->searchable(['name', 'email'])
+                            ->sortable(),
+                        TextColumn::make('email')
+                            ->color('gray')
+                            ->searchable(),
+                    ]),
+                    TextColumn::make('you_badge')
+                        ->label('')
+                        ->state(fn (User $r): ?string => $r->is($this->authUser())
+                            ? __('settings.users.table.you')
+                            : null)
+                        ->badge()
+                        ->color('gray')
+                        ->grow(false),
+                    TextColumn::make('pivot.role')
+                        ->label(__('forms.common.role'))
+                        ->badge()
+                        ->formatStateUsing(fn (?string $state): string => OrganizationRole::tryFrom((string) $state)?->getLabel() ?? '—')
+                        ->color(fn (?string $state): string => OrganizationRole::tryFrom((string) $state)?->getColor() ?? 'gray')
+                        ->grow(false),
+                    TextColumn::make('pivot.created_at')
+                        ->label(__('settings.users.table.joined'))
+                        ->date()
+                        ->color('gray')
+                        ->grow(false),
+                ]),
             ])
             ->filters([
                 SelectFilter::make('role')

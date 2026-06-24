@@ -68,6 +68,7 @@ return [
             'name' => 'Name',
             'email' => 'Email',
             'joined' => 'Joined',
+            'you' => 'You',
         ],
     ],
 

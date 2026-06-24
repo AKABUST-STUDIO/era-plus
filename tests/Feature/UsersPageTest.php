@@ -121,4 +121,18 @@ class UsersPageTest extends TestCase
             'user_id' => $this->user->id,
         ]);
     }
+
+    public function test_user_listing_shows_you_badge_for_current_user(): void
+    {
+        $other = User::factory()->create(['name' => 'Anne']);
+        $this->organization->users()->attach($other, [
+            'role' => OrganizationRole::Member->value,
+            'is_admin' => false,
+        ]);
+
+        Livewire::test(UsersPage::class)
+            ->assertSee('Maria')
+            ->assertSee('Anne')
+            ->assertSee(__('settings.users.table.you'));
+    }
 }
