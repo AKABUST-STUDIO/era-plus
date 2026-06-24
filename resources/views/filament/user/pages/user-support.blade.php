@@ -1,3 +1,7 @@
 <x-filament-panels::page>
-    <div class="text-sm text-gray-500">{{ __('settings.work_in_progress.heading') }}</div>
+    {{ $this->createForm }}
+
+    <div class="mt-6">
+        {{ $this->table }}
+    </div>
 </x-filament-panels::page>
