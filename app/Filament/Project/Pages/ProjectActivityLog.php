@@ -19,7 +19,10 @@ class ProjectActivityLog extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationLabel = 'Activity log';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.activity_log');
+    }
 
     protected static ?int $navigationSort = 90;
 

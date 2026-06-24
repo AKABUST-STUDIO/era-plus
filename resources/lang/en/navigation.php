@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'finance' => 'Finance',
+    'finance_entry' => 'finance entry',
+    'finance_entries' => 'finance entries',
+    'travel' => 'Travel',
+    'travel_expense' => 'travel expense',
+    'travel_expenses' => 'travel expenses',
+    'members' => 'Members',
+    'member' => 'member',
+    'tasks' => 'Tasks',
+    'task' => 'task',
+    'participants' => 'Participants',
+    'participant' => 'participant',
+    'activities' => 'Activities',
+    'activity' => 'activity',
+    'activity_log' => 'Activity log',
+    'settings' => 'Settings',
+    'organizations' => 'Organizations',
+    'authentication' => 'Authentication',
+    'billing' => 'Billing',
+    'invoices' => 'Invoices',
+    'support' => 'Support',
+];

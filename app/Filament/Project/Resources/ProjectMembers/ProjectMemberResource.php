@@ -16,9 +16,15 @@ class ProjectMemberResource extends Resource
 {
     protected static ?string $model = ProjectMember::class;
 
-    protected static ?string $navigationLabel = 'Members';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.members');
+    }
 
-    protected static ?string $modelLabel = 'member';
+    public static function getModelLabel(): string
+    {
+        return __('navigation.member');
+    }
 
     protected static ?string $pluralModelLabel = 'members';
 

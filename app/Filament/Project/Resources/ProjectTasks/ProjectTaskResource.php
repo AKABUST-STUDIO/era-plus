@@ -16,7 +16,10 @@ class ProjectTaskResource extends Resource
 {
     protected static ?string $model = ProjectTask::class;
 
-    protected static ?string $navigationLabel = 'Tasks';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.tasks');
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

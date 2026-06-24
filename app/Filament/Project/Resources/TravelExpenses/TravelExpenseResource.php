@@ -16,11 +16,20 @@ class TravelExpenseResource extends Resource
 {
     protected static ?string $model = TravelExpense::class;
 
-    protected static ?string $navigationLabel = 'Travel';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.travel');
+    }
 
-    protected static ?string $modelLabel = 'travel expense';
+    public static function getModelLabel(): string
+    {
+        return __('navigation.travel_expense');
+    }
 
-    protected static ?string $pluralModelLabel = 'travel expenses';
+    public static function getPluralModelLabel(): string
+    {
+        return __('navigation.travel_expenses');
+    }
 
     public static function form(Schema $schema): Schema
     {

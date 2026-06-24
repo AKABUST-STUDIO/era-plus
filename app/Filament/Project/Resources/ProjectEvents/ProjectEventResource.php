@@ -16,7 +16,10 @@ class ProjectEventResource extends Resource
 {
     protected static ?string $model = ProjectEvent::class;
 
-    protected static ?string $navigationLabel = 'Activities';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.activities');
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

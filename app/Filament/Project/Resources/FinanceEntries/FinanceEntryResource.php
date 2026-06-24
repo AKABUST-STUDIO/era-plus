@@ -22,11 +22,20 @@ class FinanceEntryResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'description';
 
-    protected static ?string $navigationLabel = 'Finance';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.finance');
+    }
 
-    protected static ?string $modelLabel = 'finance entry';
+    public static function getModelLabel(): string
+    {
+        return __('navigation.finance_entry');
+    }
 
-    protected static ?string $pluralModelLabel = 'finance entries';
+    public static function getPluralModelLabel(): string
+    {
+        return __('navigation.finance_entries');
+    }
 
     public static function canViewAny(): bool
     {
