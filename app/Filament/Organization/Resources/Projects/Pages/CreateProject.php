@@ -23,6 +23,11 @@ class CreateProject extends CreateRecord
 
     protected static string $resource = ProjectResource::class;
 
+    public function getWizardComponent(): Component
+    {
+        return parent::getWizardComponent();
+    }
+
     /**
      * @return array<int, Step>
      */
@@ -64,11 +69,14 @@ class CreateProject extends CreateRecord
                         ->schema([
                             Select::make('country_id')
                                 ->label(__('forms.common.country'))
-                                ->options(fn (): array => Country::query()
+                                ->searchable()
+                                ->getSearchResultsUsing(fn (string $search): array => Country::query()
+                                    ->where('name', 'like', "%{$search}%")
                                     ->orderBy('name')
+                                    ->limit(50)
                                     ->pluck('name', 'id')
                                     ->all())
-                                ->searchable()
+                                ->getOptionLabelUsing(fn ($value): ?string => Country::query()->find($value)?->name)
                                 ->required()
                                 ->distinct(),
                             TextInput::make('default_travel_expense_limit')
