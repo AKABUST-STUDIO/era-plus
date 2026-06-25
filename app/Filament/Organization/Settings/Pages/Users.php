@@ -195,24 +195,26 @@ class Users extends Page implements HasTable
                         : $query),
             ])
             ->recordActions([
-                Action::make('changeRole')
-                    ->label('Change role')
-                    ->icon('lucide-refresh-cw')
-                    ->visible(fn (User $r): bool => ! $r->is($this->authUser()))
-                    ->form([
-                        Select::make('role')
-                            ->options(OrganizationRole::class)
-                            ->default(fn (User $r): string => (string) $r->pivot->role)
-                            ->required(),
-                    ])
-                    ->action(fn (User $r, array $data) => $this->changeRole($r, OrganizationRole::from($data['role']))),
-                Action::make('remove')
-                    ->label('Remove')
-                    ->icon('lucide-trash-2')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->visible(fn (User $r): bool => ! $r->is($this->authUser()))
-                    ->action(fn (User $r) => $this->removeMember($r)),
+                \Filament\Actions\ActionGroup::make([
+                    Action::make('changeRole')
+                        ->label(__('settings.users.actions.change_role'))
+                        ->icon('lucide-refresh-cw')
+                        ->visible(fn (User $r): bool => ! $r->is($this->authUser()))
+                        ->form([
+                            Select::make('role')
+                                ->options(OrganizationRole::class)
+                                ->default(fn (User $r): string => (string) $r->pivot->role)
+                                ->required(),
+                        ])
+                        ->action(fn (User $r, array $data) => $this->changeRole($r, OrganizationRole::from($data['role']))),
+                    Action::make('remove')
+                        ->label(__('settings.users.actions.remove'))
+                        ->icon('lucide-trash-2')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->visible(fn (User $r): bool => ! $r->is($this->authUser()))
+                        ->action(fn (User $r) => $this->removeMember($r)),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
