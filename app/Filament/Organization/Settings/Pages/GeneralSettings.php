@@ -128,12 +128,18 @@ class GeneralSettings extends Page
 
     protected function leaveSection(): Section
     {
+        $isLastAdmin = $this->currentUserIsLastAdmin();
+
         return Section::make(__('settings.general.leave.heading'))
-            ->description(__('settings.general.leave.description'))
+            ->description($isLastAdmin
+                ? __('settings.general.leave.last_admin_description')
+                : __('settings.general.leave.description'))
             ->footerActions([
                 Action::make('leave')
                     ->label(__('settings.general.leave.action'))
                     ->color('warning')
+                    ->disabled($isLastAdmin)
+                    ->tooltip($isLastAdmin ? __('settings.general.leave.last_admin_tooltip') : null)
                     ->requiresConfirmation()
                     ->action(fn () => $this->leave()),
             ]);
@@ -141,15 +147,58 @@ class GeneralSettings extends Page
 
     protected function deleteSection(): Section
     {
+        $organizationName = (string) $this->organization?->name;
+        $confirmPhrase = __('settings.general.delete.confirm_phrase');
+
         return Section::make(__('settings.general.delete.heading'))
             ->description(__('settings.general.delete.description'))
             ->footerActions([
                 Action::make('delete')
                     ->label(__('settings.general.delete.action'))
                     ->color('danger')
-                    ->requiresConfirmation()
+                    ->modalIcon('lucide-triangle-alert')
+                    ->modalIconColor('danger')
+                    ->modalHeading(__('settings.general.delete.modal_heading', ['name' => $organizationName]))
+                    ->modalDescription(__('settings.general.delete.modal_description', [
+                        'name' => $organizationName,
+                        'phrase' => $confirmPhrase,
+                    ]))
+                    ->modalSubmitActionLabel(__('settings.general.delete.action'))
+                    ->form([
+                        \Filament\Forms\Components\TextInput::make('name_confirm')
+                            ->label(__('settings.general.delete.name_label', ['name' => $organizationName]))
+                            ->required()
+                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($organizationName): void {
+                                if ((string) $value !== $organizationName) {
+                                    $fail(__('settings.general.delete.name_mismatch'));
+                                }
+                            }),
+                        \Filament\Forms\Components\TextInput::make('phrase_confirm')
+                            ->label(__('settings.general.delete.phrase_label', ['phrase' => $confirmPhrase]))
+                            ->required()
+                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($confirmPhrase): void {
+                                if ((string) $value !== $confirmPhrase) {
+                                    $fail(__('settings.general.delete.phrase_mismatch'));
+                                }
+                            }),
+                    ])
                     ->action(fn () => $this->delete()),
             ]);
+    }
+
+    protected function currentUserIsLastAdmin(): bool
+    {
+        $user = Filament::auth()->user();
+
+        if ($user === null || $this->organization === null) {
+            return false;
+        }
+
+        if (! $user->isOrgAdmin($this->organization)) {
+            return false;
+        }
+
+        return $this->organization->admins()->count() <= 1;
     }
 
     public function saveName(): void
@@ -191,6 +240,16 @@ class GeneralSettings extends Page
 
     public function leave(): void
     {
+        if ($this->currentUserIsLastAdmin()) {
+            Notification::make()
+                ->title(__('settings.general.leave.last_admin_title'))
+                ->body(__('settings.general.leave.last_admin_body'))
+                ->danger()
+                ->send();
+
+            return;
+        }
+
         if ($this->organization->users()->count() <= 1) {
             Notification::make()
                 ->title(__('settings.general.leave.only_member_title'))

@@ -45,6 +45,62 @@ class Organization extends Model implements HasAvatar, HasMedia
         $activity->organization_id = $this->id;
     }
 
+    protected static function booted(): void
+    {
+        static::created(function (self $organization): void {
+            $organization->subscribeToFreePlan();
+        });
+
+        static::deleting(function (self $organization): void {
+            if ($organization->isForceDeleting()) {
+                return;
+            }
+
+            $organization->cancelAllSubscriptions();
+        });
+    }
+
+    /**
+     * Attach the Free-tier Stripe subscription on Organization creation.
+     * Silently no-ops when the price ID or Stripe credentials are missing
+     * (local/test) — the org is still created with subscription_tier=free.
+     */
+    public function subscribeToFreePlan(): void
+    {
+        $priceId = config('services.stripe.prices.free');
+        $secret = config('cashier.secret');
+
+        if (! $priceId || ! $secret) {
+            return;
+        }
+
+        try {
+            $this->newSubscription('default', $priceId)->create();
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * Cancel every active Stripe subscription for this organization.
+     * Wrapped so test environments without Stripe creds don't break delete.
+     */
+    public function cancelAllSubscriptions(): void
+    {
+        if (! $this->hasStripeId()) {
+            return;
+        }
+
+        try {
+            $this->subscriptions()
+                ->active()
+                ->get()
+                ->each(fn ($subscription) => $subscription->cancelNow());
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
     protected $fillable = [
         'name',
         'slug',
@@ -123,7 +179,16 @@ class Organization extends Model implements HasAvatar, HasMedia
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'organization_user')
+            ->withPivot('role', 'is_admin')
             ->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<User, $this>
+     */
+    public function admins(): BelongsToMany
+    {
+        return $this->users()->wherePivot('is_admin', true);
     }
 
     /**

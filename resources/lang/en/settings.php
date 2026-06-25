@@ -38,10 +38,14 @@ return [
         'leave' => [
             'heading' => 'Leave organization',
             'description' => 'Remove yourself from this organization. You will lose access until you are invited back.',
+            'last_admin_description' => 'You are the only Organization Admin. Transfer the role to another member before you can leave.',
+            'last_admin_tooltip' => 'Promote another member to Organization Admin first.',
             'action' => 'Leave organization',
             'saved' => 'You have left the organization',
             'only_member_title' => 'You are the only member',
             'only_member_body' => 'Delete the organization instead of leaving it.',
+            'last_admin_title' => 'You are the only Organization Admin',
+            'last_admin_body' => 'Promote another member to Organization Admin before leaving.',
         ],
 
         'delete' => [
@@ -49,6 +53,13 @@ return [
             'description' => 'Permanently delete this organization and all of its data. This action cannot be undone.',
             'action' => 'Delete organization',
             'saved' => 'Organization deleted',
+            'confirm_phrase' => 'delete my organization',
+            'modal_heading' => 'Delete :name',
+            'modal_description' => 'This permanently removes :name and cancels any active Stripe subscription. To confirm, type the organization name and the phrase ":phrase".',
+            'name_label' => 'Type the organization name (:name)',
+            'phrase_label' => 'Type ":phrase"',
+            'name_mismatch' => 'Name does not match the organization.',
+            'phrase_mismatch' => 'Phrase does not match.',
         ],
     ],
 
