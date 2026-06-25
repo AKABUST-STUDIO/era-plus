@@ -3,7 +3,12 @@
 namespace App\Livewire;
 
 use App\Facades\OrganizationService;
+use App\Filament\Organization\Settings\Pages\Billing;
+use App\Filament\User\Pages\Settings;
 use App\Models\User;
+use App\Providers\Filament\Organization\SettingsPanelProvider;
+use App\Providers\Filament\UserPanelProvider;
+use Filament\Facades\Filament;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -16,12 +21,12 @@ class UserFooter extends Component
 
         return view('livewire.user-footer', [
             'user' => $user instanceof User ? $user : null,
-            'accountUrl' => route('filament.user.home'),
+            'accountUrl' => Settings::getUrl(panel: UserPanelProvider::PANEL_ID),
             'showUpgrade' => OrganizationService::shouldShowUpgradeCta(),
             'upgradeUrl' => $organization
-                ? route('filament.organization-settings.pages.billing', ['organization' => $organization->slug])
+                ? Billing::getUrl(tenant: $organization, panel: SettingsPanelProvider::PANEL_ID)
                 : null,
-            'logoutFormAction' => filament()->getCurrentOrDefaultPanel()?->getLogoutUrl(),
+            'logoutFormAction' => Filament::getCurrentOrDefaultPanel()?->getLogoutUrl(),
         ]);
     }
 }
