@@ -13,14 +13,14 @@ class SidebarFooterTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_footer_wrapper_view_renders(): void
+    public function test_user_footer_component_renders_for_authenticated_user(): void
     {
         $user = User::factory()->create(['name' => 'Maria', 'email' => 'maria@example.test']);
         $this->actingAs($user);
 
-        $html = view('livewire.user-footer-wrapper')->render();
-
-        $this->assertStringContainsString('user-footer', $html);
+        \Livewire\Livewire::test(\App\Livewire\UserFooter::class)
+            ->assertSee('Maria')
+            ->assertSee('maria@example.test');
     }
 
     public function test_upgrade_cta_is_visible_for_free_tier_via_organization_service(): void

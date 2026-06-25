@@ -6,11 +6,7 @@
                     type="button"
                     class="w-full flex items-center gap-3 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-white/5 transition"
                 >
-                    <img
-                        src="{{ $avatarUrl }}"
-                        alt="{{ $user->name }}"
-                        class="size-8 rounded-full object-cover shrink-0"
-                    >
+                    <x-filament-panels::avatar.user :user="$user" class="size-8 shrink-0" />
                     <div class="text-left min-w-0">
                         <div class="text-sm font-medium truncate">{{ $user->name }}</div>
                         <div class="text-xs text-gray-500 truncate">{{ $user->email }}</div>

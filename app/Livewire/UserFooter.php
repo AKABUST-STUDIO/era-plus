@@ -16,44 +16,12 @@ class UserFooter extends Component
 
         return view('livewire.user-footer', [
             'user' => $user instanceof User ? $user : null,
-            'avatarUrl' => $this->avatarUrl($user),
-            'accountUrl' => $this->safeRoute('filament.user.pages.dashboard') ?? '#',
+            'accountUrl' => route('filament.user.home'),
             'showUpgrade' => OrganizationService::shouldShowUpgradeCta(),
             'upgradeUrl' => $organization
-                ? $this->safeRoute('filament.organization-settings.pages.billing', ['organization' => $organization->slug])
+                ? route('filament.organization-settings.pages.billing', ['organization' => $organization->slug])
                 : null,
-            'logoutFormAction' => $this->safeLogoutUrl(),
+            'logoutFormAction' => filament()->getCurrentOrDefaultPanel()?->getLogoutUrl(),
         ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $parameters
-     */
-    private function safeRoute(string $name, array $parameters = []): ?string
-    {
-        try {
-            return route($name, $parameters);
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private function safeLogoutUrl(): ?string
-    {
-        try {
-            return filament()->getCurrentOrDefaultPanel()?->getLogoutUrl();
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private function avatarUrl(?User $user): string
-    {
-        if ($user === null) {
-            return 'https://ui-avatars.com/api/?name=?&size=128';
-        }
-
-        return $user->getFilamentAvatarUrl()
-            ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&size=128';
     }
 }
