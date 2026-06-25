@@ -24,7 +24,7 @@ class UserFooter extends Component
             'accountUrl' => Settings::getUrl(panel: UserPanelProvider::PANEL_ID),
             'showUpgrade' => OrganizationService::shouldShowUpgradeCta(),
             'upgradeUrl' => $organization
-                ? Billing::getUrl(tenant: $organization, panel: SettingsPanelProvider::PANEL_ID)
+                ? Billing::getUrl(parameters: ['organization' => $organization], tenant: $organization, panel: SettingsPanelProvider::PANEL_ID)
                 : null,
             'logoutFormAction' => Filament::getCurrentOrDefaultPanel()?->getLogoutUrl(),
         ]);
