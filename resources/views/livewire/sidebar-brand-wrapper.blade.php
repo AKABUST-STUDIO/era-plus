@@ -1,1 +1,1 @@
-<x-⚡sidebar-brand />
+<livewire:sidebar-brand />

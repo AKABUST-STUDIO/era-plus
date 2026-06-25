@@ -156,4 +156,20 @@ return [
         'navigation_label' => 'Activity',
         'title' => 'Activity',
     ],
+
+    'two_factor_required' => [
+        'title' => 'Two-factor authentication required',
+        'heading' => ':organization requires two-factor authentication',
+        'body' => 'This organization enforces two-factor authentication for every member. Set up an authenticator app on your account to continue.',
+        'set_up' => 'Set up two-factor',
+    ],
+
+    'email_verification_required' => [
+        'title' => 'Email verification required',
+        'heading' => ':organization requires a verified email address',
+        'body' => 'We sent a verification link to :email. Open it from any device, then return here.',
+        'resend' => 'Resend verification email',
+        'resend_sent' => 'Verification email sent',
+        'refresh' => 'I have verified — refresh',
+    ],
 ];

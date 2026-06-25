@@ -54,8 +54,19 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     {
         return [
             'email_verified_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_confirmed_at !== null;
+    }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
     }
 
     /**

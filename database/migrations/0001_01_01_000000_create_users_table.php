@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->foreignId('default_organization_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

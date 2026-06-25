@@ -1,1 +1,1 @@
-<x-⚡user-footer />
+<livewire:user-footer />

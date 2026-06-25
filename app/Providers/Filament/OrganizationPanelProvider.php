@@ -5,6 +5,8 @@ namespace App\Providers\Filament;
 use App\Filament\Organization\Pages\Tenancy\RegisterOrganization;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Http\Middleware\ApplyTenantContext;
+use App\Http\Middleware\EnforceOrganizationEmailVerification;
+use App\Http\Middleware\EnforceOrganizationTwoFactor;
 use App\Models\Organization;
 use App\Providers\Filament\Organization\SettingsPanelProvider;
 use Filament\Http\Middleware\Authenticate;
@@ -47,6 +49,8 @@ class OrganizationPanelProvider extends BasePanelProvider
             ])
             ->tenantMiddleware([
                 ApplyTenantContext::class,
+                EnforceOrganizationEmailVerification::class,
+                EnforceOrganizationTwoFactor::class,
             ], isPersistent: true);
     }
 
