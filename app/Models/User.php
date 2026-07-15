@@ -20,16 +20,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
-use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
-use Laragear\WebAuthn\WebAuthnAuthentication;
 use Laravel\Cashier\Billable;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\PasskeyAuthenticatable;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 #[ObservedBy(UserObserver::class)]
-class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia, HasTenants, MustVerifyEmail, WebAuthnAuthenticatable
+class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia, HasTenants, MustVerifyEmail, PasskeyUser
 {
     use Billable;
 
@@ -38,7 +38,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
 
     use InteractsWithMedia;
     use Notifiable;
-    use WebAuthnAuthentication;
+    use PasskeyAuthenticatable;
 
     /**
      * @var list<string>

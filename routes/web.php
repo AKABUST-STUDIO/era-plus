@@ -4,7 +4,6 @@ use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\InvoiceDownloadController;
 use Illuminate\Support\Facades\Route;
-use Laragear\WebAuthn\Http\Routes as WebAuthnRoutes;
 
 Route::get('/', function () {
     return view('welcome');
@@ -25,5 +24,3 @@ Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect']
 Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])
     ->whereIn('provider', ['google', 'microsoft', 'apple'])
     ->name('auth.oauth.callback');
-
-WebAuthnRoutes::register();

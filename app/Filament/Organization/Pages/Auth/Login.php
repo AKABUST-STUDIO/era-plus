@@ -27,11 +27,7 @@ class Login extends BaseLogin
 
     public function mount(): void
     {
-        if (Filament::auth()->check()) {
-            redirect()->intended(Filament::getUrl());
-
-            return;
-        }
+        parent::mount();
 
         $this->form->fill([
             'email' => (string) request()->query('email', ''),

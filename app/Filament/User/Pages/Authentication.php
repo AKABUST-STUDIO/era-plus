@@ -6,10 +6,10 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Laragear\WebAuthn\Models\WebAuthnCredential;
+use Laravel\Passkeys\Passkey;
 
 /**
- * @property-read Collection<int, WebAuthnCredential> $passkeys
+ * @property-read Collection<int, Passkey> $passkeys
  */
 class Authentication extends Page
 {
@@ -23,9 +23,9 @@ class Authentication extends Page
     }
 
     /**
-     * @return Collection<int, WebAuthnCredential>
+     * @return Collection<int, Passkey>
      */
-    public function getPasskeysProperty()
+    public function getPasskeysProperty(): Collection
     {
         $user = Auth::user();
 
@@ -33,12 +33,10 @@ class Authentication extends Page
             return collect();
         }
 
-        return $user->webAuthnCredentials()
-            ->orderByDesc('created_at')
-            ->get();
+        return $user->passkeys()->latest()->get();
     }
 
-    public function deletePasskey(string $id): void
+    public function deletePasskey(int $id): void
     {
         $user = Auth::user();
 
@@ -46,7 +44,7 @@ class Authentication extends Page
             return;
         }
 
-        $user->webAuthnCredentials()->whereKey($id)->delete();
+        $user->passkeys()->whereKey($id)->delete();
 
         Notification::make()->title('Passkey removed.')->success()->send();
     }

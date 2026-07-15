@@ -1,6 +1,4 @@
 <x-filament-panels::page>
-    <script src="https://cdn.jsdelivr.net/npm/@laragear/webpass@2/dist/webpass.js" defer></script>
-
     <div class="space-y-6">
         <section class="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-start justify-between gap-4">
@@ -12,23 +10,28 @@
                 </div>
                 <button type="button"
                         x-data="{
+                            registering: false,
                             async register() {
-                                if (typeof Webpass === 'undefined' || Webpass.isUnsupported()) {
-                                    $dispatch('passkey-unsupported');
-                                    return;
-                                }
-                                const { success, error } = await Webpass.attest('{{ route('webauthn.register.options') }}', '{{ route('webauthn.register') }}');
-                                if (success) {
+                                if (this.registering) return;
+                                const name = prompt('Name this passkey (e.g. My MacBook)');
+                                if (!name) return;
+                                this.registering = true;
+                                try {
+                                    const { Passkeys } = await import('https://cdn.jsdelivr.net/npm/@laravel/passkeys@0.2.0/+esm');
+                                    await Passkeys.register({ name });
                                     $wire.$refresh();
-                                    $dispatch('passkey-registered');
-                                } else {
-                                    $dispatch('passkey-failed', { message: error?.message ?? 'Registration failed.' });
+                                } catch (error) {
+                                    alert('Could not register passkey: ' + (error?.message ?? 'unknown'));
+                                } finally {
+                                    this.registering = false;
                                 }
                             }
                         }"
                         x-on:click="register()"
-                        class="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500">
-                    Register a passkey
+                        x-bind:disabled="registering"
+                        class="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-60">
+                    <span x-show="!registering">Register a passkey</span>
+                    <span x-show="registering">Waiting for your device…</span>
                 </button>
             </div>
 
@@ -39,13 +42,16 @@
                     @foreach ($this->passkeys as $passkey)
                         <li class="flex items-center justify-between py-3" wire:key="passkey-{{ $passkey->getKey() }}">
                             <div>
-                                <p class="text-sm font-medium text-gray-950 dark:text-white">
-                                    Passkey <span class="font-mono text-xs text-gray-500">{{ \Illuminate\Support\Str::limit($passkey->getKey(), 24) }}</span>
+                                <p class="text-sm font-medium text-gray-950 dark:text-white">{{ $passkey->name }}</p>
+                                <p class="text-xs text-gray-500">
+                                    Added {{ $passkey->created_at?->diffForHumans() }}
+                                    @if ($passkey->last_used_at)
+                                        &middot; last used {{ $passkey->last_used_at->diffForHumans() }}
+                                    @endif
                                 </p>
-                                <p class="text-xs text-gray-500">Registered {{ $passkey->created_at?->diffForHumans() }}</p>
                             </div>
                             <button type="button"
-                                    wire:click="deletePasskey('{{ $passkey->getKey() }}')"
+                                    wire:click="deletePasskey({{ $passkey->getKey() }})"
                                     wire:confirm="Remove this passkey?"
                                     class="text-sm text-red-600 hover:text-red-500">
                                 Remove
@@ -56,18 +62,4 @@
             @endif
         </section>
     </div>
-
-    <script>
-        window.addEventListener('passkey-unsupported', () => {
-            alert("Your browser doesn't support passkeys.");
-        });
-        window.addEventListener('passkey-registered', () => {
-            window.dispatchEvent(new CustomEvent('filament-notification', {
-                detail: { title: 'Passkey registered.', status: 'success' }
-            }));
-        });
-        window.addEventListener('passkey-failed', (event) => {
-            alert('Could not register passkey: ' + (event.detail?.message ?? 'unknown'));
-        });
-    </script>
 </x-filament-panels::page>
