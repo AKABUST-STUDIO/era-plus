@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
+use SocialiteProviders\Apple\Provider as AppleProvider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Microsoft\Provider as MicrosoftProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -53,8 +55,8 @@ class AppServiceProvider extends ServiceProvider
     protected function registerSocialiteProviders(): void
     {
         Event::listen(function (SocialiteWasCalled $event): void {
-            $event->extendSocialite('microsoft', \SocialiteProviders\Microsoft\Provider::class);
-            $event->extendSocialite('apple', \SocialiteProviders\Apple\Provider::class);
+            $event->extendSocialite('microsoft', MicrosoftProvider::class);
+            $event->extendSocialite('apple', AppleProvider::class);
         });
     }
 }

@@ -4,11 +4,12 @@ namespace App\Filament\User\Pages;
 
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Laragear\WebAuthn\Models\WebAuthnCredential;
 
 /**
- * @property-read \Illuminate\Support\Collection<int, WebAuthnCredential> $passkeys
+ * @property-read Collection<int, WebAuthnCredential> $passkeys
  */
 class Authentication extends Page
 {
@@ -22,7 +23,7 @@ class Authentication extends Page
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, WebAuthnCredential>
+     * @return Collection<int, WebAuthnCredential>
      */
     public function getPasskeysProperty()
     {
