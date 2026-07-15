@@ -13,6 +13,8 @@ use App\Providers\Filament\Organization\SettingsPanelProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\View\View;
 
 class OrganizationPanelProvider extends BasePanelProvider
 {
@@ -47,6 +49,10 @@ class OrganizationPanelProvider extends BasePanelProvider
             ->pages([
                 Overview::class,
             ])
+            ->renderHook(
+                PanelsRenderHook::AUTH_REGISTER_FORM_AFTER,
+                fn (): View => view('filament.auth.consent'),
+            )
             ->navigationItems($this->getNavigationItems())
             ->authMiddleware([
                 Authenticate::class,
