@@ -53,6 +53,10 @@ class OrganizationPanelProvider extends BasePanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn (): View => view('filament.auth.passkey-login-button'),
+            )
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn (): View => view('filament.auth.oauth-buttons'),
             )
             ->renderHook(
