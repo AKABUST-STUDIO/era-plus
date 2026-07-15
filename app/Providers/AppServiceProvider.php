@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerCashier();
         $this->registerRouteBindings();
         $this->deprioritizeProjectTenantRoute();
+        $this->registerSocialiteProviders();
     }
 
     protected function registerCashier(): void
@@ -45,6 +47,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Route::bind('organization', function (string $value): Organization {
             return Organization::where('slug', $value)->firstOrFail();
+        });
+    }
+
+    protected function registerSocialiteProviders(): void
+    {
+        Event::listen(function (SocialiteWasCalled $event): void {
+            $event->extendSocialite('microsoft', \SocialiteProviders\Microsoft\Provider::class);
+            $event->extendSocialite('apple', \SocialiteProviders\Apple\Provider::class);
         });
     }
 }

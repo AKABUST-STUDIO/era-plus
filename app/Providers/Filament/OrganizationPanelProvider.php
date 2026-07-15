@@ -52,6 +52,14 @@ class OrganizationPanelProvider extends BasePanelProvider
                 Overview::class,
             ])
             ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn (): View => view('filament.auth.oauth-buttons'),
+            )
+            ->renderHook(
+                PanelsRenderHook::AUTH_REGISTER_FORM_BEFORE,
+                fn (): View => view('filament.auth.oauth-buttons'),
+            )
+            ->renderHook(
                 PanelsRenderHook::AUTH_REGISTER_FORM_AFTER,
                 fn (): View => view('filament.auth.consent'),
             )
