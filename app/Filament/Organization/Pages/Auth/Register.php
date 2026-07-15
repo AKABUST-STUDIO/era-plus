@@ -3,7 +3,7 @@
 namespace App\Filament\Organization\Pages\Auth;
 
 use App\Models\User;
-use App\Services\LoginCodeService;
+use App\Support\EmailUsername;
 use Filament\Actions\Action;
 use Filament\Auth\Http\Responses\Contracts\RegistrationResponse;
 use Filament\Auth\Pages\Register as BaseRegister;
@@ -40,7 +40,7 @@ class Register extends BaseRegister
 
         $this->form->fill([
             'email' => $email,
-            'name' => $email !== '' ? LoginCodeService::deriveNameFromEmail($email) : '',
+            'name' => $email !== '' ? EmailUsername::toDisplayName($email) : '',
         ]);
     }
 
@@ -72,7 +72,7 @@ class Register extends BaseRegister
                     return;
                 }
 
-                $set('name', LoginCodeService::deriveNameFromEmail($state));
+                $set('name', EmailUsername::toDisplayName($state));
             });
     }
 
@@ -96,42 +96,33 @@ class Register extends BaseRegister
             ->maxLength(6);
     }
 
-    public function registerAndSendCode(LoginCodeService $codes): void
+    public function registerAndSendCode(): void
     {
         $data = $this->form->getState();
         $email = mb_strtolower(trim((string) $data['email']));
         $name = trim((string) $data['name']);
 
-        if ($codes->tooManyRequests($email)) {
-            Notification::make()
-                ->title('Too many code requests. Try again in '.$codes->secondsUntilRetry($email).' seconds.')
-                ->danger()
-                ->send();
-
-            return;
-        }
-
-        User::query()->create([
+        $user = User::query()->create([
             'email' => $email,
             'name' => $name,
             'password' => Str::random(64),
         ]);
 
-        $codes->issueAndSend($email);
+        $user->sendOneTimePassword();
 
         $this->emailForCode = $email;
         $this->step = 'code';
         $this->form->fill();
     }
 
-    public function verifyCode(LoginCodeService $codes): ?RegistrationResponse
+    public function verifyCode(): ?RegistrationResponse
     {
         $data = $this->form->getState();
         $code = trim((string) ($data['code'] ?? ''));
 
-        if (blank($this->emailForCode) || ! $codes->verify($this->emailForCode, $code)) {
+        if (blank($this->emailForCode)) {
             throw ValidationException::withMessages([
-                'data.code' => 'That code is invalid or has expired.',
+                'data.code' => 'Session expired. Please register again.',
             ]);
         }
 
@@ -143,17 +134,24 @@ class Register extends BaseRegister
             ]);
         }
 
+        $result = $user->attemptLoginUsingOneTimePassword($code, remember: true);
+
+        if (! $result->isOk()) {
+            throw ValidationException::withMessages([
+                'data.code' => $result->validationMessage(),
+            ]);
+        }
+
         if ($user->email_verified_at === null) {
             $user->markEmailAsVerified();
         }
 
-        Filament::auth()->login($user, remember: true);
         session()->regenerate();
 
         return app(RegistrationResponse::class);
     }
 
-    public function resendCode(LoginCodeService $codes): void
+    public function resendCode(): void
     {
         if (blank($this->emailForCode)) {
             $this->step = 'form';
@@ -161,16 +159,15 @@ class Register extends BaseRegister
             return;
         }
 
-        if ($codes->tooManyRequests($this->emailForCode)) {
-            Notification::make()
-                ->title('Too many code requests. Try again in '.$codes->secondsUntilRetry($this->emailForCode).' seconds.')
-                ->danger()
-                ->send();
+        $user = User::query()->where('email', $this->emailForCode)->first();
+
+        if (! $user) {
+            $this->step = 'form';
 
             return;
         }
 
-        $codes->issueAndSend($this->emailForCode);
+        $user->sendOneTimePassword();
 
         Notification::make()->title('A new code is on the way.')->success()->send();
     }

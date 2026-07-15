@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\OAuthAccount;
 use App\Models\User;
-use App\Services\LoginCodeService;
+use App\Support\EmailUsername;
 use Filament\Facades\Filament;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -66,7 +66,7 @@ class SocialiteController extends Controller
         if (! $user) {
             $user = User::query()->create([
                 'email' => $email,
-                'name' => $socialUser->getName() ?: LoginCodeService::deriveNameFromEmail($email),
+                'name' => $socialUser->getName() ?: EmailUsername::toDisplayName($email),
                 'password' => Str::random(64),
             ]);
         }

@@ -3,7 +3,6 @@
 namespace App\Filament\Organization\Pages\Auth;
 
 use App\Models\User;
-use App\Services\LoginCodeService;
 use Filament\Actions\Action;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
@@ -18,6 +17,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
+use Spatie\OneTimePasswords\Enums\ConsumeOneTimePasswordResult;
 
 class Login extends BaseLogin
 {
@@ -63,19 +63,10 @@ class Login extends BaseLogin
             ->maxLength(6);
     }
 
-    public function requestCode(LoginCodeService $codes): void
+    public function requestCode(): void
     {
         $data = $this->form->getState();
         $email = mb_strtolower(trim((string) ($data['email'] ?? '')));
-
-        if ($codes->tooManyRequests($email)) {
-            Notification::make()
-                ->title('Too many code requests. Try again in '.$codes->secondsUntilRetry($email).' seconds.')
-                ->danger()
-                ->send();
-
-            return;
-        }
 
         $user = User::query()->where('email', $email)->first();
 
@@ -85,21 +76,21 @@ class Login extends BaseLogin
             return;
         }
 
-        $codes->issueAndSend($email);
+        $user->sendOneTimePassword();
 
         $this->emailForCode = $email;
         $this->step = 'code';
         $this->form->fill();
     }
 
-    public function verifyCode(LoginCodeService $codes): ?LoginResponse
+    public function verifyCode(): ?LoginResponse
     {
         $data = $this->form->getState();
         $code = trim((string) ($data['code'] ?? ''));
 
-        if (blank($this->emailForCode) || ! $codes->verify($this->emailForCode, $code)) {
+        if (blank($this->emailForCode)) {
             throw ValidationException::withMessages([
-                'data.code' => 'That code is invalid or has expired.',
+                'data.code' => 'Session expired. Please request a new code.',
             ]);
         }
 
@@ -111,17 +102,24 @@ class Login extends BaseLogin
             ]);
         }
 
+        $result = $user->attemptLoginUsingOneTimePassword($code, remember: true);
+
+        if (! $result->isOk()) {
+            throw ValidationException::withMessages([
+                'data.code' => $result->validationMessage(),
+            ]);
+        }
+
         if ($user->email_verified_at === null) {
             $user->markEmailAsVerified();
         }
 
-        Filament::auth()->login($user, remember: true);
         session()->regenerate();
 
         return app(LoginResponse::class);
     }
 
-    public function resendCode(LoginCodeService $codes): void
+    public function resendCode(): void
     {
         if (blank($this->emailForCode)) {
             $this->step = 'email';
@@ -129,16 +127,15 @@ class Login extends BaseLogin
             return;
         }
 
-        if ($codes->tooManyRequests($this->emailForCode)) {
-            Notification::make()
-                ->title('Too many code requests. Try again in '.$codes->secondsUntilRetry($this->emailForCode).' seconds.')
-                ->danger()
-                ->send();
+        $user = User::query()->where('email', $this->emailForCode)->first();
+
+        if (! $user) {
+            $this->step = 'email';
 
             return;
         }
 
-        $codes->issueAndSend($this->emailForCode);
+        $user->sendOneTimePassword();
 
         Notification::make()->title('A new code is on the way.')->success()->send();
     }

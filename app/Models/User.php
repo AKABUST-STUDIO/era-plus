@@ -23,6 +23,7 @@ use Illuminate\Support\Collection;
 use Laravel\Cashier\Billable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
+use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -36,6 +37,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    use HasOneTimePasswords;
     use InteractsWithMedia;
     use Notifiable;
     use PasskeyAuthenticatable;
