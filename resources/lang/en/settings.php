@@ -107,11 +107,10 @@ return [
         'plan' => [
             'heading' => 'Plan',
             'current_label' => 'Current plan',
-            'free_pitch' => 'Upgrade to Pro for unlimited projects, advanced reporting, and priority support.',
+            'basic_pitch' => 'Upgrade to Pro for unlimited projects, advanced reporting, and priority support.',
             'upgrade' => 'Upgrade plan',
             'manage' => 'Manage subscription',
             'pro_active' => 'You are on the Pro plan. Unlimited projects.',
-            'premium_active' => 'You are on the Premium plan. Everything in Pro, plus white-labeling, dedicated deployment, and custom integrations.',
         ],
 
         'payment_method' => [

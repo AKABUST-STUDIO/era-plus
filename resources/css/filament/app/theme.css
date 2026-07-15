@@ -4,20 +4,15 @@
 @source '../../../../resources/**/*';
 
 /* -------------------------------------------------------------------------- */
-/* Sidebar & topbar borders                                                   */
+/* Sidebar border — matches the topbar's edge color                           */
 /* -------------------------------------------------------------------------- */
 
 .fi-main-sidebar {
-    border-inline-end: 1px solid var(--gray-200);
+    border-inline-end: 1px solid color-mix(in oklab, var(--gray-950) 5%, transparent);
 }
 
-.fi-topbar {
-    border-block-end: 1px solid var(--gray-200);
-}
-
-.dark .fi-main-sidebar,
-.dark .fi-topbar {
-    border-color: var(--gray-800);
+.dark .fi-main-sidebar {
+    border-color: color-mix(in oklab, var(--color-white) 10%, transparent);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -37,4 +32,32 @@
 .fi-sidebar-resize-handle:hover,
 .fi-sidebar-resize-handle.fi-active {
     background-color: color-mix(in oklab, var(--gray-500) 30%, transparent);
+}
+
+/* -------------------------------------------------------------------------- */
+/* User menu — icons on the right, profile name + email subtitle              */
+/* -------------------------------------------------------------------------- */
+
+.fi-user-menu .fi-dropdown-list-item,
+.fi-user-menu .fi-dropdown-header {
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+}
+
+.fi-user-menu .fi-dropdown-list-item-label,
+.fi-user-menu .fi-dropdown-header > span {
+    flex: 1 1 auto;
+}
+
+.fi-user-menu-profile-name {
+    display: block;
+    font-weight: 600;
+}
+
+.fi-user-menu-profile-email {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--gray-500);
 }

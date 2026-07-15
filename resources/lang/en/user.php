@@ -86,7 +86,6 @@ return [
         'no_payment_method' => 'No payment method on file',
         'manage' => 'Manage in Stripe',
         'upgrade_pro' => 'Upgrade to Pro',
-        'upgrade_premium' => 'Upgrade to Premium',
     ],
 
     'invoices' => [
