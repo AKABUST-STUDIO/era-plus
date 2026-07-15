@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Organization\Pages\Auth\Login;
+use App\Filament\Organization\Pages\Auth\Register;
 use App\Filament\Organization\Pages\Overview;
 use App\Filament\Organization\Pages\Tenancy\RegisterOrganization;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
@@ -26,8 +28,8 @@ class OrganizationPanelProvider extends BasePanelProvider
             ->default()
             ->id(self::PANEL_ID)
             ->path('')
-            ->login()
-            ->registration()
+            ->login(Login::class)
+            ->registration(Register::class)
             ->tenant(Organization::class, slugAttribute: 'slug')
             ->tenantRegistration(RegisterOrganization::class)
             ->discoverResources(
