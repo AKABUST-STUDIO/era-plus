@@ -28,12 +28,12 @@ class ProjectSettingsTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user);
+        $this->user->joinOrganization($this->organization);
         $this->project = Project::factory()->for($this->organization)->create([
             'name' => 'Original',
             'beginning_date' => '2026-09-01',
         ]);
-        $this->project->users()->attach($this->user);
+        $this->user->joinProject($this->project);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));

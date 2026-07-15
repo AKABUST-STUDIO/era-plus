@@ -19,7 +19,7 @@ class GeneralSettings extends Page
 {
     use HasOrgSettingsBreadcrumbs;
 
-    protected static ?string $slug = 'general';
+    protected static ?string $slug = 'overview';
 
     protected static ?int $navigationSort = 0;
 
@@ -165,7 +165,7 @@ class GeneralSettings extends Page
                     ]))
                     ->modalSubmitActionLabel(__('settings.general.delete.action'))
                     ->form([
-                        \Filament\Forms\Components\TextInput::make('name_confirm')
+                        TextInput::make('name_confirm')
                             ->label(__('settings.general.delete.name_label', ['name' => $organizationName]))
                             ->required()
                             ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($organizationName): void {
@@ -173,7 +173,7 @@ class GeneralSettings extends Page
                                     $fail(__('settings.general.delete.name_mismatch'));
                                 }
                             }),
-                        \Filament\Forms\Components\TextInput::make('phrase_confirm')
+                        TextInput::make('phrase_confirm')
                             ->label(__('settings.general.delete.phrase_label', ['phrase' => $confirmPhrase]))
                             ->required()
                             ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($confirmPhrase): void {

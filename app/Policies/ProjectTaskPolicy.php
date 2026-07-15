@@ -4,71 +4,59 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\Project;
 use App\Models\ProjectTask;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\User;
+use App\Services\ProjectAccess;
+use Filament\Facades\Filament;
 
 class ProjectTaskPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(AuthUser $authUser): bool
+    public function viewAny(User $user): bool
     {
-        return $authUser->can('ViewAny:ProjectTask');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function view(AuthUser $authUser, ProjectTask $projectTask): bool
+    public function view(User $user, ProjectTask $projectTask): bool
     {
-        return $authUser->can('View:ProjectTask');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function create(AuthUser $authUser): bool
+    public function create(User $user): bool
     {
-        return $authUser->can('Create:ProjectTask');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function update(AuthUser $authUser, ProjectTask $projectTask): bool
+    public function update(User $user, ProjectTask $projectTask): bool
     {
-        return $authUser->can('Update:ProjectTask');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function delete(AuthUser $authUser, ProjectTask $projectTask): bool
+    public function delete(User $user, ProjectTask $projectTask): bool
     {
-        return $authUser->can('Delete:ProjectTask');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function deleteAny(AuthUser $authUser): bool
+    public function deleteAny(User $user): bool
     {
-        return $authUser->can('DeleteAny:ProjectTask');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function restore(AuthUser $authUser, ProjectTask $projectTask): bool
+    public function restore(User $user, ProjectTask $projectTask): bool
     {
-        return $authUser->can('Restore:ProjectTask');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function forceDelete(AuthUser $authUser, ProjectTask $projectTask): bool
+    public function forceDelete(User $user, ProjectTask $projectTask): bool
     {
-        return $authUser->can('ForceDelete:ProjectTask');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function forceDeleteAny(AuthUser $authUser): bool
+    private function allows(User $user, string $ability): bool
     {
-        return $authUser->can('ForceDeleteAny:ProjectTask');
-    }
+        $project = Filament::getTenant();
 
-    public function restoreAny(AuthUser $authUser): bool
-    {
-        return $authUser->can('RestoreAny:ProjectTask');
-    }
-
-    public function replicate(AuthUser $authUser, ProjectTask $projectTask): bool
-    {
-        return $authUser->can('Replicate:ProjectTask');
-    }
-
-    public function reorder(AuthUser $authUser): bool
-    {
-        return $authUser->can('Reorder:ProjectTask');
+        return $project instanceof Project
+            && app(ProjectAccess::class)->can($user, $ability, $project);
     }
 }

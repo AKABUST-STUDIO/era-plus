@@ -25,6 +25,7 @@ class ApplyTenantContext
         } elseif ($tenant instanceof Organization) {
             URL::defaults(['organization' => $tenant->slug]);
             OrganizationService::remember($tenant);
+            ProjectService::forget();
         } elseif (($organization = $request->route('organization')) instanceof Organization) {
             URL::defaults(['organization' => $organization->slug]);
             OrganizationService::remember($organization);

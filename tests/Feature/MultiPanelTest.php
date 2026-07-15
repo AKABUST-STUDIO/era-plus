@@ -34,7 +34,7 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         $this->actingAs($user)
             ->get($this->url('/'.$organization->slug))
@@ -44,7 +44,7 @@ class MultiPanelTest extends TestCase
     public function test_organization_panel_404s_for_unknown_slug(): void
     {
         $user = User::factory()->create();
-        Organization::factory()->create()->users()->attach($user);
+        $user->joinOrganization(Organization::factory()->create());
 
         $this->actingAs($user)
             ->get($this->url('/no-such-org'))
@@ -55,11 +55,11 @@ class MultiPanelTest extends TestCase
     {
         $member = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($member);
+        $member->joinOrganization($organization);
 
         $intruder = User::factory()->create();
         $intruderOrg = Organization::factory()->create();
-        $intruderOrg->users()->attach($intruder);
+        $intruder->joinOrganization($intruderOrg);
 
         $this->actingAs($intruder)
             ->get($this->url('/'.$organization->slug))
@@ -70,9 +70,9 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
         $project = Project::factory()->for($organization)->create();
-        $project->users()->attach($user);
+        $user->joinProject($project);
 
         $this->actingAs($user)
             ->get($this->url('/'.$organization->slug.'/'.$project->slug))
@@ -83,7 +83,7 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         $this->actingAs($user)
             ->get($this->url('/'.$organization->slug.'/settings/general'))
@@ -94,7 +94,7 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         $this->actingAs($user)
             ->get($this->url('/'.$organization->slug.'/settings/activity'))
@@ -106,9 +106,9 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
         $project = Project::factory()->for($organization)->create();
-        $project->users()->attach($user);
+        $user->joinProject($project);
 
         $this->actingAs($user)
             ->get($this->url('/no-such-org/'.$project->slug))
@@ -119,11 +119,11 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $ownOrg = Organization::factory()->create();
-        $ownOrg->users()->attach($user);
+        $user->joinOrganization($ownOrg);
 
         $otherOrg = Organization::factory()->create();
         $project = Project::factory()->for($otherOrg)->create();
-        $project->users()->attach($user);
+        $user->joinProject($project);
 
         $this->actingAs($user)
             ->get($this->url('/'.$ownOrg->slug.'/'.$project->slug))
@@ -134,9 +134,9 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $ownOrg = Organization::factory()->create();
-        $ownOrg->users()->attach($user);
+        $user->joinOrganization($ownOrg);
         $ownProject = Project::factory()->for($ownOrg)->create(['name' => 'Shared', 'slug' => 'shared']);
-        $ownProject->users()->attach($user);
+        $user->joinProject($ownProject);
 
         $otherOrg = Organization::factory()->create();
         Project::factory()->for($otherOrg)->create(['name' => 'Shared', 'slug' => 'shared']);
@@ -150,7 +150,7 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
         $project = Project::factory()->for($organization)->create();
 
         $this->actingAs($user)
@@ -173,16 +173,16 @@ class MultiPanelTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         $myProject = Project::factory()->for($organization)->create(['name' => 'Mine']);
-        $myProject->users()->attach($user);
+        $user->joinProject($myProject);
 
         Project::factory()->for($organization)->create(['name' => 'Not Mine']);
 
         $otherOrg = Organization::factory()->create();
         $otherOrgProject = Project::factory()->for($otherOrg)->create(['name' => 'Other Org Project']);
-        $otherOrgProject->users()->attach($user);
+        $user->joinProject($otherOrgProject);
 
         $this->actingAs($user);
         Filament::setTenant($organization);
@@ -198,15 +198,15 @@ class MultiPanelTest extends TestCase
         $user = User::factory()->create();
 
         $currentOrg = Organization::factory()->create(['name' => 'Current Org']);
-        $currentOrg->users()->attach($user);
+        $user->joinOrganization($currentOrg);
 
         $otherOrg = Organization::factory()->create(['name' => 'Other Org']);
-        $otherOrg->users()->attach($user);
+        $user->joinOrganization($otherOrg);
 
         $strangerOrg = Organization::factory()->create(['name' => 'Stranger Org']);
 
         $project = Project::factory()->for($currentOrg)->create();
-        $project->users()->attach($user);
+        $user->joinProject($project);
 
         Filament::setCurrentPanel(Filament::getPanel('project'));
         $this->actingAs($user);

@@ -37,7 +37,7 @@ class OrganizationTest extends TestCase
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
 
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         $this->assertTrue($organization->users->contains($user));
         $this->assertTrue($user->organizations->contains($organization));
@@ -49,7 +49,8 @@ class OrganizationTest extends TestCase
         $org1 = Organization::factory()->create(['name' => 'Org One']);
         $org2 = Organization::factory()->create(['name' => 'Org Two']);
 
-        $user->organizations()->attach([$org1->id, $org2->id]);
+        $user->joinOrganization($org1);
+        $user->joinOrganization($org2);
 
         $this->assertCount(2, $user->fresh()->organizations);
     }
@@ -59,7 +60,7 @@ class OrganizationTest extends TestCase
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
 
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         $this->assertTrue($user->canAccessTenant($organization));
     }

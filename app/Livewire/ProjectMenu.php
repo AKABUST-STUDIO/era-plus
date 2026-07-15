@@ -20,19 +20,24 @@ class ProjectMenu extends Component
         if (! $user instanceof User || ! $organization instanceof Organization) {
             return view('livewire.project-menu', [
                 'organization' => null,
+                'currentProject' => null,
                 'items' => collect(),
                 'createUrl' => null,
             ]);
         }
 
+        $currentProject = ProjectService::current();
+
         $items = ProjectService::projectsFor($user, $organization)->map(fn (Project $project) => [
             'name' => $project->name,
             'url' => ProjectService::urlFor($project),
             'image' => $project->getAvatarUrl(),
+            'isCurrent' => $currentProject instanceof Project && $project->is($currentProject),
         ]);
 
         return view('livewire.project-menu', [
             'organization' => $organization,
+            'currentProject' => $currentProject,
             'items' => $items,
             'createUrl' => ProjectService::createUrlFor($organization),
         ]);

@@ -25,9 +25,7 @@ class Invoices extends Page
     {
         /** @var Collection<int, Organization> $orgs */
         $orgs = Organization::query()
-            ->whereHas('users', fn ($q) => $q
-                ->whereKey(auth()->id())
-                ->where('organization_user.is_admin', true))
+            ->whereHas('admins', fn ($q) => $q->whereKey(auth()->id()))
             ->orderBy('name')
             ->get();
 

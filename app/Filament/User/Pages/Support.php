@@ -87,8 +87,6 @@ class Support extends Page implements HasTable
             'status' => SupportRequestStatus::Open->value,
         ]);
 
-        // Seed the message thread with the original body so future replies
-        // share a single chronological view.
         $request->messages()->create([
             'user_id' => auth()->id(),
             'body' => $data['body'],

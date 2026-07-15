@@ -5,70 +5,58 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\FinanceEntry;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\Project;
+use App\Models\User;
+use App\Services\ProjectAccess;
+use Filament\Facades\Filament;
 
 class FinanceEntryPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(AuthUser $authUser): bool
+    public function viewAny(User $user): bool
     {
-        return $authUser->can('ViewAny:FinanceEntry');
+        return $this->allows($user, ProjectAccess::ABILITY_VIEW_FINANCE);
     }
 
-    public function view(AuthUser $authUser, FinanceEntry $financeEntry): bool
+    public function view(User $user, FinanceEntry $financeEntry): bool
     {
-        return $authUser->can('View:FinanceEntry');
+        return $this->allows($user, ProjectAccess::ABILITY_VIEW_FINANCE);
     }
 
-    public function create(AuthUser $authUser): bool
+    public function create(User $user): bool
     {
-        return $authUser->can('Create:FinanceEntry');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function update(AuthUser $authUser, FinanceEntry $financeEntry): bool
+    public function update(User $user, FinanceEntry $financeEntry): bool
     {
-        return $authUser->can('Update:FinanceEntry');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function delete(AuthUser $authUser, FinanceEntry $financeEntry): bool
+    public function delete(User $user, FinanceEntry $financeEntry): bool
     {
-        return $authUser->can('Delete:FinanceEntry');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function deleteAny(AuthUser $authUser): bool
+    public function deleteAny(User $user): bool
     {
-        return $authUser->can('DeleteAny:FinanceEntry');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function restore(AuthUser $authUser, FinanceEntry $financeEntry): bool
+    public function restore(User $user, FinanceEntry $financeEntry): bool
     {
-        return $authUser->can('Restore:FinanceEntry');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function forceDelete(AuthUser $authUser, FinanceEntry $financeEntry): bool
+    public function forceDelete(User $user, FinanceEntry $financeEntry): bool
     {
-        return $authUser->can('ForceDelete:FinanceEntry');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function forceDeleteAny(AuthUser $authUser): bool
+    private function allows(User $user, string $ability): bool
     {
-        return $authUser->can('ForceDeleteAny:FinanceEntry');
-    }
+        $project = Filament::getTenant();
 
-    public function restoreAny(AuthUser $authUser): bool
-    {
-        return $authUser->can('RestoreAny:FinanceEntry');
-    }
-
-    public function replicate(AuthUser $authUser, FinanceEntry $financeEntry): bool
-    {
-        return $authUser->can('Replicate:FinanceEntry');
-    }
-
-    public function reorder(AuthUser $authUser): bool
-    {
-        return $authUser->can('Reorder:FinanceEntry');
+        return $project instanceof Project
+            && app(ProjectAccess::class)->can($user, $ability, $project);
     }
 }

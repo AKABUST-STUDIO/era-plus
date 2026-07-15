@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\BudgetCategory;
 use App\Enums\FinanceOperation;
+use App\Enums\OrganizationRole;
 use App\Exports\FinanceEntriesExport;
 use App\Filament\Project\Resources\FinanceEntries\Pages\ListFinanceEntries;
 use App\Models\FinanceEntry;
@@ -32,9 +34,9 @@ class FinanceEntriesExportTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user, ['role' => \App\Enums\OrganizationRole::Admin->value, 'is_admin' => true]);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->project->users()->attach($this->user);
+        $this->user->joinProject($this->project);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));
@@ -58,7 +60,7 @@ class FinanceEntriesExportTest extends TestCase
             'amount' => 125.50,
             'occurred_at' => '2026-04-10',
             'description' => 'Conference fee',
-            'cost_category' => \App\Enums\BudgetCategory::Travel,
+            'cost_category' => BudgetCategory::Travel,
             'created_by' => $this->user->id,
         ]);
 

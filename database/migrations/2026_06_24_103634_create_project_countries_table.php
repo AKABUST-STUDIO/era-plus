@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        /** @todo decide wtf */
         Schema::create('project_countries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();

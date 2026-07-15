@@ -21,17 +21,11 @@ class ActivityLog extends Activity
         ];
     }
 
-    /**
-     * Backwards-compatible accessor for the description field.
-     */
     public function getLabelAttribute(): string
     {
         return (string) $this->description;
     }
 
-    /**
-     * Backwards-compatible accessor for the event field.
-     */
     public function getEventTypeAttribute(): ?string
     {
         return $this->event;

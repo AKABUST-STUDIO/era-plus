@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrganizationRole;
 use App\Models\FinanceEntry;
 use App\Models\Organization;
 use App\Models\Project;
@@ -32,9 +33,9 @@ class FinanceEntryDocumentsTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user, ['role' => \App\Enums\OrganizationRole::Admin->value, 'is_admin' => true]);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->project->users()->attach($this->user);
+        $this->user->joinProject($this->project);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));

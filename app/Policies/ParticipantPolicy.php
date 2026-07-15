@@ -5,70 +5,58 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\Participant;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\Project;
+use App\Models\User;
+use App\Services\ProjectAccess;
+use Filament\Facades\Filament;
 
 class ParticipantPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(AuthUser $authUser): bool
+    public function viewAny(User $user): bool
     {
-        return $authUser->can('ViewAny:Participant');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
-    public function view(AuthUser $authUser, Participant $participant): bool
+    public function view(User $user, Participant $participant): bool
     {
-        return $authUser->can('View:Participant');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
-    public function create(AuthUser $authUser): bool
+    public function create(User $user): bool
     {
-        return $authUser->can('Create:Participant');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
-    public function update(AuthUser $authUser, Participant $participant): bool
+    public function update(User $user, Participant $participant): bool
     {
-        return $authUser->can('Update:Participant');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
-    public function delete(AuthUser $authUser, Participant $participant): bool
+    public function delete(User $user, Participant $participant): bool
     {
-        return $authUser->can('Delete:Participant');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
-    public function deleteAny(AuthUser $authUser): bool
+    public function deleteAny(User $user): bool
     {
-        return $authUser->can('DeleteAny:Participant');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
-    public function restore(AuthUser $authUser, Participant $participant): bool
+    public function restore(User $user, Participant $participant): bool
     {
-        return $authUser->can('Restore:Participant');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
-    public function forceDelete(AuthUser $authUser, Participant $participant): bool
+    public function forceDelete(User $user, Participant $participant): bool
     {
-        return $authUser->can('ForceDelete:Participant');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
-    public function forceDeleteAny(AuthUser $authUser): bool
+    private function allows(User $user, string $ability): bool
     {
-        return $authUser->can('ForceDeleteAny:Participant');
-    }
+        $project = Filament::getTenant();
 
-    public function restoreAny(AuthUser $authUser): bool
-    {
-        return $authUser->can('RestoreAny:Participant');
-    }
-
-    public function replicate(AuthUser $authUser, Participant $participant): bool
-    {
-        return $authUser->can('Replicate:Participant');
-    }
-
-    public function reorder(AuthUser $authUser): bool
-    {
-        return $authUser->can('Reorder:Participant');
+        return $project instanceof Project
+            && app(ProjectAccess::class)->can($user, $ability, $project);
     }
 }

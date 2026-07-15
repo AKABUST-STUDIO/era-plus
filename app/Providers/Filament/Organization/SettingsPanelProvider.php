@@ -11,7 +11,7 @@ use Filament\Panel;
 
 class SettingsPanelProvider extends BasePanelProvider
 {
-    public const PANEL_ID = 'organization-settings';
+    public const PANEL_ID = 'organization.settings';
 
     public function panel(Panel $panel): Panel
     {

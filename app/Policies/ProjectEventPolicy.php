@@ -4,71 +4,59 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\Project;
 use App\Models\ProjectEvent;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\User;
+use App\Services\ProjectAccess;
+use Filament\Facades\Filament;
 
 class ProjectEventPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(AuthUser $authUser): bool
+    public function viewAny(User $user): bool
     {
-        return $authUser->can('ViewAny:ProjectEvent');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function view(AuthUser $authUser, ProjectEvent $projectEvent): bool
+    public function view(User $user, ProjectEvent $projectEvent): bool
     {
-        return $authUser->can('View:ProjectEvent');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function create(AuthUser $authUser): bool
+    public function create(User $user): bool
     {
-        return $authUser->can('Create:ProjectEvent');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function update(AuthUser $authUser, ProjectEvent $projectEvent): bool
+    public function update(User $user, ProjectEvent $projectEvent): bool
     {
-        return $authUser->can('Update:ProjectEvent');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function delete(AuthUser $authUser, ProjectEvent $projectEvent): bool
+    public function delete(User $user, ProjectEvent $projectEvent): bool
     {
-        return $authUser->can('Delete:ProjectEvent');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function deleteAny(AuthUser $authUser): bool
+    public function deleteAny(User $user): bool
     {
-        return $authUser->can('DeleteAny:ProjectEvent');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function restore(AuthUser $authUser, ProjectEvent $projectEvent): bool
+    public function restore(User $user, ProjectEvent $projectEvent): bool
     {
-        return $authUser->can('Restore:ProjectEvent');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function forceDelete(AuthUser $authUser, ProjectEvent $projectEvent): bool
+    public function forceDelete(User $user, ProjectEvent $projectEvent): bool
     {
-        return $authUser->can('ForceDelete:ProjectEvent');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_TASKS);
     }
 
-    public function forceDeleteAny(AuthUser $authUser): bool
+    private function allows(User $user, string $ability): bool
     {
-        return $authUser->can('ForceDeleteAny:ProjectEvent');
-    }
+        $project = Filament::getTenant();
 
-    public function restoreAny(AuthUser $authUser): bool
-    {
-        return $authUser->can('RestoreAny:ProjectEvent');
-    }
-
-    public function replicate(AuthUser $authUser, ProjectEvent $projectEvent): bool
-    {
-        return $authUser->can('Replicate:ProjectEvent');
-    }
-
-    public function reorder(AuthUser $authUser): bool
-    {
-        return $authUser->can('Reorder:ProjectEvent');
+        return $project instanceof Project
+            && app(ProjectAccess::class)->can($user, $ability, $project);
     }
 }

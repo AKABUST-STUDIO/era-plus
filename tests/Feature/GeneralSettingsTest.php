@@ -32,7 +32,7 @@ class GeneralSettingsTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         return [$user, $organization];
     }
@@ -129,7 +129,7 @@ class GeneralSettingsTest extends TestCase
     public function test_member_can_leave_an_organization_with_other_members(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
-        $organization->users()->attach(User::factory()->create());
+        User::factory()->create()->joinOrganization($organization);
         $this->actingOnSettingsPanel($user, $organization);
 
         Livewire::test(GeneralSettings::class)

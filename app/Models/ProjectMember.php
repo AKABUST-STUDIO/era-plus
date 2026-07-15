@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\ProjectRole;
 use App\Models\Scopes\ProjectScope;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,18 +16,8 @@ class ProjectMember extends Pivot
     protected $fillable = [
         'project_id',
         'user_id',
-        'role',
+        'role_id',
     ];
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'role' => ProjectRole::class,
-        ];
-    }
 
     protected static function booted(): void
     {
@@ -57,5 +46,13 @@ class ProjectMember extends Pivot
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo<Role, $this>
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
     }
 }

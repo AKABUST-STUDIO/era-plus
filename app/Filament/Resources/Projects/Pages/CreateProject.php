@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Organization\Resources\Projects\Pages;
+namespace App\Filament\Resources\Projects\Pages;
 
 use App\Enums\ProjectRole;
-use App\Filament\Organization\Resources\Projects\ProjectResource;
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Organization;
 use App\Models\ProjectCountry;
 use Filament\Facades\Filament;
@@ -14,18 +14,25 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Nnjeim\World\Models\Country;
 
 class CreateProject extends CreateRecord
 {
-    use HasWizard;
+    use HasWizard {
+        getWizardComponent as protected baseWizardComponent;
+    }
 
     protected static string $resource = ProjectResource::class;
 
     public function getWizardComponent(): Component
     {
-        return parent::getWizardComponent();
+        /** @var Wizard $wizard */
+        $wizard = $this->baseWizardComponent();
+
+        return $wizard->persistStepInQueryString();
     }
 
     /**
@@ -108,9 +115,7 @@ class CreateProject extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $this->record->users()->attach(auth()->id(), [
-            'role' => ProjectRole::Coordinator->value,
-        ]);
+        auth()->user()->joinProject($this->record, ProjectRole::Coordinator);
 
         foreach ($this->data['project_countries'] ?? [] as $row) {
             if (empty($row['country_id'])) {

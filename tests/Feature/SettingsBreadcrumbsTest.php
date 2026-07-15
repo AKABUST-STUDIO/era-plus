@@ -32,10 +32,7 @@ class SettingsBreadcrumbsTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create(['name' => 'Acme Erasmus']);
-        $this->organization->users()->attach($this->user, [
-            'role' => OrganizationRole::Admin->value,
-            'is_admin' => true,
-        ]);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('organization-settings'));

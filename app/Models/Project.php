@@ -4,22 +4,29 @@ namespace App\Models;
 
 use App\Enums\BudgetCategory;
 use App\Enums\FinanceOperation;
+use App\Enums\ProjectRole;
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Scopes\ProjectScope;
+use App\Observers\ProjectObserver;
+use Database\Factories\ProjectFactory;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
+#[ObservedBy(ProjectObserver::class)]
 class Project extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProjectFactory> */
+    /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 
     use HasSlug;
@@ -34,7 +41,7 @@ class Project extends Model
             ->dontLogEmptyChanges();
     }
 
-    public function tapActivity(\Spatie\Activitylog\Contracts\Activity $activity, string $eventName): void
+    public function tapActivity(Activity $activity, string $eventName): void
     {
         $activity->organization_id = $this->organization_id;
         $activity->project_id = $this->id;
@@ -106,8 +113,37 @@ class Project extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'project_user')
-            ->withPivot('role')
+            ->withPivot('role_id')
             ->withTimestamps();
+    }
+
+    /**
+     * @return MorphMany<Role, $this>
+     */
+    public function roles(): MorphMany
+    {
+        return $this->morphMany(Role::class, 'roleable');
+    }
+
+    public function roleFor(ProjectRole|string $role): ?Role
+    {
+        $name = $role instanceof ProjectRole ? $role->value : $role;
+
+        return $this->roles()->where('name', $name)->first();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function roleOptions(): array
+    {
+        return $this->roles()
+            ->orderBy('id')
+            ->get()
+            ->mapWithKeys(fn (Role $role): array => [
+                $role->id => ProjectRole::tryFrom($role->name)?->getLabel() ?? $role->name,
+            ])
+            ->all();
     }
 
     /**

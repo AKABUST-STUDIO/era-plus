@@ -2,15 +2,24 @@
 
 namespace App\Models;
 
+use App\Enums\OrganizationRole;
 use App\Enums\SubscriptionTier;
+use App\Observers\OrganizationObserver;
+use App\Services\ProjectAccess;
+use Database\Factories\OrganizationFactory;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\HasAvatar;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Laravel\Cashier\Billable;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Image\Enums\Fit;
@@ -20,12 +29,12 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
+#[ObservedBy(OrganizationObserver::class)]
 class Organization extends Model implements HasAvatar, HasMedia
 {
-    /** @use HasFactory<\Database\Factories\OrganizationFactory> */
-    use Billable;
-
+    /** @use HasFactory<OrganizationFactory> */
     use HasFactory;
+
     use HasSlug;
     use InteractsWithMedia;
     use LogsActivity;
@@ -34,92 +43,23 @@ class Organization extends Model implements HasAvatar, HasMedia
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'slug', 'subscription_tier', 'enforce_two_factor', 'enforce_email_verification', 'tax_id'])
+            ->logOnly(['name', 'slug', 'enforce_two_factor', 'enforce_email_verification'])
             ->logOnlyDirty()
             ->useLogName('organization')
             ->dontLogEmptyChanges();
     }
 
-    public function tapActivity(\Spatie\Activitylog\Contracts\Activity $activity, string $eventName): void
+    public function tapActivity(Activity $activity, string $eventName): void
     {
         $activity->organization_id = $this->id;
-    }
-
-    protected static function booted(): void
-    {
-        static::created(function (self $organization): void {
-            $organization->subscribeToFreePlan();
-        });
-
-        static::deleting(function (self $organization): void {
-            if ($organization->isForceDeleting()) {
-                return;
-            }
-
-            $organization->cancelAllSubscriptions();
-        });
-    }
-
-    /**
-     * Attach the Free-tier Stripe subscription on Organization creation.
-     * Silently no-ops when the price ID or Stripe credentials are missing
-     * (local/test) — the org is still created with subscription_tier=free.
-     */
-    public function subscribeToFreePlan(): void
-    {
-        $priceId = config('services.stripe.prices.free');
-        $secret = config('cashier.secret');
-
-        if (! $priceId || ! $secret) {
-            return;
-        }
-
-        try {
-            $this->newSubscription('default', $priceId)->create();
-        } catch (\Throwable $e) {
-            report($e);
-        }
-    }
-
-    /**
-     * Cancel every active Stripe subscription for this organization.
-     * Wrapped so test environments without Stripe creds don't break delete.
-     */
-    public function cancelAllSubscriptions(): void
-    {
-        if (! $this->hasStripeId()) {
-            return;
-        }
-
-        try {
-            $this->subscriptions()
-                ->active()
-                ->get()
-                ->each(fn ($subscription) => $subscription->cancelNow());
-        } catch (\Throwable $e) {
-            report($e);
-        }
     }
 
     protected $fillable = [
         'name',
         'slug',
-        'subscription_tier',
-        'extra_project_seats',
-        'billing_address',
-        'invoice_language',
-        'tax_id',
+        'subscription_id',
         'enforce_two_factor',
         'enforce_email_verification',
-    ];
-
-    /**
-     * @var array<string, mixed>
-     */
-    protected $attributes = [
-        'subscription_tier' => 'free',
-        'extra_project_seats' => 0,
-        'invoice_language' => 'en',
     ];
 
     /**
@@ -128,13 +68,14 @@ class Organization extends Model implements HasAvatar, HasMedia
     protected function casts(): array
     {
         return [
-            'subscription_tier' => SubscriptionTier::class,
-            'extra_project_seats' => 'integer',
-            'trial_ends_at' => 'datetime',
-            'billing_address' => 'array',
             'enforce_two_factor' => 'boolean',
             'enforce_email_verification' => 'boolean',
         ];
+    }
+
+    protected function subscriptionTier(): Attribute
+    {
+        return Attribute::get(fn (): SubscriptionTier => SubscriptionTier::fromStripePriceId($this->subscription?->stripe_price) ?? SubscriptionTier::Basic);
     }
 
     public function getSlugOptions(): SlugOptions
@@ -174,13 +115,55 @@ class Organization extends Model implements HasAvatar, HasMedia
     }
 
     /**
+     * @return BelongsTo<Subscription, $this>
+     */
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class);
+    }
+
+    public function owner(): ?User
+    {
+        return $this->subscription?->user;
+    }
+
+    /**
      * @return BelongsToMany<User, $this>
      */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'organization_user')
-            ->withPivot('role', 'is_admin')
+            ->withPivot('role_id')
             ->withTimestamps();
+    }
+
+    /**
+     * @return MorphMany<Role, $this>
+     */
+    public function roles(): MorphMany
+    {
+        return $this->morphMany(Role::class, 'roleable');
+    }
+
+    public function roleFor(OrganizationRole|string $role): ?Role
+    {
+        $name = $role instanceof OrganizationRole ? $role->value : $role;
+
+        return $this->roles()->where('name', $name)->first();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function roleOptions(): array
+    {
+        return $this->roles()
+            ->orderBy('id')
+            ->get()
+            ->mapWithKeys(fn (Role $role): array => [
+                $role->id => OrganizationRole::tryFrom($role->name)?->getLabel() ?? $role->name,
+            ])
+            ->all();
     }
 
     /**
@@ -188,7 +171,12 @@ class Organization extends Model implements HasAvatar, HasMedia
      */
     public function admins(): BelongsToMany
     {
-        return $this->users()->wherePivot('is_admin', true);
+        return $this->users()->whereExists(function (QueryBuilder $query): void {
+            $query->from('role_has_permissions')
+                ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
+                ->whereColumn('role_has_permissions.role_id', 'organization_user.role_id')
+                ->where('permissions.name', ProjectAccess::ABILITY_ADMINISTER_ORGANIZATION);
+        });
     }
 
     /**
@@ -201,13 +189,7 @@ class Organization extends Model implements HasAvatar, HasMedia
 
     public function projectLimit(): ?int
     {
-        $base = $this->subscription_tier?->baseProjectLimit();
-
-        if ($base === null) {
-            return null;
-        }
-
-        return $base + (int) $this->extra_project_seats;
+        return $this->subscription_tier->baseProjectLimit();
     }
 
     public function canCreateProject(): bool

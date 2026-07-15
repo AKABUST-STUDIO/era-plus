@@ -32,12 +32,9 @@ class ProjectEventTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user, [
-            'role' => OrganizationRole::Admin->value,
-            'is_admin' => true,
-        ]);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->project->users()->attach($this->user, ['role' => ProjectRole::Coordinator->value]);
+        $this->user->joinProject($this->project, ProjectRole::Coordinator);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));

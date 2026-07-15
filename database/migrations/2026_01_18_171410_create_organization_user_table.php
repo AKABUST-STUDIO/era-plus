@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\OrganizationRole;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,8 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('role', 32)->default(OrganizationRole::Member->value);
-            $table->boolean('is_admin')->default(false);
+            $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['organization_id', 'user_id']);

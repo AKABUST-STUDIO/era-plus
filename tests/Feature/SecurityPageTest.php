@@ -25,7 +25,7 @@ class SecurityPageTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user);
+        $this->user->joinOrganization($this->organization);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('organization-settings'));

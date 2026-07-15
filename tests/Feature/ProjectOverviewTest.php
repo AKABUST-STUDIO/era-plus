@@ -20,9 +20,9 @@ class ProjectOverviewTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
         $project = Project::factory()->for($organization)->create(['name' => 'Mobility 2026']);
-        $project->users()->attach($user);
+        $user->joinProject($project);
 
         $host = 'app.'.parse_url(config('app.url'), PHP_URL_HOST);
 
@@ -36,9 +36,9 @@ class ProjectOverviewTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create(['name' => 'Acme Org']);
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
         $project = Project::factory()->for($organization)->create(['name' => 'Erasmus Pilot']);
-        $project->users()->attach($user);
+        $user->joinProject($project);
 
         $this->actingAs($user);
         Filament::setCurrentPanel(Filament::getPanel('project'));

@@ -20,7 +20,7 @@ class SettingsSecurityTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         $this->actingAs($user);
         Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));

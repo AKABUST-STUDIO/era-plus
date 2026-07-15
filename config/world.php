@@ -1,5 +1,7 @@
 <?php
 
+use Nnjeim\World\Models as World;
+
 return [
 
     /*
@@ -75,7 +77,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'routes' => true,
+    'routes' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -204,12 +206,12 @@ return [
     */
 
     'models' => [
-        'cities' => \Nnjeim\World\Models\City::class,
-        'countries' => \Nnjeim\World\Models\Country::class,
-        'currencies' => \Nnjeim\World\Models\Currency::class,
-        'languages' => \Nnjeim\World\Models\Language::class,
-        'states' => \Nnjeim\World\Models\State::class,
-        'timezones' => \Nnjeim\World\Models\Timezone::class,
+        'cities' => World\City::class,
+        'countries' => World\Country::class,
+        'currencies' => World\Currency::class,
+        'languages' => World\Language::class,
+        'states' => World\State::class,
+        'timezones' => World\Timezone::class,
     ],
 
 ];

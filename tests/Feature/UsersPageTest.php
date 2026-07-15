@@ -26,10 +26,7 @@ class UsersPageTest extends TestCase
 
         $this->user = User::factory()->create(['name' => 'Maria']);
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user, [
-            'role' => OrganizationRole::Admin->value,
-            'is_admin' => true,
-        ]);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('organization-settings'));
@@ -54,8 +51,7 @@ class UsersPageTest extends TestCase
         $this->assertDatabaseHas('organization_user', [
             'organization_id' => $this->organization->id,
             'user_id' => $newbie->id,
-            'role' => OrganizationRole::Coordinator->value,
-            'is_admin' => false,
+            'role_id' => $this->organization->roleFor(OrganizationRole::Coordinator)->id,
         ]);
     }
 
@@ -76,10 +72,7 @@ class UsersPageTest extends TestCase
     public function test_change_role_persists(): void
     {
         $member = User::factory()->create();
-        $this->organization->users()->attach($member, [
-            'role' => OrganizationRole::Member->value,
-            'is_admin' => false,
-        ]);
+        $member->joinOrganization($this->organization, OrganizationRole::Member);
 
         Livewire::test(UsersPage::class)
             ->instance()
@@ -88,17 +81,14 @@ class UsersPageTest extends TestCase
         $this->assertDatabaseHas('organization_user', [
             'organization_id' => $this->organization->id,
             'user_id' => $member->id,
-            'role' => OrganizationRole::Leader->value,
+            'role_id' => $this->organization->roleFor(OrganizationRole::Leader)->id,
         ]);
     }
 
     public function test_remove_member_detaches(): void
     {
         $member = User::factory()->create();
-        $this->organization->users()->attach($member, [
-            'role' => OrganizationRole::Member->value,
-            'is_admin' => false,
-        ]);
+        $member->joinOrganization($this->organization, OrganizationRole::Member);
 
         Livewire::test(UsersPage::class)
             ->instance()
@@ -125,10 +115,7 @@ class UsersPageTest extends TestCase
     public function test_user_listing_shows_you_badge_for_current_user(): void
     {
         $other = User::factory()->create(['name' => 'Anne']);
-        $this->organization->users()->attach($other, [
-            'role' => OrganizationRole::Member->value,
-            'is_admin' => false,
-        ]);
+        $other->joinOrganization($this->organization, OrganizationRole::Member);
 
         Livewire::test(UsersPage::class)
             ->assertSee('Maria')

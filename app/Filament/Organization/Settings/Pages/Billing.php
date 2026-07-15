@@ -13,6 +13,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class Billing extends Page
 {
@@ -78,28 +79,22 @@ class Billing extends Page
 
     protected function planSection(): Section
     {
-        $isFree = $this->organization->subscription_tier === SubscriptionTier::Free;
+        $isBasic = $this->organization->subscription_tier === SubscriptionTier::Basic;
 
         return Section::make(__('settings.billing.plan.heading'))
             ->description(match ($this->organization->subscription_tier) {
-                SubscriptionTier::Free => __('settings.billing.plan.free_pitch'),
-                SubscriptionTier::Pro => __('settings.billing.plan.pro_active'),
-                SubscriptionTier::Premium => __('settings.billing.plan.premium_active'),
+                SubscriptionTier::Basic => __('settings.billing.plan.basic_pitch'),
+                SubscriptionTier::Pro, SubscriptionTier::Trial => __('settings.billing.plan.pro_active'),
             })
             ->footerActions([
                 Action::make('checkoutPro')
                     ->label('Upgrade to Pro')
                     ->color('primary')
-                    ->visible(fn (): bool => $isFree && filled(config('services.stripe.prices.pro')))
+                    ->visible(fn (): bool => $isBasic && filled(config('services.stripe.prices.pro')))
                     ->action(fn () => $this->checkout(config('services.stripe.prices.pro'))),
-                Action::make('checkoutPremium')
-                    ->label('Upgrade to Premium')
-                    ->color('warning')
-                    ->visible(fn (): bool => $isFree && filled(config('services.stripe.prices.premium')))
-                    ->action(fn () => $this->checkout(config('services.stripe.prices.premium'))),
                 Action::make('manage')
                     ->label(__('settings.billing.plan.manage'))
-                    ->visible(! $isFree)
+                    ->visible(! $isBasic)
                     ->action(fn () => $this->billingPortal()),
             ]);
     }
@@ -232,7 +227,7 @@ class Billing extends Page
             ->send();
     }
 
-    public function checkout(?string $priceId): \Symfony\Component\HttpFoundation\RedirectResponse
+    public function checkout(?string $priceId): RedirectResponse
     {
         abort_unless($priceId, 400, 'Stripe price ID not configured.');
 
@@ -246,10 +241,10 @@ class Billing extends Page
         return redirect()->away($checkout->url);
     }
 
-    public function billingPortal(): \Symfony\Component\HttpFoundation\RedirectResponse
+    public function billingPortal(): RedirectResponse
     {
-        return redirect()->away(
-            $this->organization->billingPortalUrl(static::getUrl(['tenant' => $this->organization]))
+        return auth()->user()->redirectToBillingPortal(
+            route('filament.organization.home', ['tenant' => $this->organization])
         );
     }
 }

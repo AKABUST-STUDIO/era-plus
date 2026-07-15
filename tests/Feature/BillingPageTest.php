@@ -26,7 +26,7 @@ class BillingPageTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user);
+        $this->user->joinOrganization($this->organization);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('organization-settings'));
@@ -40,10 +40,10 @@ class BillingPageTest extends TestCase
             ->assertSuccessful();
     }
 
-    public function test_billing_page_shows_free_pitch_for_free_tier(): void
+    public function test_billing_page_shows_basic_pitch_for_basic_tier(): void
     {
         Livewire::test(Billing::class)
-            ->assertSee(__('settings.billing.plan.free_pitch'));
+            ->assertSee(__('settings.billing.plan.basic_pitch'));
     }
 
     public function test_billing_page_shows_pro_message_for_pro_tier(): void
@@ -52,7 +52,7 @@ class BillingPageTest extends TestCase
 
         Livewire::test(Billing::class)
             ->assertSee(__('settings.billing.plan.pro_active'))
-            ->assertDontSee(__('settings.billing.plan.free_pitch'));
+            ->assertDontSee(__('settings.billing.plan.basic_pitch'));
     }
 
     public function test_can_save_billing_address(): void

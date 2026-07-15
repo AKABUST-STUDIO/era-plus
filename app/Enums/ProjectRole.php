@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Services\ProjectAccess;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
@@ -26,6 +27,18 @@ enum ProjectRole: string implements HasColor, HasLabel
             self::Coordinator => 'primary',
             self::Leader => 'info',
             self::Participant => 'gray',
+        };
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function defaultPermissions(): array
+    {
+        return match ($this) {
+            self::Coordinator => [ProjectAccess::ABILITY_ADMINISTER_PROJECT],
+            self::Leader => [ProjectAccess::ABILITY_VIEW_FINANCE, ProjectAccess::ABILITY_MANAGE_TASKS],
+            self::Participant => [],
         };
     }
 }

@@ -43,21 +43,21 @@ class Invoices extends Page
      */
     public function getInvoiceRows(): array
     {
-        if (! $this->organization?->hasStripeId()) {
+        if (! auth()->user()->hasStripeId()) {
             return [];
         }
 
         $rows = [];
 
-        foreach ($this->organization->invoices(includePending: true) as $invoice) {
+        foreach (auth()->user()->invoices(includePending: true) as $invoice) {
             $rows[] = [
                 'id' => $invoice->id,
                 'date' => $invoice->date()->toDateString(),
                 'total' => $invoice->total(),
                 'status' => $invoice->status,
-                'download_url' => route('cashier.invoice.download', [
-                    'invoice' => $invoice->id,
-                ], absolute: false),
+                // 'download_url' => route('cashier.invoice.download', [
+                //     'invoice' => $invoice->id,
+                // ], absolute: false),
             ];
         }
 

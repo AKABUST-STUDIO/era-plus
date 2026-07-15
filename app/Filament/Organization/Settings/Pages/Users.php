@@ -10,6 +10,7 @@ use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\Select;
@@ -121,8 +122,7 @@ class Users extends Page implements HasTable
             : (OrganizationRole::tryFrom((string) $role) ?? OrganizationRole::Member);
 
         $this->organization->users()->attach($user, [
-            'role' => $role->value,
-            'is_admin' => $role === OrganizationRole::Admin,
+            'role_id' => $this->organization->roleFor($role)?->id,
         ]);
 
         Mail::to($user->email)->queue(new OrganizationInvitation(
@@ -174,11 +174,11 @@ class Users extends Page implements HasTable
                         ->badge()
                         ->color('gray')
                         ->grow(false),
-                    TextColumn::make('pivot.role')
+                    TextColumn::make('pivot.role_id')
                         ->label(__('forms.common.role'))
                         ->badge()
-                        ->formatStateUsing(fn (?string $state): string => OrganizationRole::tryFrom((string) $state)?->getLabel() ?? '—')
-                        ->color(fn (?string $state): string => OrganizationRole::tryFrom((string) $state)?->getColor() ?? 'gray')
+                        ->formatStateUsing(fn (?int $state): string => OrganizationRole::tryFrom((string) $this->roleName($state))?->getLabel() ?? '—')
+                        ->color(fn (?int $state): string => OrganizationRole::tryFrom((string) $this->roleName($state))?->getColor() ?? 'gray')
                         ->grow(false),
                     TextColumn::make('pivot.created_at')
                         ->label(__('settings.users.table.joined'))
@@ -191,11 +191,11 @@ class Users extends Page implements HasTable
                 SelectFilter::make('role')
                     ->options(OrganizationRole::class)
                     ->query(fn ($query, array $data) => filled($data['value'] ?? null)
-                        ? $query->wherePivot('role', $data['value'])
+                        ? $query->where('organization_user.role_id', $this->organization->roleFor($data['value'])?->id)
                         : $query),
             ])
             ->recordActions([
-                \Filament\Actions\ActionGroup::make([
+                ActionGroup::make([
                     Action::make('changeRole')
                         ->label(__('settings.users.actions.change_role'))
                         ->icon('lucide-refresh-cw')
@@ -203,7 +203,7 @@ class Users extends Page implements HasTable
                         ->form([
                             Select::make('role')
                                 ->options(OrganizationRole::class)
-                                ->default(fn (User $r): string => (string) $r->pivot->role)
+                                ->default(fn (User $r): ?string => $this->roleName($r->pivot->role_id))
                                 ->required(),
                         ])
                         ->action(fn (User $r, array $data) => $this->changeRole($r, OrganizationRole::from($data['role']))),
@@ -232,8 +232,7 @@ class Users extends Page implements HasTable
     public function changeRole(User $user, OrganizationRole $role): void
     {
         $this->organization->users()->updateExistingPivot($user->id, [
-            'role' => $role->value,
-            'is_admin' => $role === OrganizationRole::Admin,
+            'role_id' => $this->organization->roleFor($role)?->id,
         ]);
 
         ActivityLog::record(
@@ -275,5 +274,21 @@ class Users extends Page implements HasTable
     private function authUser(): User
     {
         return auth()->user();
+    }
+
+    /**
+     * @var array<int, string>|null
+     */
+    private ?array $roleNameMap = null;
+
+    private function roleName(?int $roleId): ?string
+    {
+        if ($roleId === null) {
+            return null;
+        }
+
+        $this->roleNameMap ??= $this->organization->roles()->pluck('name', 'id')->all();
+
+        return $this->roleNameMap[$roleId] ?? null;
     }
 }

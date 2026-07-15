@@ -30,9 +30,9 @@ class ActivityLogTest extends TestCase
 
         $this->user = User::factory()->create(['name' => 'Maria']);
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user);
+        $this->user->joinOrganization($this->organization);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->project->users()->attach($this->user);
+        $this->user->joinProject($this->project);
 
         $this->actingAs($this->user);
     }

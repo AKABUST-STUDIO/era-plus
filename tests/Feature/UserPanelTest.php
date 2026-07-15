@@ -12,6 +12,7 @@ use App\Filament\User\Pages\Support;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Filament\Pages\Dashboard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -34,7 +35,7 @@ class UserPanelTest extends TestCase
 
     public function test_dashboard_loads_for_any_logged_in_user(): void
     {
-        Livewire::test(\Filament\Pages\Dashboard::class)->assertSuccessful();
+        Livewire::test(Dashboard::class)->assertSuccessful();
     }
 
     public function test_settings_page_renders_with_user_data(): void
@@ -56,7 +57,7 @@ class UserPanelTest extends TestCase
     public function test_settings_can_set_default_organization(): void
     {
         $org = Organization::factory()->create();
-        $org->users()->attach($this->user);
+        $this->user->joinOrganization($org);
 
         Livewire::test(Settings::class)
             ->fillForm(['default_organization_id' => $org->id])
@@ -68,7 +69,7 @@ class UserPanelTest extends TestCase
     public function test_organizations_page_lists_only_user_orgs(): void
     {
         $mine = Organization::factory()->create(['name' => 'Mine']);
-        $mine->users()->attach($this->user);
+        $this->user->joinOrganization($mine);
         Organization::factory()->create(['name' => 'Stranger']);
 
         Livewire::test(Organizations::class)

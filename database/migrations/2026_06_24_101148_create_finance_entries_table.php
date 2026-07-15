@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        /** @todo complete refactor */
         Schema::create('finance_entries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();

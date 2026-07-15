@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Organization\Pages\Overview;
 use App\Filament\Organization\Pages\Tenancy\RegisterOrganization;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Http\Middleware\ApplyTenantContext;
@@ -11,7 +12,6 @@ use App\Models\Organization;
 use App\Providers\Filament\Organization\SettingsPanelProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Navigation\NavigationItem;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 
 class OrganizationPanelProvider extends BasePanelProvider
@@ -32,6 +32,10 @@ class OrganizationPanelProvider extends BasePanelProvider
                 in: app_path('Filament/Organization/Resources'),
                 for: 'App\\Filament\\Organization\\Resources',
             )
+            ->discoverResources(
+                in: app_path('Filament/Resources'),
+                for: 'App\\Filament\\Resources',
+            )
             ->discoverPages(
                 in: app_path('Filament/Organization/Pages'),
                 for: 'App\\Filament\\Organization\\Pages',
@@ -41,7 +45,7 @@ class OrganizationPanelProvider extends BasePanelProvider
                 for: 'App\\Filament\\Organization\\Widgets',
             )
             ->pages([
-                Dashboard::class,
+                Overview::class,
             ])
             ->navigationItems($this->getNavigationItems())
             ->authMiddleware([

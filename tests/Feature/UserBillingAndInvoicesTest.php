@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\OrganizationRole;
+use App\Enums\SubscriptionTier;
 use App\Facades\OrganizationService;
 use App\Filament\User\Pages\Billing;
 use App\Filament\User\Pages\Invoices;
@@ -28,21 +29,14 @@ class UserBillingAndInvoicesTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('user'));
     }
 
-    public function test_billing_page_lists_only_owned_organizations(): void
+    public function test_billing_page_lists_only_organizations_the_user_pays_for(): void
     {
-        $owned = Organization::factory()->create(['name' => 'Owned']);
-        $owned->users()->attach($this->user, [
-            'role' => OrganizationRole::Admin->value,
-            'is_admin' => true,
-        ]);
+        $owned = Organization::factory()->subscribed(SubscriptionTier::Pro, $this->user)->create(['name' => 'Owned']);
 
         $member = Organization::factory()->create(['name' => 'Member']);
-        $member->users()->attach($this->user, [
-            'role' => OrganizationRole::Member->value,
-            'is_admin' => false,
-        ]);
+        $this->user->joinOrganization($member, OrganizationRole::Admin);
 
-        $stranger = Organization::factory()->create(['name' => 'Stranger']);
+        Organization::factory()->subscribed(SubscriptionTier::Pro)->create(['name' => 'Stranger']);
 
         $orgs = Livewire::test(Billing::class)
             ->instance()
@@ -52,7 +46,7 @@ class UserBillingAndInvoicesTest extends TestCase
         $this->assertTrue($orgs->first()->is($owned));
     }
 
-    public function test_billing_empty_state_for_user_with_no_owned_orgs(): void
+    public function test_billing_empty_state_for_user_without_a_subscription(): void
     {
         Livewire::test(Billing::class)
             ->assertSee(__('user.billing.empty'));
@@ -60,46 +54,24 @@ class UserBillingAndInvoicesTest extends TestCase
 
     public function test_billing_shows_card_label_when_payment_method_present(): void
     {
-        $organization = Organization::factory()->create([
-            'pm_type' => 'visa',
-            'pm_last_four' => '4242',
-        ]);
-        $organization->users()->attach($this->user, [
-            'role' => OrganizationRole::Admin->value,
-            'is_admin' => true,
-        ]);
+        $this->user->forceFill(['pm_type' => 'visa', 'pm_last_four' => '4242'])->save();
 
-        $label = (new Billing)->cardLabel($organization);
-
-        $this->assertSame('Visa …4242', $label);
+        $this->assertSame('Visa …4242', (new Billing)->cardLabel());
     }
 
     public function test_billing_shows_no_payment_message_when_card_missing(): void
     {
-        $organization = Organization::factory()->create([
-            'pm_type' => null,
-            'pm_last_four' => null,
-        ]);
-
-        $label = (new Billing)->cardLabel($organization);
-
-        $this->assertSame(__('user.billing.no_payment_method'), $label);
+        $this->assertSame(__('user.billing.no_payment_method'), (new Billing)->cardLabel());
     }
 
-    public function test_invoices_page_renders_no_orgs_empty_state(): void
+    public function test_invoices_page_renders_empty_state_without_billing(): void
     {
         Livewire::test(Invoices::class)
-            ->assertSee(__('user.invoices.empty_no_orgs'));
+            ->assertSee(__('user.invoices.empty_no_invoices'));
     }
 
     public function test_invoices_returns_empty_collection_without_stripe_id(): void
     {
-        $organization = Organization::factory()->create();
-        $organization->users()->attach($this->user, [
-            'role' => OrganizationRole::Admin->value,
-            'is_admin' => true,
-        ]);
-
         $rows = Livewire::test(Invoices::class)
             ->instance()
             ->getInvoiceRows();

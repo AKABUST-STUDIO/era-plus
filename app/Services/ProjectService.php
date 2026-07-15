@@ -2,17 +2,25 @@
 
 namespace App\Services;
 
-use App\Filament\Organization\Resources\Projects\ProjectResource;
+use App\Filament\Organization\Pages\Overview;
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
 use App\Providers\Filament\OrganizationPanelProvider;
-use App\Providers\Filament\ProjectPanelProvider;
+use Filament\Facades\Filament;
 use Illuminate\Support\Collection;
 
 class ProjectService
 {
     private const SESSION_KEY = 'selected_project_id';
+
+    public function current(): ?Project
+    {
+        $tenant = Filament::getTenant();
+
+        return $tenant instanceof Project ? $tenant : $this->selected();
+    }
 
     /**
      * @return Collection<int, Project>
@@ -29,10 +37,7 @@ class ProjectService
 
     public function urlFor(Project $project): string
     {
-        return route('filament.'.ProjectPanelProvider::PANEL_ID.'.pages.dashboard', [
-            'organization' => $project->organization->slug,
-            'tenant' => $project->slug,
-        ]);
+        return Overview::getUrl(['organization' => $project->slug]);
     }
 
     public function createUrlFor(Organization $organization): string

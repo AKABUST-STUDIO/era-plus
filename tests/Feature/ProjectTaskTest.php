@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrganizationRole;
+use App\Enums\ProjectRole;
 use App\Enums\ProjectTaskStatus;
 use App\Filament\Project\Resources\ProjectTasks\Pages\CreateProjectTask;
 use App\Filament\Project\Resources\ProjectTasks\Pages\EditProjectTask;
@@ -35,11 +37,11 @@ class ProjectTaskTest extends TestCase
         $this->user = User::factory()->create(['name' => 'Coordinator']);
         $this->assignee = User::factory()->create(['name' => 'Anne']);
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'is_admin' => true]);
-        $this->organization->users()->attach($this->assignee->id);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
+        $this->assignee->joinOrganization($this->organization);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->project->users()->attach($this->user->id, ['role' => \App\Enums\ProjectRole::Coordinator->value]);
-        $this->project->users()->attach($this->assignee->id);
+        $this->user->joinProject($this->project, ProjectRole::Coordinator);
+        $this->assignee->joinProject($this->project);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));

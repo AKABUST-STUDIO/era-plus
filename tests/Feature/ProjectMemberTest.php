@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrganizationRole;
 use App\Enums\ProjectRole;
 use App\Filament\Project\Resources\ProjectMembers\Pages\CreateProjectMember;
 use App\Filament\Project\Resources\ProjectMembers\Pages\EditProjectMember;
@@ -32,9 +33,9 @@ class ProjectMemberTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user, ['role' => \App\Enums\OrganizationRole::Admin->value, 'is_admin' => true]);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->project->users()->attach($this->user, ['role' => ProjectRole::Coordinator->value]);
+        $this->user->joinProject($this->project, ProjectRole::Coordinator);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));
@@ -54,8 +55,8 @@ class ProjectMemberTest extends TestCase
     {
         $otherProject = Project::factory()->for($this->organization)->create();
         $strangerInOtherProject = User::factory()->create();
-        $this->organization->users()->attach($strangerInOtherProject);
-        $otherProject->users()->attach($strangerInOtherProject, ['role' => ProjectRole::Participant->value]);
+        $strangerInOtherProject->joinOrganization($this->organization);
+        $strangerInOtherProject->joinProject($otherProject, ProjectRole::Participant);
 
         Livewire::test(ListProjectMembers::class)
             ->assertSee($this->user->name)
@@ -65,7 +66,7 @@ class ProjectMemberTest extends TestCase
     public function test_can_add_org_member_to_project(): void
     {
         $newMember = User::factory()->create();
-        $this->organization->users()->attach($newMember);
+        $newMember->joinOrganization($this->organization);
 
         Livewire::test(CreateProjectMember::class)
             ->fillForm([
@@ -78,15 +79,15 @@ class ProjectMemberTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'project_id' => $this->project->id,
             'user_id' => $newMember->id,
-            'role' => ProjectRole::Leader->value,
+            'role_id' => $this->project->roleFor(ProjectRole::Leader)->id,
         ]);
     }
 
     public function test_can_change_member_role(): void
     {
         $member = User::factory()->create();
-        $this->organization->users()->attach($member);
-        $this->project->users()->attach($member, ['role' => ProjectRole::Participant->value]);
+        $member->joinOrganization($this->organization);
+        $member->joinProject($this->project, ProjectRole::Participant);
 
         $pivot = ProjectMember::query()
             ->where('user_id', $member->id)
@@ -100,15 +101,15 @@ class ProjectMemberTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'project_id' => $this->project->id,
             'user_id' => $member->id,
-            'role' => ProjectRole::Leader->value,
+            'role_id' => $this->project->roleFor(ProjectRole::Leader)->id,
         ]);
     }
 
     public function test_can_remove_member(): void
     {
         $member = User::factory()->create();
-        $this->organization->users()->attach($member);
-        $this->project->users()->attach($member, ['role' => ProjectRole::Participant->value]);
+        $member->joinOrganization($this->organization);
+        $member->joinProject($this->project, ProjectRole::Participant);
 
         $pivot = ProjectMember::query()->where('user_id', $member->id)->first();
 
@@ -126,7 +127,7 @@ class ProjectMemberTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'project_id' => $this->project->id,
             'user_id' => $this->user->id,
-            'role' => ProjectRole::Coordinator->value,
+            'role_id' => $this->project->roleFor(ProjectRole::Coordinator)->id,
         ]);
     }
 }

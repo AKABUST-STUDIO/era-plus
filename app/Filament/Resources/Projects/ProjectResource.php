@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Organization\Resources\Projects;
+namespace App\Filament\Resources\Projects;
 
-use App\Filament\Organization\Resources\Projects\Pages\CreateProject;
-use App\Filament\Organization\Resources\Projects\Pages\EditProject;
-use App\Filament\Organization\Resources\Projects\Pages\ListProjects;
-use App\Filament\Organization\Resources\Projects\Schemas\ProjectForm;
-use App\Filament\Organization\Resources\Projects\Tables\ProjectsTable;
+use App\Filament\Resources\Projects\Pages\CreateProject;
+use App\Filament\Resources\Projects\Pages\EditProject;
+use App\Filament\Resources\Projects\Pages\ListProjects;
+use App\Filament\Resources\Projects\Schemas\ProjectForm;
+use App\Filament\Resources\Projects\Tables\ProjectsTable;
 use App\Models\Organization;
 use App\Models\Project;
 use Filament\Facades\Filament;

@@ -5,33 +5,35 @@ namespace Tests\Feature;
 use App\Enums\SubscriptionTier;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Billable;
-use Laravel\Cashier\Cashier;
 use Tests\TestCase;
 
 class CashierBillableTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_organization_uses_billable_trait(): void
+    public function test_user_uses_billable_trait(): void
     {
-        $this->assertContains(Billable::class, class_uses_recursive(Organization::class));
+        $this->assertContains(Billable::class, class_uses_recursive(User::class));
     }
 
-    public function test_cashier_customer_model_is_organization(): void
-    {
-        $this->assertSame(Organization::class, Cashier::$customerModel);
-    }
-
-    public function test_subscription_tier_defaults_to_free(): void
+    public function test_subscription_tier_defaults_to_basic_without_a_subscription(): void
     {
         $organization = Organization::factory()->create();
 
-        $this->assertSame(SubscriptionTier::Free, $organization->fresh()->subscription_tier);
+        $this->assertSame(SubscriptionTier::Basic, $organization->fresh()->subscription_tier);
     }
 
-    public function test_free_tier_allows_one_project(): void
+    public function test_tier_is_derived_from_the_linked_subscription(): void
+    {
+        $organization = Organization::factory()->subscribed(SubscriptionTier::Pro)->create();
+
+        $this->assertSame(SubscriptionTier::Pro, $organization->fresh()->subscription_tier);
+    }
+
+    public function test_basic_tier_allows_one_project(): void
     {
         $organization = Organization::factory()->create();
 
@@ -42,24 +44,9 @@ class CashierBillableTest extends TestCase
         $this->assertFalse($organization->fresh()->canCreateProject());
     }
 
-    public function test_extra_seats_raise_free_tier_limit(): void
-    {
-        $organization = Organization::factory()->create(['extra_project_seats' => 2]);
-
-        Project::factory()->for($organization)->count(2)->create();
-
-        $this->assertTrue($organization->fresh()->canCreateProject());
-
-        Project::factory()->for($organization)->create();
-
-        $this->assertFalse($organization->fresh()->canCreateProject());
-    }
-
     public function test_pro_tier_has_unlimited_projects(): void
     {
-        $organization = Organization::factory()->create([
-            'subscription_tier' => SubscriptionTier::Pro,
-        ]);
+        $organization = Organization::factory()->subscribed(SubscriptionTier::Pro)->create();
 
         Project::factory()->for($organization)->count(10)->create();
 
@@ -67,23 +54,12 @@ class CashierBillableTest extends TestCase
         $this->assertNull($organization->fresh()->projectLimit());
     }
 
-    public function test_premium_tier_has_unlimited_projects(): void
+    public function test_trial_tier_has_unlimited_projects(): void
     {
-        $organization = Organization::factory()->create([
-            'subscription_tier' => SubscriptionTier::Premium,
-        ]);
+        $organization = Organization::factory()->subscribed(SubscriptionTier::Trial)->create();
 
         Project::factory()->for($organization)->count(10)->create();
 
-        $this->assertTrue($organization->fresh()->canCreateProject());
-    }
-
-    public function test_organization_can_have_stripe_id(): void
-    {
-        $organization = Organization::factory()->create([
-            'stripe_id' => 'cus_test_123',
-        ]);
-
-        $this->assertTrue($organization->hasStripeId());
+        $this->assertNull($organization->fresh()->projectLimit());
     }
 }

@@ -30,7 +30,7 @@ class SettingsUsersTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $organization->users()->attach($user);
+        $user->joinOrganization($organization);
 
         return [$user, $organization];
     }
@@ -48,7 +48,7 @@ class SettingsUsersTest extends TestCase
     {
         [$user, $organization] = $this->memberOfOrganization();
         $fellowMember = User::factory()->create();
-        $organization->users()->attach($fellowMember);
+        $fellowMember->joinOrganization($organization);
 
         $outsider = User::factory()->create();
 

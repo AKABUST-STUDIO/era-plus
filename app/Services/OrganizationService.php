@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Enums\SubscriptionTier;
+use App\Filament\Organization\Pages\Overview;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
-use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Support\Collection;
 
@@ -14,11 +14,6 @@ class OrganizationService
 {
     private const SESSION_KEY = 'selected_organization_id';
 
-    /**
-     * The organization in context: the current panel's tenant when one exists
-     * (Organization directly, or a Project's organization), otherwise the
-     * session-selected organization for panels that are not tenant-scoped.
-     */
     public function current(): ?Organization
     {
         $tenant = Filament::getTenant();
@@ -43,9 +38,7 @@ class OrganizationService
 
     public function urlFor(Organization $organization): string
     {
-        return route('filament.'.OrganizationPanelProvider::PANEL_ID.'.pages.dashboard', [
-            'tenant' => $organization->slug,
-        ]);
+        return Overview::getUrl(['organization' => $organization->slug]);
     }
 
     public function remember(Organization $organization): void
@@ -70,6 +63,6 @@ class OrganizationService
         $organization = $this->current();
 
         return $organization instanceof Organization
-            && $organization->subscription_tier === SubscriptionTier::Free;
+            && $organization->subscription_tier === SubscriptionTier::Basic;
     }
 }

@@ -2,8 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrganizationRole;
 use App\Enums\ProjectRole;
-use App\Filament\Organization\Resources\Projects\Pages\CreateProject;
+use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
@@ -41,7 +42,7 @@ class ProjectWizardTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->organization->users()->attach($this->user, ['role' => \App\Enums\OrganizationRole::Admin->value, 'is_admin' => true]);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('organization'));
@@ -102,7 +103,7 @@ class ProjectWizardTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'project_id' => $project->id,
             'user_id' => $this->user->id,
-            'role' => ProjectRole::Coordinator->value,
+            'role_id' => $project->roleFor(ProjectRole::Coordinator)->id,
         ]);
     }
 

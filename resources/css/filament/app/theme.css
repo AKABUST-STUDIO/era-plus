@@ -2,3 +2,39 @@
 
 @source '../../../../app/**/*';
 @source '../../../../resources/**/*';
+
+/* -------------------------------------------------------------------------- */
+/* Sidebar & topbar borders                                                   */
+/* -------------------------------------------------------------------------- */
+
+.fi-main-sidebar {
+    border-inline-end: 1px solid var(--gray-200);
+}
+
+.fi-topbar {
+    border-block-end: 1px solid var(--gray-200);
+}
+
+.dark .fi-main-sidebar,
+.dark .fi-topbar {
+    border-color: var(--gray-800);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sidebar resize handle                                                      */
+/* -------------------------------------------------------------------------- */
+
+.fi-sidebar-resize-handle {
+    display: none;
+}
+
+@media (min-width: 64rem) {
+    .fi-body:not(.fi-body-has-top-navigation) .fi-sidebar.fi-sidebar-open .fi-sidebar-resize-handle {
+        display: block;
+    }
+}
+
+.fi-sidebar-resize-handle:hover,
+.fi-sidebar-resize-handle.fi-active {
+    background-color: color-mix(in oklab, var(--gray-500) 30%, transparent);
+}

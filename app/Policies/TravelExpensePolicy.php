@@ -4,71 +4,59 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\Project;
 use App\Models\TravelExpense;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\User;
+use App\Services\ProjectAccess;
+use Filament\Facades\Filament;
 
 class TravelExpensePolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(AuthUser $authUser): bool
+    public function viewAny(User $user): bool
     {
-        return $authUser->can('ViewAny:TravelExpense');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function view(AuthUser $authUser, TravelExpense $travelExpense): bool
+    public function view(User $user, TravelExpense $travelExpense): bool
     {
-        return $authUser->can('View:TravelExpense');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function create(AuthUser $authUser): bool
+    public function create(User $user): bool
     {
-        return $authUser->can('Create:TravelExpense');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function update(AuthUser $authUser, TravelExpense $travelExpense): bool
+    public function update(User $user, TravelExpense $travelExpense): bool
     {
-        return $authUser->can('Update:TravelExpense');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function delete(AuthUser $authUser, TravelExpense $travelExpense): bool
+    public function delete(User $user, TravelExpense $travelExpense): bool
     {
-        return $authUser->can('Delete:TravelExpense');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function deleteAny(AuthUser $authUser): bool
+    public function deleteAny(User $user): bool
     {
-        return $authUser->can('DeleteAny:TravelExpense');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function restore(AuthUser $authUser, TravelExpense $travelExpense): bool
+    public function restore(User $user, TravelExpense $travelExpense): bool
     {
-        return $authUser->can('Restore:TravelExpense');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function forceDelete(AuthUser $authUser, TravelExpense $travelExpense): bool
+    public function forceDelete(User $user, TravelExpense $travelExpense): bool
     {
-        return $authUser->can('ForceDelete:TravelExpense');
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
-    public function forceDeleteAny(AuthUser $authUser): bool
+    private function allows(User $user, string $ability): bool
     {
-        return $authUser->can('ForceDeleteAny:TravelExpense');
-    }
+        $project = Filament::getTenant();
 
-    public function restoreAny(AuthUser $authUser): bool
-    {
-        return $authUser->can('RestoreAny:TravelExpense');
-    }
-
-    public function replicate(AuthUser $authUser, TravelExpense $travelExpense): bool
-    {
-        return $authUser->can('Replicate:TravelExpense');
-    }
-
-    public function reorder(AuthUser $authUser): bool
-    {
-        return $authUser->can('Reorder:TravelExpense');
+        return $project instanceof Project
+            && app(ProjectAccess::class)->can($user, $ability, $project);
     }
 }

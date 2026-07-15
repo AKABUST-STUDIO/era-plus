@@ -2,29 +2,37 @@
 
 namespace App\Models;
 
+use App\Enums\OrganizationRole;
+use App\Enums\ProjectRole;
+use App\Facades\ProjectAccess;
+use App\Observers\UserObserver;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Laravel\Cashier\Billable;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Spatie\Permission\Traits\HasRoles;
 
+#[ObservedBy(UserObserver::class)]
 class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia, HasTenants, MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    use Billable;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
 
-    use HasRoles;
     use InteractsWithMedia;
     use Notifiable;
 
@@ -71,15 +79,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'organization_user')
-            ->withPivot('role', 'is_admin')
+            ->withPivot('role_id')
             ->withTimestamps();
-    }
-
-    public function isOrgAdmin(Organization $organization): bool
-    {
-        $pivot = $this->organizations()->whereKey($organization->id)->first()?->pivot;
-
-        return (bool) ($pivot?->is_admin);
     }
 
     /**
@@ -88,8 +89,36 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     public function projects(): BelongsToMany
     {
         return $this->belongsToMany(Project::class, 'project_user')
-            ->withPivot('role')
+            ->withPivot('role_id')
             ->withTimestamps();
+    }
+
+    public function roleFor(Organization|Project $tenant): ?Role
+    {
+        $relation = $tenant instanceof Organization ? $this->organizations() : $this->projects();
+
+        $roleId = $relation->whereKey($tenant->getKey())->first()?->pivot->role_id;
+
+        return $roleId !== null ? Role::find($roleId) : null;
+    }
+
+    public function isOrgAdmin(Organization $organization): bool
+    {
+        return ProjectAccess::administersOrganization($this, $organization);
+    }
+
+    public function joinOrganization(Organization $organization, OrganizationRole $role = OrganizationRole::Member): void
+    {
+        $this->organizations()->syncWithoutDetaching([
+            $organization->getKey() => ['role_id' => $organization->roleFor($role)?->id],
+        ]);
+    }
+
+    public function joinProject(Project $project, ProjectRole $role = ProjectRole::Participant): void
+    {
+        $this->projects()->syncWithoutDetaching([
+            $project->getKey() => ['role_id' => $project->roleFor($role)?->id],
+        ]);
     }
 
     public function registerMediaCollections(): void
@@ -154,5 +183,10 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         return $this->projects()
             ->where('projects.organization_id', $organization->id)
             ->get();
+    }
+
+    public function hasVerifiedEmail()
+    {
+        return true;
     }
 }

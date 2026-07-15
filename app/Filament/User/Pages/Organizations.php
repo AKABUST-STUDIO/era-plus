@@ -3,6 +3,7 @@
 namespace App\Filament\User\Pages;
 
 use App\Enums\OrganizationRole;
+use App\Filament\Organization\Pages\Tenancy\RegisterOrganization;
 use App\Models\Organization;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -40,7 +41,7 @@ class Organizations extends Page implements HasTable
                     Action::make('create')
                         ->label(__('user.organizations.create.action'))
                         ->icon('lucide-plus')
-                        ->url(fn (): string => CreateOrganization::getUrl()),
+                        ->url(fn (): string => RegisterOrganization::getUrl()),
                 ]),
         ]);
     }
@@ -89,16 +90,13 @@ class Organizations extends Page implements HasTable
 
     private function roleLabelFor(Organization $organization): string
     {
-        $pivot = $organization->users()
-            ->whereKey(auth()->id())
-            ->first()?->pivot;
+        $role = auth()->user()->roleFor($organization);
+        $enum = $role !== null ? OrganizationRole::tryFrom($role->name) : null;
 
-        if ($pivot?->is_admin) {
+        if ($enum === OrganizationRole::Admin) {
             return __('user.organizations.role.owner');
         }
 
-        $role = OrganizationRole::tryFrom((string) $pivot?->role);
-
-        return $role?->getLabel() ?? __('user.organizations.role.member');
+        return $enum?->getLabel() ?? __('user.organizations.role.member');
     }
 }

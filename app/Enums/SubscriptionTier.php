@@ -7,33 +7,52 @@ use Filament\Support\Contracts\HasLabel;
 
 enum SubscriptionTier: string implements HasColor, HasLabel
 {
-    case Free = 'free';
+    case Basic = 'basic';
     case Pro = 'pro';
-    case Premium = 'premium';
+    case Trial = 'trial';
 
     public function getLabel(): string
     {
         return match ($this) {
-            self::Free => 'Free',
+            self::Basic => 'Basic',
             self::Pro => 'Pro',
-            self::Premium => 'Premium',
+            self::Trial => 'Trial',
         };
     }
 
     public function getColor(): string
     {
         return match ($this) {
-            self::Free => 'gray',
-            self::Pro => 'primary',
-            self::Premium => 'warning',
+            self::Basic => 'gray',
+            self::Pro, self::Trial => 'primary',
         };
     }
 
     public function baseProjectLimit(): ?int
     {
         return match ($this) {
-            self::Free => 1,
-            self::Pro, self::Premium => null,
+            self::Basic => 1,
+            self::Pro, self::Trial => null,
         };
+    }
+
+    public function stripePriceId(): ?string
+    {
+        return config('services.stripe.prices.'.$this->value);
+    }
+
+    public static function fromStripePriceId(?string $priceId): ?self
+    {
+        if ($priceId === null) {
+            return null;
+        }
+
+        foreach (self::cases() as $tier) {
+            if ($tier->stripePriceId() === $priceId) {
+                return $tier;
+            }
+        }
+
+        return null;
     }
 }

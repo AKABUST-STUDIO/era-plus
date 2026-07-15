@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\ProjectRole;
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
 
@@ -20,47 +20,48 @@ class ProjectAccess
 
     public const ABILITY_MANAGE_SETTINGS = 'project.manage_settings';
 
+    public const ABILITY_ADMINISTER_ORGANIZATION = 'organization.administer';
+
+    public const ABILITY_ADMINISTER_PROJECT = 'project.administer';
+
     public function can(User $user, string $ability, Project $project): bool
     {
-        if ($user->isOrgAdmin($project->organization)) {
+        if ($this->administersOrganization($user, $project->organization)) {
             return true;
         }
 
-        $role = $this->projectRole($user, $project);
+        $role = $user->roleFor($project);
 
         if ($role === null) {
             return false;
         }
 
-        return match ($ability) {
-            self::ABILITY_VIEW_FINANCE => in_array($role, [
-                ProjectRole::Coordinator, ProjectRole::Leader,
-            ], true),
-            self::ABILITY_MANAGE_FINANCE,
-            self::ABILITY_MANAGE_MEMBERS,
-            self::ABILITY_MANAGE_PARTICIPANTS,
-            self::ABILITY_MANAGE_SETTINGS => $role === ProjectRole::Coordinator,
-            self::ABILITY_MANAGE_TASKS => in_array($role, [
-                ProjectRole::Coordinator, ProjectRole::Leader,
-            ], true),
-            default => false,
-        };
+        if ($role->hasPermissionTo(self::ABILITY_ADMINISTER_PROJECT)) {
+            return true;
+        }
+
+        return $role->hasPermissionTo($ability);
     }
 
-    public function projectRole(User $user, Project $project): ?ProjectRole
+    public function administersOrganization(User $user, Organization $organization): bool
     {
-        $pivot = $user->projects()->whereKey($project->id)->first()?->pivot;
-
-        if ($pivot === null) {
-            return null;
+        if ($organization->owner()?->is($user)) {
+            return true;
         }
 
-        $value = $pivot->role;
+        $role = $user->roleFor($organization);
 
-        if ($value instanceof ProjectRole) {
-            return $value;
+        return $role !== null && $role->hasPermissionTo(self::ABILITY_ADMINISTER_ORGANIZATION);
+    }
+
+    public function administersProject(User $user, Project $project): bool
+    {
+        if ($this->administersOrganization($user, $project->organization)) {
+            return true;
         }
 
-        return ProjectRole::tryFrom((string) $value);
+        $role = $user->roleFor($project);
+
+        return $role !== null && $role->hasPermissionTo(self::ABILITY_ADMINISTER_PROJECT);
     }
 }

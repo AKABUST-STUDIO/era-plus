@@ -23,10 +23,7 @@ class EnforcementMiddlewareTest extends TestCase
 
     private function attachAdmin(Organization $organization, User $user): void
     {
-        $organization->users()->attach($user, [
-            'role' => OrganizationRole::Admin->value,
-            'is_admin' => true,
-        ]);
+        $user->joinOrganization($organization, OrganizationRole::Admin);
     }
 
     public function test_two_factor_enforcement_redirects_unverified_user(): void

@@ -29,7 +29,7 @@ class UserActivityPageTest extends TestCase
     public function test_organizations_list_only_includes_user_memberships(): void
     {
         $mine = Organization::factory()->create(['name' => 'Mine']);
-        $mine->users()->attach($this->user);
+        $this->user->joinOrganization($mine);
 
         Organization::factory()->create(['name' => 'Stranger']);
 
@@ -44,10 +44,10 @@ class UserActivityPageTest extends TestCase
     public function test_projects_list_only_includes_user_memberships(): void
     {
         $org = Organization::factory()->create();
-        $org->users()->attach($this->user);
+        $this->user->joinOrganization($org);
 
         $mine = Project::factory()->for($org)->create(['name' => 'Mine project']);
-        $mine->users()->attach($this->user);
+        $this->user->joinOrganization($mine);
 
         Project::factory()->for($org)->create(['name' => 'Stranger project']);
 
@@ -62,7 +62,7 @@ class UserActivityPageTest extends TestCase
     public function test_org_activity_url_uses_settings_panel_route(): void
     {
         $org = Organization::factory()->create();
-        $org->users()->attach($this->user);
+        $this->user->joinOrganization($org);
 
         $url = (new Activity)->organizationActivityUrl($org);
 
@@ -74,10 +74,10 @@ class UserActivityPageTest extends TestCase
     public function test_project_activity_url_uses_project_panel_route(): void
     {
         $org = Organization::factory()->create();
-        $org->users()->attach($this->user);
+        $this->user->joinOrganization($org);
 
         $project = Project::factory()->for($org)->create();
-        $project->users()->attach($this->user);
+        $this->user->joinProject($project);
 
         $url = (new Activity)->projectActivityUrl($project);
 
@@ -89,7 +89,7 @@ class UserActivityPageTest extends TestCase
     public function test_activity_page_renders_section_when_user_has_orgs(): void
     {
         $org = Organization::factory()->create(['name' => 'Renderable Org']);
-        $org->users()->attach($this->user);
+        $this->user->joinOrganization($org);
 
         Livewire::test(Activity::class)
             ->assertSee('Renderable Org')

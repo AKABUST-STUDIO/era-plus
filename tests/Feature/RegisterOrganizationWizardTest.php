@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\SubscriptionTier;
-use App\Filament\User\Pages\CreateOrganization;
+use App\Filament\Organization\Pages\Tenancy\RegisterOrganization;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-class CreateOrganizationWizardTest extends TestCase
+class RegisterOrganizationWizardTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -24,34 +24,34 @@ class CreateOrganizationWizardTest extends TestCase
         $this->user = User::factory()->create();
 
         $this->actingAs($this->user);
-        Filament::setCurrentPanel(Filament::getPanel('user'));
+        Filament::setCurrentPanel(Filament::getPanel('organization'));
     }
 
     public function test_wizard_renders(): void
     {
-        Livewire::test(CreateOrganization::class)->assertSuccessful();
+        Livewire::test(RegisterOrganization::class)->assertSuccessful();
     }
 
-    public function test_create_persists_organization_and_attaches_user(): void
+    public function test_register_persists_organization_and_attaches_user_as_admin(): void
     {
-        Livewire::test(CreateOrganization::class)
+        Livewire::test(RegisterOrganization::class)
             ->fillForm([
                 'name' => 'Acme Nordic',
-                'subscription_tier' => SubscriptionTier::Pro->value,
+                'subscription_tier' => SubscriptionTier::Basic->value,
             ])
-            ->call('create');
+            ->call('register');
 
         $organization = Organization::query()->where('name', 'Acme Nordic')->firstOrFail();
 
-        $this->assertSame(SubscriptionTier::Pro, $organization->subscription_tier);
         $this->assertTrue($organization->users()->whereKey($this->user->id)->exists());
+        $this->assertTrue($this->user->fresh()->isOrgAdmin($organization));
     }
 
     public function test_first_organization_becomes_default(): void
     {
-        Livewire::test(CreateOrganization::class)
-            ->fillForm(['name' => 'First Org', 'subscription_tier' => SubscriptionTier::Free->value])
-            ->call('create');
+        Livewire::test(RegisterOrganization::class)
+            ->fillForm(['name' => 'First Org', 'subscription_tier' => SubscriptionTier::Basic->value])
+            ->call('register');
 
         $organization = Organization::query()->where('name', 'First Org')->firstOrFail();
 
@@ -61,21 +61,21 @@ class CreateOrganizationWizardTest extends TestCase
     public function test_existing_default_is_not_overwritten(): void
     {
         $existing = Organization::factory()->create(['name' => 'Old']);
-        $existing->users()->attach($this->user);
+        $this->user->joinOrganization($existing);
         $this->user->update(['default_organization_id' => $existing->id]);
 
-        Livewire::test(CreateOrganization::class)
-            ->fillForm(['name' => 'Second Org', 'subscription_tier' => SubscriptionTier::Free->value])
-            ->call('create');
+        Livewire::test(RegisterOrganization::class)
+            ->fillForm(['name' => 'Second Org', 'subscription_tier' => SubscriptionTier::Basic->value])
+            ->call('register');
 
         $this->assertSame($existing->id, $this->user->fresh()->default_organization_id);
     }
 
     public function test_name_is_required(): void
     {
-        Livewire::test(CreateOrganization::class)
+        Livewire::test(RegisterOrganization::class)
             ->fillForm(['name' => null])
-            ->call('create')
+            ->call('register')
             ->assertHasFormErrors(['name']);
     }
 }

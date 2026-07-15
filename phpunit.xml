@@ -31,5 +31,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="STRIPE_PRICE_BASIC" value="price_basic"/>
+        <env name="STRIPE_PRICE_PRO" value="price_pro"/>
+        <env name="STRIPE_PRICE_TRIAL" value="price_trial"/>
     </php>
 </phpunit>
