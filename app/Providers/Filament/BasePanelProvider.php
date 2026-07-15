@@ -2,9 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Panels\UserMenu;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Enums\DatabaseNotificationsPosition;
-use Filament\Enums\GlobalSearchPosition;
+use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -43,7 +44,6 @@ abstract class BasePanelProvider extends PanelProvider
             ->spa(hasPrefetching: true)
 
             ->domain('app.'.parse_url(config('app.url'), PHP_URL_HOST))
-            ->globalSearch(position: GlobalSearchPosition::Sidebar)
 
             ->revealablePasswords()
             ->passwordReset(RequestPasswordReset::class)
@@ -59,14 +59,8 @@ abstract class BasePanelProvider extends PanelProvider
 
             ->userMenu(false)
             ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_LOGO_AFTER,
-                fn (): View => view('livewire.sidebar-brand-wrapper'),
-            )
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_FOOTER,
-                fn (): View => view('livewire.user-footer-wrapper'),
-            )
+            ->userMenu(position: UserMenuPosition::Sidebar)
+            ->userMenuItems(UserMenu::items())
             ->middleware(static::SHARED_MIDDLEWARE);
     }
 

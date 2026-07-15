@@ -149,7 +149,7 @@ class Support extends Page implements HasTable
     public function unreadStaffRepliesCount(): int
     {
         return SupportRequestMessage::query()
-            ->whereHas('supportRequest', fn (Builder $q) => $q->where('user_id', auth()->id()))
+            ->whereHas('supportRequest', fn (Builder $query) => $query->where('user_id', auth()->id()))
             ->where('is_staff_reply', true)
             ->whereNull('read_at')
             ->count();
@@ -158,7 +158,7 @@ class Support extends Page implements HasTable
     public static function getNavigationBadge(): ?string
     {
         $count = SupportRequestMessage::query()
-            ->whereHas('supportRequest', fn (Builder $q) => $q->where('user_id', auth()->id()))
+            ->whereHas('supportRequest', fn (Builder $query) => $query->where('user_id', auth()->id()))
             ->where('is_staff_reply', true)
             ->whereNull('read_at')
             ->count();
@@ -177,7 +177,7 @@ class Support extends Page implements HasTable
                 TextColumn::make('status')->label(__('user.support.status'))->badge()->sortable(),
                 IconColumn::make('unread')
                     ->label(__('user.support.unread'))
-                    ->state(fn (SupportRequest $r): bool => $r->hasUnreadStaffReply())
+                    ->state(fn (SupportRequest $supportRequest): bool => $supportRequest->hasUnreadStaffReply())
                     ->trueIcon('lucide-mail-warning')
                     ->falseIcon(null)
                     ->color('warning'),
@@ -190,24 +190,24 @@ class Support extends Page implements HasTable
                 Action::make('reply')
                     ->label(__('user.support.actions.reply'))
                     ->icon('lucide-message-square')
-                    ->modalHeading(fn (SupportRequest $r): string => __('user.support.actions.reply_to', ['subject' => $r->subject]))
+                    ->modalHeading(fn (SupportRequest $supportRequest): string => __('user.support.actions.reply_to', ['subject' => $supportRequest->subject]))
                     ->form([
                         Textarea::make('body')->label(__('user.support.body'))->required()->rows(5),
                     ])
-                    ->action(fn (SupportRequest $r, array $data) => $this->reply($r, $data['body'])),
+                    ->action(fn (SupportRequest $supportRequest, array $data) => $this->reply($supportRequest, $data['body'])),
                 Action::make('resolve')
                     ->label(__('user.support.actions.resolve'))
                     ->icon('lucide-check')
                     ->color('success')
-                    ->visible(fn (SupportRequest $r): bool => $r->status !== SupportRequestStatus::Resolved
-                        && $r->status !== SupportRequestStatus::Closed)
-                    ->action(fn (SupportRequest $r) => $this->markResolved($r)),
+                    ->visible(fn (SupportRequest $supportRequest): bool => $supportRequest->status !== SupportRequestStatus::Resolved
+                        && $supportRequest->status !== SupportRequestStatus::Closed)
+                    ->action(fn (SupportRequest $supportRequest) => $this->markResolved($supportRequest)),
                 Action::make('reopen')
                     ->label(__('user.support.actions.reopen'))
                     ->icon('lucide-rotate-ccw')
                     ->color('warning')
-                    ->visible(fn (SupportRequest $r): bool => $r->status === SupportRequestStatus::Resolved)
-                    ->action(fn (SupportRequest $r) => $this->markReopen($r)),
+                    ->visible(fn (SupportRequest $supportRequest): bool => $supportRequest->status === SupportRequestStatus::Resolved)
+                    ->action(fn (SupportRequest $supportRequest) => $this->markReopen($supportRequest)),
             ]);
     }
 }

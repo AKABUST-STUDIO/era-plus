@@ -27,7 +27,7 @@
                             <td class="px-4 py-2 text-sm">{{ $row['total'] }}</td>
                             <td class="px-4 py-2 text-sm">{{ $row['status'] }}</td>
                             <td class="px-4 py-2 text-sm">
-                                <a href="{{ $row['download_url'] }}" class="text-primary-600 hover:underline">Download</a>
+                                <a href="{{ $row['download_url'] ?? '' }}" class="text-primary-600 hover:underline">Download</a>
                             </td>
                         </tr>
                     @endforeach

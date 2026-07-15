@@ -6,6 +6,7 @@ use App\Facades\OrganizationService;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\ActivityLog;
 use App\Models\Organization;
+use App\Models\User;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -58,7 +59,7 @@ class Activity extends Page implements HasTable
             ->defaultGroup(
                 Group::make('created_at')
                     ->date()
-                    ->getTitleFromRecordUsing(fn (ActivityLog $r): string => $r->created_at?->format('F Y') ?? '—')
+                    ->getTitleFromRecordUsing(fn (ActivityLog $activityLog): string => $activityLog->created_at?->format('F Y') ?? '—')
             )
             ->columns([
                 TextColumn::make('created_at')->label(__('forms.common.when'))->dateTime()->sortable(),
@@ -68,9 +69,18 @@ class Activity extends Page implements HasTable
                 TextColumn::make('description')->label('Action')->searchable()->wrap(),
             ])
             ->filters([
-                SelectFilter::make('user_id')
+                SelectFilter::make('causer_id')
                     ->label(__('forms.common.user'))
-                    ->relationship('user', 'name'),
+                    ->options(fn (): array => User::query()
+                        ->whereIn('id', ActivityLog::query()
+                            ->where('organization_id', $this->organization->id)
+                            ->where('causer_type', User::class)
+                            ->whereNotNull('causer_id')
+                            ->distinct()
+                            ->pluck('causer_id'))
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->all()),
                 SelectFilter::make('project_id')
                     ->label(__('forms.common.project'))
                     ->relationship('project', 'name'),
@@ -84,10 +94,10 @@ class Activity extends Page implements HasTable
                         ->all()),
                 Filter::make('last_3_days')
                     ->label('Last 3 days')
-                    ->query(fn (Builder $q): Builder => $q->where('created_at', '>=', now()->subDays(3))),
+                    ->query(fn (Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(3))),
                 Filter::make('last_30_days')
                     ->label('Last 30 days')
-                    ->query(fn (Builder $q): Builder => $q->where('created_at', '>=', now()->subDays(30))),
+                    ->query(fn (Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(30))),
             ]);
     }
 }

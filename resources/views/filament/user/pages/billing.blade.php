@@ -8,7 +8,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">
                 {{ __('user.billing.empty') }}
             </p>
-            <a href="{{ \App\Filament\User\Pages\CreateOrganization::getUrl() }}"
+            <a href="{{ \Filament\Facades\Filament::getPanel('organization')->getTenantRegistrationUrl() }}"
                class="mt-4 inline-flex items-center gap-1 text-primary-600 hover:underline text-sm">
                 {{ __('user.organizations.create.action') }}
             </a>
@@ -18,27 +18,21 @@
             @foreach ($organizations as $organization)
                 <x-filament::section>
                     <x-slot name="heading">{{ $organization->name }}</x-slot>
-                    <x-slot name="description">{{ $this->cardLabel($organization) }}</x-slot>
+                    <x-slot name="description">{{ $this->cardLabel() }}</x-slot>
 
                     <div class="flex flex-wrap gap-3 items-center">
                         <x-filament::badge>{{ $this->planLabel($organization) }}</x-filament::badge>
 
-                        @if ($organization->hasStripeId())
+                        @if ($this->hasBillingAccount())
                             <x-filament::button wire:click="manage({{ $organization->id }})" size="sm">
                                 {{ __('user.billing.manage') }}
                             </x-filament::button>
                         @endif
 
-                        @if ($this->isFreeTier($organization))
+                        @if ($this->isBasicTier($organization))
                             @if (filled(config('services.stripe.prices.pro')))
                                 <x-filament::button color="primary" size="sm" wire:click="upgrade({{ $organization->id }}, 'pro')">
                                     {{ __('user.billing.upgrade_pro') }}
-                                </x-filament::button>
-                            @endif
-
-                            @if (filled(config('services.stripe.prices.premium')))
-                                <x-filament::button color="warning" size="sm" wire:click="upgrade({{ $organization->id }}, 'premium')">
-                                    {{ __('user.billing.upgrade_premium') }}
                                 </x-filament::button>
                             @endif
                         @endif

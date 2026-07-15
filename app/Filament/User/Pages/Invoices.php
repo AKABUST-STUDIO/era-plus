@@ -2,10 +2,8 @@
 
 namespace App\Filament\User\Pages;
 
-use App\Models\Organization;
 use Filament\Pages\Page;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Collection;
 
 class Invoices extends Page
 {
@@ -18,46 +16,30 @@ class Invoices extends Page
         return __('user.invoices.title');
     }
 
-    /**
-     * @return Collection<int, Organization>
-     */
-    public function getOwnedOrganizations(): Collection
+    public function hasBillingAccount(): bool
     {
-        /** @var Collection<int, Organization> $orgs */
-        $orgs = Organization::query()
-            ->whereHas('admins', fn ($q) => $q->whereKey(auth()->id()))
-            ->orderBy('name')
-            ->get();
-
-        return $orgs;
+        return (bool) auth()->user()->hasStripeId();
     }
 
     /**
-     * @return SupportCollection<int, array<string, mixed>>
+     * @return Collection<int, array<string, mixed>>
      */
-    public function getInvoiceRows(): SupportCollection
+    public function getInvoiceRows(): Collection
     {
-        $rows = collect();
+        $user = auth()->user();
 
-        foreach ($this->getOwnedOrganizations() as $organization) {
-            if (! $organization->hasStripeId()) {
-                continue;
-            }
-
-            foreach ($organization->invoices(includePending: true) as $invoice) {
-                $rows->push([
-                    'id' => $invoice->id,
-                    'organization' => $organization->name,
-                    'date' => $invoice->date()->toDateString(),
-                    'total' => $invoice->total(),
-                    'status' => $invoice->status,
-                    'download_url' => route('cashier.invoice.download', [
-                        'invoice' => $invoice->id,
-                    ], absolute: false),
-                ]);
-            }
+        if (! $user->hasStripeId()) {
+            return collect();
         }
 
-        return $rows->sortByDesc('date')->values();
+        return collect($user->invoices(includePending: true))
+            ->map(fn ($invoice): array => [
+                'id' => $invoice->id,
+                'date' => $invoice->date()->toDateString(),
+                'total' => $invoice->total(),
+                'status' => $invoice->status,
+                'download_url' => route('invoices.download', ['invoice' => $invoice->id], absolute: false),
+            ])
+            ->values();
     }
 }

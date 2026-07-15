@@ -4,8 +4,10 @@ namespace App\Filament\User\Pages;
 
 use App\Enums\SubscriptionTier;
 use App\Models\Organization;
+use App\Models\Subscription;
 use Filament\Pages\Page;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class Billing extends Page
 {
@@ -23,43 +25,45 @@ class Billing extends Page
      */
     public function getOwnedOrganizations(): Collection
     {
-        /** @var Collection<int, Organization> $orgs */
-        $orgs = Organization::query()
-            ->whereHas('users', fn ($q) => $q
-                ->whereKey(auth()->id())
-                ->where('organization_user.is_admin', true))
-            ->orderBy('name')
-            ->get();
-
-        return $orgs;
+        return auth()->user()->subscriptions()
+            ->with('organization')
+            ->get()
+            ->map(fn (Subscription $subscription): ?Organization => $subscription->organization)
+            ->filter()
+            ->unique(fn (Organization $organization): int => $organization->id)
+            ->sortBy('name')
+            ->values();
     }
 
-    public function manage(int $organizationId): \Symfony\Component\HttpFoundation\RedirectResponse
+    public function hasBillingAccount(): bool
     {
-        $organization = $this->ownedOrgOrFail($organizationId);
-
-        return redirect()->away(
-            $organization->billingPortalUrl(static::getUrl())
-        );
+        return (bool) auth()->user()->hasStripeId();
     }
 
-    public function upgrade(int $organizationId, string $plan): \Symfony\Component\HttpFoundation\RedirectResponse
+    public function manage(int $organizationId): RedirectResponse
+    {
+        $this->ownedOrgOrFail($organizationId);
+
+        return auth()->user()->redirectToBillingPortal(static::getUrl());
+    }
+
+    public function upgrade(int $organizationId, string $plan): RedirectResponse
     {
         $organization = $this->ownedOrgOrFail($organizationId);
 
         $priceId = match ($plan) {
             'pro' => config('services.stripe.prices.pro'),
-            'premium' => config('services.stripe.prices.premium'),
             default => null,
         };
 
         abort_unless($priceId, 400, 'Stripe price ID not configured for plan '.$plan);
 
-        $checkout = $organization
+        $checkout = auth()->user()
             ->newSubscription('default', $priceId)
             ->checkout([
                 'success_url' => static::getUrl(),
                 'cancel_url' => static::getUrl(),
+                'metadata' => ['organization_id' => $organization->id],
             ]);
 
         return redirect()->away($checkout->url);
@@ -67,21 +71,23 @@ class Billing extends Page
 
     public function planLabel(Organization $organization): string
     {
-        return $organization->subscription_tier?->getLabel() ?? SubscriptionTier::Free->getLabel();
+        return $organization->subscription_tier?->getLabel() ?? SubscriptionTier::Basic->getLabel();
     }
 
-    public function isFreeTier(Organization $organization): bool
+    public function isBasicTier(Organization $organization): bool
     {
-        return $organization->subscription_tier === SubscriptionTier::Free;
+        return $organization->subscription_tier === SubscriptionTier::Basic;
     }
 
-    public function cardLabel(Organization $organization): string
+    public function cardLabel(): string
     {
-        if (! $organization->pm_last_four) {
+        $user = auth()->user();
+
+        if (! $user->pm_last_four) {
             return __('user.billing.no_payment_method');
         }
 
-        return sprintf('%s …%s', ucfirst((string) $organization->pm_type), $organization->pm_last_four);
+        return sprintf('%s …%s', ucfirst((string) $user->pm_type), $user->pm_last_four);
     }
 
     private function ownedOrgOrFail(int $organizationId): Organization

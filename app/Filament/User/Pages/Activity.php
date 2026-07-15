@@ -39,7 +39,7 @@ class Activity extends Page implements HasTable
     {
         /** @var Collection<int, Organization> $orgs */
         $orgs = Organization::query()
-            ->whereHas('users', fn (Builder $q) => $q->whereKey(auth()->id()))
+            ->whereHas('users', fn (Builder $query) => $query->whereKey(auth()->id()))
             ->orderBy('name')
             ->get();
 
@@ -56,7 +56,7 @@ class Activity extends Page implements HasTable
     {
         /** @var Collection<int, Project> $projects */
         $projects = Project::query()
-            ->whereHas('users', fn (Builder $q) => $q->whereKey(auth()->id()))
+            ->whereHas('users', fn (Builder $query) => $query->whereKey(auth()->id()))
             ->with('organization')
             ->orderBy('name')
             ->get();
@@ -126,10 +126,10 @@ class Activity extends Page implements HasTable
             ->filters([
                 Filter::make('last_7_days')
                     ->label(__('user.activity.last_7_days'))
-                    ->query(fn (Builder $q): Builder => $q->where('created_at', '>=', now()->subDays(7))),
+                    ->query(fn (Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(7))),
                 Filter::make('last_30_days')
                     ->label(__('user.activity.last_30_days'))
-                    ->query(fn (Builder $q): Builder => $q->where('created_at', '>=', now()->subDays(30))),
+                    ->query(fn (Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(30))),
             ]);
     }
 }

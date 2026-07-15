@@ -3,10 +3,12 @@
 namespace App\Filament\User\Pages;
 
 use App\Enums\OrganizationRole;
-use App\Filament\Organization\Pages\Tenancy\RegisterOrganization;
+use App\Filament\Organization\Pages\Overview;
+use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Models\Organization;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -41,7 +43,7 @@ class Organizations extends Page implements HasTable
                     Action::make('create')
                         ->label(__('user.organizations.create.action'))
                         ->icon('lucide-plus')
-                        ->url(fn (): string => RegisterOrganization::getUrl()),
+                        ->url(fn (): ?string => Filament::getPanel('organization')->getTenantRegistrationUrl()),
                 ]),
         ]);
     }
@@ -50,11 +52,11 @@ class Organizations extends Page implements HasTable
     {
         return $table
             ->query(fn (): Builder => Organization::query()
-                ->whereHas('users', fn (Builder $q) => $q->whereKey(auth()->id())))
+                ->whereHas('users', fn (Builder $query) => $query->whereKey(auth()->id())))
             ->columns([
                 Split::make([
                     ImageColumn::make('avatar')
-                        ->getStateUsing(fn (Organization $r): string => $r->getAvatarUrl())
+                        ->getStateUsing(fn (Organization $organization): string => $organization->getAvatarUrl())
                         ->circular()
                         ->grow(false),
                     Stack::make([
@@ -68,7 +70,7 @@ class Organizations extends Page implements HasTable
                                 ->grow(false),
                         ])->grow(false)->from('md'),
                         TextColumn::make('role')
-                            ->state(fn (Organization $r): string => $this->roleLabelFor($r))
+                            ->state(fn (Organization $organization): string => $this->roleLabelFor($organization))
                             ->color('gray'),
                     ]),
                 ]),
@@ -78,11 +80,11 @@ class Organizations extends Page implements HasTable
                     Action::make('view')
                         ->label(__('user.organizations.actions.view'))
                         ->icon('lucide-eye')
-                        ->url(fn (Organization $r): string => route('filament.organization.pages.dashboard', ['tenant' => $r->slug])),
+                        ->url(fn (Organization $organization): string => Overview::getUrl(panel: 'organization', tenant: $organization)),
                     Action::make('manage')
                         ->label(__('user.organizations.actions.manage'))
                         ->icon('lucide-settings')
-                        ->url(fn (Organization $r): string => route('filament.organization-settings.pages.general', ['organization' => $r->slug])),
+                        ->url(fn (Organization $organization): string => GeneralSettings::getUrl(['organization' => $organization->slug], panel: 'organization.settings')),
                 ]),
             ])
             ->defaultSort('name');

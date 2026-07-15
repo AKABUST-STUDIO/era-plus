@@ -138,6 +138,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         return $this->getFirstMediaUrl('avatar', 'thumb') ?: null;
     }
 
+    public function avatarUrl(): string
+    {
+        return $this->getFilamentAvatarUrl()
+            ?? 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&size=128';
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {

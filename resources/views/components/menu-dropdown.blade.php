@@ -83,17 +83,7 @@
                     :image="$item['image'] ?? null"
                     :tag="$item['tag'] ?? 'a'"
                 >
-                <div class="inline-flex flex-col">
-                    <span>
-                            {{ $item['name'] }}
-                            
-                        </span>
-                        <span class="text-gray-100">
-                            {{ $item['name'] }}
-                            {{ $item['name'] }}
-
-                        </span>
-                    </div>
+                    {{ $item['name'] }}
                 </x-filament::dropdown.list.item>
             @endforeach
         </x-filament::dropdown.list>

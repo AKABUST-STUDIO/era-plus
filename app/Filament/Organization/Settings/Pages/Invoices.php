@@ -55,9 +55,7 @@ class Invoices extends Page
                 'date' => $invoice->date()->toDateString(),
                 'total' => $invoice->total(),
                 'status' => $invoice->status,
-                // 'download_url' => route('cashier.invoice.download', [
-                //     'invoice' => $invoice->id,
-                // ], absolute: false),
+                'download_url' => route('invoices.download', ['invoice' => $invoice->id], absolute: false),
             ];
         }
 

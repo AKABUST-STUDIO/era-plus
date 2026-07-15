@@ -1,18 +1,9 @@
 <x-filament-panels::page>
     @php
         $rows = $this->getInvoiceRows();
-        $hasOrgs = $this->getOwnedOrganizations()->isNotEmpty();
     @endphp
 
-    @if (! $hasOrgs)
-        <div class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('user.invoices.empty_no_orgs') }}</p>
-            <a href="{{ \App\Filament\User\Pages\CreateOrganization::getUrl() }}"
-               class="mt-4 inline-flex items-center gap-1 text-primary-600 hover:underline text-sm">
-                {{ __('user.organizations.create.action') }}
-            </a>
-        </div>
-    @elseif ($rows->isEmpty())
+    @if ($rows->isEmpty())
         <div class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 p-8 text-center">
             <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('user.invoices.empty_no_invoices') }}</p>
         </div>
@@ -22,7 +13,6 @@
                 <thead class="bg-gray-50 dark:bg-white/5">
                     <tr>
                         <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ __('user.invoices.date') }}</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ __('user.invoices.organization') }}</th>
                         <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ __('user.invoices.total') }}</th>
                         <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ __('user.invoices.status') }}</th>
                         <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500"></th>
@@ -30,9 +20,8 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-white/10">
                     @foreach ($rows as $row)
-                        <tr>
+                        <tr wire:key="invoice-{{ $row['id'] }}">
                             <td class="px-4 py-2 text-sm">{{ $row['date'] }}</td>
-                            <td class="px-4 py-2 text-sm">{{ $row['organization'] }}</td>
                             <td class="px-4 py-2 text-sm">{{ $row['total'] }}</td>
                             <td class="px-4 py-2 text-sm">{{ $row['status'] }}</td>
                             <td class="px-4 py-2 text-sm">

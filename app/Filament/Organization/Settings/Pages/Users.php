@@ -152,8 +152,7 @@ class Users extends Page implements HasTable
             ->columns([
                 Split::make([
                     ImageColumn::make('avatar')
-                        ->getStateUsing(fn (User $r): string => $r->getFilamentAvatarUrl()
-                            ?? 'https://ui-avatars.com/api/?name='.urlencode($r->name).'&size=128')
+                        ->getStateUsing(fn (User $user): string => $user->avatarUrl())
                         ->circular()
                         ->grow(false),
                     Stack::make([
@@ -168,7 +167,7 @@ class Users extends Page implements HasTable
                     ]),
                     TextColumn::make('you_badge')
                         ->label('')
-                        ->state(fn (User $r): ?string => $r->is($this->authUser())
+                        ->state(fn (User $user): ?string => $user->is($this->authUser())
                             ? __('settings.users.table.you')
                             : null)
                         ->badge()
@@ -199,21 +198,21 @@ class Users extends Page implements HasTable
                     Action::make('changeRole')
                         ->label(__('settings.users.actions.change_role'))
                         ->icon('lucide-refresh-cw')
-                        ->visible(fn (User $r): bool => ! $r->is($this->authUser()))
+                        ->visible(fn (User $user): bool => ! $user->is($this->authUser()))
                         ->form([
                             Select::make('role')
                                 ->options(OrganizationRole::class)
-                                ->default(fn (User $r): ?string => $this->roleName($r->pivot->role_id))
+                                ->default(fn (User $user): ?string => $this->roleName($user->pivot->role_id))
                                 ->required(),
                         ])
-                        ->action(fn (User $r, array $data) => $this->changeRole($r, OrganizationRole::from($data['role']))),
+                        ->action(fn (User $user, array $data) => $this->changeRole($user, OrganizationRole::from($data['role']))),
                     Action::make('remove')
                         ->label(__('settings.users.actions.remove'))
                         ->icon('lucide-trash-2')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->visible(fn (User $r): bool => ! $r->is($this->authUser()))
-                        ->action(fn (User $r) => $this->removeMember($r)),
+                        ->visible(fn (User $user): bool => ! $user->is($this->authUser()))
+                        ->action(fn (User $user) => $this->removeMember($user)),
                 ]),
             ])
             ->toolbarActions([
@@ -223,7 +222,7 @@ class Users extends Page implements HasTable
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each(
-                            fn (User $r) => $r->is($this->authUser()) ? null : $this->removeMember($r)
+                            fn (User $user) => $user->is($this->authUser()) ? null : $this->removeMember($user)
                         )),
                 ]),
             ]);
