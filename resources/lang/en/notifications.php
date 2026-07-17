@@ -19,4 +19,5 @@ return [
     'support_submitted' => 'Support request submitted',
     'member_added' => 'Member added',
     'organization_created' => 'Organization created',
+    'passkey_removed' => 'Passkey removed.',
 ];

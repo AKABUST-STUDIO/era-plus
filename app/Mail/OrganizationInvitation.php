@@ -6,12 +6,13 @@ use App\Enums\OrganizationRole;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OrganizationInvitation extends Mailable
+class OrganizationInvitation extends Mailable implements ShouldQueue
 {
     use Queueable;
     use SerializesModels;
@@ -21,7 +22,9 @@ class OrganizationInvitation extends Mailable
         public User $invitee,
         public OrganizationRole $role,
         public ?User $invitedBy = null,
-    ) {}
+    ) {
+        $this->onQueue('email');
+    }
 
     public function envelope(): Envelope
     {

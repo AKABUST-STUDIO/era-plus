@@ -4,6 +4,21 @@
 @source '../../../../resources/**/*';
 
 /* -------------------------------------------------------------------------- */
+/* Simple page                                                                */
+/* -------------------------------------------------------------------------- */
+
+/* Remove simple page container on login */
+.fi-organization-auth-login.fi-simple-main {
+    box-shadow: none;
+    background-color: transparent;
+}
+
+/* Increase padding container on register */
+.fi-organization-auth-register.fi-simple-main {
+    padding: 4rem;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Sidebar border — matches the topbar's edge color                           */
 /* -------------------------------------------------------------------------- */
 

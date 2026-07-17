@@ -6,9 +6,12 @@ use App\Models\Organization;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Providers\Filament\ProjectPanelProvider;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Routing\Events\Routing;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use SocialiteProviders\Apple\Provider as AppleProvider;
@@ -28,6 +31,14 @@ class AppServiceProvider extends ServiceProvider
         $this->registerRouteBindings();
         $this->deprioritizeProjectTenantRoute();
         $this->registerSocialiteProviders();
+        $this->registerPasskeyAssets();
+    }
+
+    protected function registerPasskeyAssets(): void
+    {
+        FilamentAsset::register([
+            Js::make('passkeys', Vite::asset('resources/js/passkeys.js'))->module(),
+        ]);
     }
 
     protected function registerCashier(): void

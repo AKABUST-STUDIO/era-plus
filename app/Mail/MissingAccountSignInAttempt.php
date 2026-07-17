@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\SupportRequest;
+use Filament\Facades\Filament;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,12 +10,12 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class SupportRequestReceived extends Mailable implements ShouldQueue
+class MissingAccountSignInAttempt extends Mailable implements ShouldQueue
 {
     use Queueable;
     use SerializesModels;
 
-    public function __construct(public SupportRequest $request)
+    public function __construct(public string $email)
     {
         $this->onQueue('email');
     }
@@ -23,18 +23,17 @@ class SupportRequestReceived extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'We received your support request: '.$this->request->subject,
+            subject: __('emails.missing_account.subject', ['app' => str(config('app.name'))->ucfirst()]),
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.support-request-received',
+            markdown: 'emails.missing-account-sign-in-attempt',
             with: [
-                'subject' => $this->request->subject,
-                'body' => $this->request->body,
-                'priority' => ucfirst($this->request->priority),
+                'appName' => str(config('app.name'))->ucfirst(),
+                'registerUrl' => Filament::getPanel('organization')->getRegistrationUrl().'?email='.urlencode($this->email),
             ],
         );
     }

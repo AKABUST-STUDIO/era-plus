@@ -52,20 +52,24 @@ class OrganizationPanelProvider extends BasePanelProvider
                 Overview::class,
             ])
             ->renderHook(
-                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-                fn (): View => view('filament.auth.passkey-login-button'),
-            )
-            ->renderHook(
-                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-                fn (): View => view('filament.auth.oauth-buttons'),
+                PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                fn (): View => view('filament.auth.login-container-footer'),
             )
             ->renderHook(
                 PanelsRenderHook::AUTH_REGISTER_FORM_BEFORE,
-                fn (): View => view('filament.auth.oauth-buttons'),
+                fn (): View => view('filament.auth.register-container-header'),
             )
             ->renderHook(
                 PanelsRenderHook::AUTH_REGISTER_FORM_AFTER,
-                fn (): View => view('filament.auth.consent'),
+                fn (): View => view('filament.auth.register-container-footer'),
+            )
+            ->renderHook(
+                PanelsRenderHook::SIMPLE_LAYOUT_START,
+                fn (): View => view('filament.auth.topbar'),
+            )
+            ->renderHook(
+                PanelsRenderHook::SIMPLE_LAYOUT_END,
+                fn (): View => view('filament.auth.login-layout-footer'),
             )
             ->navigationItems($this->getNavigationItems())
             ->authMiddleware([
