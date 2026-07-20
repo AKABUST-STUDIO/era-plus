@@ -1,20 +1,20 @@
 <x-mail::message>
-# Sign in to {{ config('app.name') }}
+# {{ __('emails.login_code.heading', ['app' => $appName]) }}
 
-Use this one-time code to sign in:
+{{ __('emails.login_code.intro') }}
 
 <x-mail::panel>
 # {{ $code }}
 </x-mail::panel>
 
-Or click the button below to sign in directly:
+{{ __('emails.login_code.alternative') }}
 
 <x-mail::button :url="$magicLinkUrl">
-Sign in
+{{ __('emails.login_code.action') }}
 </x-mail::button>
 
-The code and link expire in {{ $expiresInMinutes }} minutes. If you didn't request this, you can safely ignore this email.
+{{ __('emails.login_code.expiry', ['minutes' => $expiresInMinutes]) }}
 
-Thanks,<br>
-{{ config('app.name') }}
+{{ __('emails.login_code.outro') }}<br>
+{{ $appName }}
 </x-mail::message>

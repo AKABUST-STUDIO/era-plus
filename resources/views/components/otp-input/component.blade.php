@@ -55,14 +55,23 @@
             },
 
             handlePaste(e) {
-                const paste = e.clipboardData.getData('text');
-                this.value = paste;
-                const inputs = Array.from(Array(this.length));
+                e.preventDefault();
 
-                inputs.forEach((element, i) => {
-                    this.$refs[(i+1)].focus();
-                    this.$refs[(i+1)].value = paste[i] || '';
+                const paste = (e.clipboardData.getData('text') || '').replace(/\s/g, '').substring(0, this.length);
+
+                Array.from(Array(this.length)).forEach((element, i) => {
+                    this.$refs[(i + 1)].value = paste[i] || '';
                 });
+
+                this.state = paste;
+
+                const focused = Math.min(paste.length + 1, this.length);
+                this.$refs[focused].focus();
+                this.$refs[focused].select();
+
+                if (paste.length === this.length) {
+                    @this.set('{{ $getStatePath() }}', this.state)
+                }
             },
 
             handleBackspace(e) {

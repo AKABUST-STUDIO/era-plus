@@ -2,6 +2,64 @@
 
 return [
 
+    'login_code' => [
+
+        'subject' => 'Your sign-in code: :code',
+
+        'heading' => 'Sign in to :app',
+
+        'intro' => 'Use this one-time code to sign in:',
+
+        'alternative' => 'Or click the button below to sign in directly:',
+
+        'action' => 'Sign in',
+
+        'expiry' => 'The code and link expire in :minutes minutes. If you didn\'t request this, you can safely ignore this email.',
+
+        'outro' => 'Thanks,',
+
+    ],
+
+    'registration_code' => [
+
+        'subject' => 'Confirm your :app account: :code',
+
+        'heading' => 'Confirm your email',
+
+        'intro' => 'Welcome to :app. Use this one-time code to confirm :email and finish setting up your account:',
+
+        'alternative' => 'Or click the button below to confirm directly:',
+
+        'action' => 'Confirm email',
+
+        'expiry' => 'The code and link expire in :minutes minutes. If you didn\'t sign up, you can safely ignore this email.',
+
+        'outro' => 'Thanks,',
+
+    ],
+
+    'account_already_exists' => [
+
+        'subject' => 'You already have a :app account',
+
+        'heading' => 'You already have an account',
+
+        'intro' => 'Someone tried to register :email with :app, but an account already exists for that address.',
+
+        'code' => 'If that was you, use this one-time code to sign in instead:',
+
+        'alternative' => 'Or click the button below to sign in directly:',
+
+        'action' => 'Sign in',
+
+        'expiry' => 'The code and link expire in :minutes minutes.',
+
+        'ignore' => 'If it wasn\'t you, you can safely ignore this email — nobody gained access to anything.',
+
+        'outro' => 'Thanks,',
+
+    ],
+
     'missing_account' => [
 
         'subject' => 'Sign-in attempt for :app',

@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Enums\OrganizationRole;
 use App\Enums\ProjectRole;
+use App\Events\UserUpdated;
 use App\Facades\ProjectAccess;
 use App\Observers\UserObserver;
+use App\Traits\User\HasAuthenticationMailable;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
@@ -23,20 +25,21 @@ use Illuminate\Support\Collection;
 use Laravel\Cashier\Billable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
-use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 
 #[ObservedBy(UserObserver::class)]
 class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia, HasTenants, MustVerifyEmail, PasskeyUser
 {
     use Billable;
 
+    use HasAuthenticationMailable;
+
     /** @use HasFactory<UserFactory> */
     use HasFactory;
-
     use HasOneTimePasswords;
     use InteractsWithMedia;
     use Notifiable;
@@ -58,6 +61,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    /**
+     * @var array<string, class-string>
+     */
+    protected $dispatchesEvents = [
+        'updated' => UserUpdated::class,
     ];
 
     /**

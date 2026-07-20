@@ -2,10 +2,9 @@
 
 namespace App\Filament\Organization\Pages\Auth;
 
+use App\Facades\AuthenticationService;
 use App\Filament\Components\OtpInput;
-use App\Mail\AccountCreated;
 use App\Models\User;
-use App\Support\EmailUsername;
 use Filament\Actions\Action;
 use Filament\Auth\Http\Responses\Contracts\RegistrationResponse;
 use Filament\Auth\Pages\Register as BaseRegister;
@@ -17,9 +16,7 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\HtmlString;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class Register extends BaseRegister
@@ -78,7 +75,7 @@ class Register extends BaseRegister
             ->autofocus()
             ->maxLength(6)
             ->afterStateUpdated(function () {
-                $this->verifyCode();
+                $this->register();
             });
     }
 
@@ -90,59 +87,28 @@ class Register extends BaseRegister
         $this->cacheSchema('content');
     }
 
-    public function registerAndSendCode(): void
+    public function requestRegister(): void
     {
-        $data = $this->form->getState();
-        $email = mb_strtolower(trim((string) $data['email']));
-        $name = EmailUsername::toDisplayName($email);
+        $email = normalize_string($this->form->getState()['email'] ?? null);
 
-        $user = User::query()->create([
-            'email' => $email,
-            'name' => $name,
-            'password' => Str::random(64),
-        ]);
-
-        $user->sendOneTimePassword();
+        AuthenticationService::register($email);
 
         $this->emailForCode = $email;
         $this->setStep('code');
         $this->form->fill();
     }
 
-    public function verifyCode(): ?RegistrationResponse
+    public function register(): ?RegistrationResponse
     {
-        $data = $this->form->getState();
-        $code = trim((string) ($data['code'] ?? ''));
-
         if (blank($this->emailForCode)) {
             throw ValidationException::withMessages([
-                'data.code' => __('filament-panels::auth/pages/register.messages.session_expired'),
+                'data.code' => __('filament-panels::auth/pages/login.messages.session_expired'),
             ]);
         }
 
-        $user = User::query()->where('email', $this->emailForCode)->first();
+        $code = normalize_string(($this->form->getState()['code'] ?? null));
 
-        if (! $user) {
-            throw ValidationException::withMessages([
-                'data.code' => __('filament-panels::auth/pages/register.messages.account_missing'),
-            ]);
-        }
-
-        $result = $user->attemptLoginUsingOneTimePassword($code, remember: true);
-
-        if (! $result->isOk()) {
-            throw ValidationException::withMessages([
-                'data.code' => $result->validationMessage(),
-            ]);
-        }
-
-        if ($user->email_verified_at === null) {
-            $user->markEmailAsVerified();
-
-            Mail::to($user->email)->queue(new AccountCreated($user));
-        }
-
-        session()->regenerate();
+        AuthenticationService::authenticate($this->emailForCode, $code, shouldSendWelcomeMailable: true);
 
         return app(RegistrationResponse::class);
     }
@@ -179,17 +145,17 @@ class Register extends BaseRegister
 
     public function getRegisterFormAction(): Action
     {
-        return Action::make('registerAndSendCode')
+        return Action::make('requestRegister')
             ->icon('lucide-mail')
             ->label(__('filament-panels::auth/pages/register.form.actions.register.label'))
-            ->submit('registerAndSendCode');
+            ->submit('requestRegister');
     }
 
     public function getFormContentComponent(): Component
     {
         return Form::make([EmbeddedSchema::make('form')])
             ->id('form')
-            ->livewireSubmitHandler('registerAndSendCode')
+            ->livewireSubmitHandler('requestRegister')
             ->extraAttributes(['class' => 'gap-4'])
             ->footer([
                 Actions::make($this->getFormActions())

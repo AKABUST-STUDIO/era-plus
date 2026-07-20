@@ -2,9 +2,8 @@
 
 namespace App\Filament\Organization\Pages\Auth;
 
+use App\Facades\AuthenticationService;
 use App\Filament\Components\OtpInput;
-use App\Mail\MissingAccountSignInAttempt;
-use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
@@ -16,7 +15,6 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
 use Override;
@@ -82,64 +80,37 @@ class Login extends BaseLogin
             ->numberInput(6)
             ->hiddenLabel()
             ->required()
+            ->string()
             ->autocomplete('one-time-code')
             ->autofocus()
             ->maxLength(6)
             ->afterStateUpdated(function () {
-                $this->verifyCode();
+                $this->login();
             });
     }
 
-    public function requestCode(): void
+    public function requestLogin(): void
     {
-        $data = $this->form->getState();
-        $email = mb_strtolower(trim((string) ($data['email'] ?? '')));
+        $email = normalize_string($this->form->getState()['email'] ?? null);
 
-        $user = User::query()->where('email', $email)->first();
-
-        if ($user) {
-            $user->sendOneTimePassword();
-        } else {
-            Mail::to($email)->queue(new MissingAccountSignInAttempt($email));
-        }
+        AuthenticationService::login($email);
 
         $this->emailForCode = $email;
         $this->setStep('code');
         $this->form->fill();
     }
 
-    public function verifyCode(): ?LoginResponse
+    public function login(): ?LoginResponse
     {
-        $data = $this->form->getState();
-        $code = trim((string) ($data['code'] ?? ''));
-
         if (blank($this->emailForCode)) {
             throw ValidationException::withMessages([
                 'data.code' => __('filament-panels::auth/pages/login.messages.session_expired'),
             ]);
         }
 
-        $user = User::query()->where('email', $this->emailForCode)->first();
+        $code = normalize_string(($this->form->getState()['code'] ?? null));
 
-        if (! $user) {
-            throw ValidationException::withMessages([
-                'data.code' => __('filament-panels::auth/pages/login.messages.account_missing'),
-            ]);
-        }
-
-        $result = $user->attemptLoginUsingOneTimePassword($code, remember: true);
-
-        if (! $result->isOk()) {
-            throw ValidationException::withMessages([
-                'data.code' => $result->validationMessage(),
-            ]);
-        }
-
-        if ($user->email_verified_at === null) {
-            $user->markEmailAsVerified();
-        }
-
-        session()->regenerate();
+        AuthenticationService::authenticate($this->emailForCode, $code);
 
         return app(LoginResponse::class);
     }
@@ -161,17 +132,17 @@ class Login extends BaseLogin
                 $this->getUseDifferentEmailFormAction(),
             ],
             default => [
-                $this->getRequestCodeFormAction(),
+                $this->getRequestLoginFormAction(),
             ],
         };
     }
 
-    protected function getRequestCodeFormAction(): Action
+    protected function getRequestLoginFormAction(): Action
     {
-        return Action::make('requestCode')
+        return Action::make('requestLogin')
             ->label(__('filament-panels::auth/pages/login.form.actions.request_code.label'))
             ->extraAttributes(['class' => 'w-full mb-6 border border-b'])
-            ->submit('requestCode');
+            ->submit('requestLogin');
     }
 
     protected function getUseDifferentEmailFormAction(): Action
@@ -188,7 +159,7 @@ class Login extends BaseLogin
     {
         return Form::make([EmbeddedSchema::make('form')])
             ->id('form')
-            ->livewireSubmitHandler('requestCode')
+            ->livewireSubmitHandler('requestLogin')
             ->extraAttributes(['class' => 'gap-4'])
             ->footer([
                 Actions::make($this->getFormActions())
