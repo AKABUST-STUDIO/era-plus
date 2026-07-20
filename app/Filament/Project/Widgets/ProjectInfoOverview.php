@@ -20,13 +20,13 @@ class ProjectInfoOverview extends StatsOverviewWidget
         }
 
         return [
-            Stat::make('Project', $project->name)
+            Stat::make(__('forms.project.overview.project'), $project->name)
                 ->description($project->organization->name)
                 ->color('primary'),
-            Stat::make('Members', (string) $project->users()->count())
-                ->description('Project members'),
-            Stat::make('Created', $project->created_at?->toDateString() ?? '—')
-                ->description('Project start'),
+            Stat::make(__('forms.project.overview.members'), (string) $project->users()->count())
+                ->description(__('forms.project.overview.project_members')),
+            Stat::make(__('forms.project.overview.created'), $project->created_at?->toDateString() ?? '—')
+                ->description(__('forms.project.overview.project_start')),
         ];
     }
 }

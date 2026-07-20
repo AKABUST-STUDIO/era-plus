@@ -30,7 +30,7 @@ class TravelExpenseForm
                     ->numeric()
                     ->minValue(0.01)
                     ->step(0.01)
-                    ->prefix('€'),
+                    ->prefix(__('forms.common.currency_prefix')),
                 DatePicker::make('occurred_at')
                     ->label(__('forms.common.date'))
                     ->required()

@@ -28,13 +28,13 @@ class FinanceEntryForm
                     ->options(BudgetCategory::class)
                     ->required(fn (callable $get): bool => $get('operation') === FinanceOperation::Subtract->value
                         || $get('operation') === FinanceOperation::Subtract)
-                    ->helperText('Required for expenses (Subtract). Optional for grant top-ups (Add).'),
+                    ->helperText(__('forms.finance.category_helper')),
                 TextInput::make('amount')
                     ->required()
                     ->numeric()
                     ->minValue(0.01)
                     ->step(0.01)
-                    ->prefix('€'),
+                    ->prefix(__('forms.common.currency_prefix')),
                 DatePicker::make('occurred_at')
                     ->label(__('forms.common.date'))
                     ->required()
@@ -45,7 +45,7 @@ class FinanceEntryForm
                     ->columnSpanFull(),
                 SpatieMediaLibraryFileUpload::make('documents')
                     ->label(__('forms.finance.documents'))
-                    ->helperText('Invoices, receipts, bank statements. PDF or image.')
+                    ->helperText(__('forms.finance.documents_helper'))
                     ->collection(FinanceEntry::DOCUMENTS_COLLECTION)
                     ->multiple()
                     ->reorderable()

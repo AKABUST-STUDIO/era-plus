@@ -25,10 +25,10 @@ class ProjectForm
                     ->afterOrEqual('beginning_date'),
                 Select::make('project_type')
                     ->options([
-                        'mobility' => 'Mobility',
-                        'cooperation' => 'Cooperation partnership',
-                        'small_scale' => 'Small-scale partnership',
-                        'youth' => 'Youth exchange',
+                        'mobility' => __('forms.project.types.mobility'),
+                        'cooperation' => __('forms.project.types.cooperation'),
+                        'small_scale' => __('forms.project.types.small_scale'),
+                        'youth' => __('forms.project.types.youth'),
                     ]),
                 Textarea::make('description')
                     ->maxLength(2000)

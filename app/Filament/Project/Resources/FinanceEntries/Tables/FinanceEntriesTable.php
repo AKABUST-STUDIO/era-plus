@@ -47,7 +47,7 @@ class FinanceEntriesTable
                 TextColumn::make('amount')
                     ->money('EUR')
                     ->sortable()
-                    ->summarize(Sum::make()->money('EUR')->label('Total')),
+                    ->summarize(Sum::make()->money('EUR')->label(__('forms.finance.total'))),
                 IconColumn::make('flagged')
                     ->label(__('forms.common.flagged'))
                     ->state(fn (FinanceEntry $record): bool => $record->isFlagged())
@@ -56,7 +56,7 @@ class FinanceEntriesTable
                     ->trueIcon('lucide-triangle-alert')
                     ->falseIcon(null)
                     ->tooltip(fn (FinanceEntry $record): ?string => $record->isFlagged()
-                        ? 'Subtract entry missing a category'
+                        ? __('forms.finance.flag_tooltip')
                         : null),
                 TextColumn::make('description')
                     ->limit(60)

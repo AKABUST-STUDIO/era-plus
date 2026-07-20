@@ -18,8 +18,6 @@ class ProjectSettings extends Page
 {
     protected string $view = 'filament.project.pages.project-settings';
 
-    protected static ?string $navigationLabel = 'Settings';
-
     protected static ?int $navigationSort = 99;
 
     public ?Project $project = null;
@@ -40,9 +38,14 @@ class ProjectSettings extends Page
         $this->form->fill($this->project->attributesToArray());
     }
 
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.settings');
+    }
+
     public function getTitle(): string
     {
-        return __('Project settings');
+        return __('forms.project.settings.title');
     }
 
     public function form(Schema $schema): Schema
@@ -59,8 +62,8 @@ class ProjectSettings extends Page
 
     protected function detailsSection(): Section
     {
-        return Section::make('Details')
-            ->description('Project name, slug, type, and description.')
+        return Section::make(__('forms.project.settings.details_heading'))
+            ->description(__('forms.project.settings.details_description'))
             ->schema([
                 TextInput::make('name')->required()->maxLength(255),
                 TextInput::make('slug')
@@ -69,42 +72,42 @@ class ProjectSettings extends Page
                     ->maxLength(255)
                     ->unique(Project::class, 'slug', ignoreRecord: true),
                 Select::make('project_type')->options([
-                    'mobility' => 'Mobility',
-                    'cooperation' => 'Cooperation partnership',
-                    'small_scale' => 'Small-scale partnership',
-                    'youth' => 'Youth exchange',
+                    'mobility' => __('forms.project.types.mobility'),
+                    'cooperation' => __('forms.project.types.cooperation'),
+                    'small_scale' => __('forms.project.types.small_scale'),
+                    'youth' => __('forms.project.types.youth'),
                 ]),
                 Textarea::make('description')->maxLength(2000)->rows(3)->columnSpanFull(),
             ])
             ->footerActions([
                 Action::make('saveDetails')
-                    ->label('Save details')
+                    ->label(__('forms.project.settings.save_details'))
                     ->action(fn () => $this->saveDetails()),
             ]);
     }
 
     protected function datesSection(): Section
     {
-        return Section::make('Dates')
-            ->description('Beginning and end dates drive the report deadline engine.')
+        return Section::make(__('forms.project.settings.dates_heading'))
+            ->description(__('forms.project.settings.dates_description'))
             ->schema([
                 DatePicker::make('beginning_date'),
                 DatePicker::make('end_date')->afterOrEqual('beginning_date'),
             ])
             ->footerActions([
                 Action::make('saveDates')
-                    ->label('Save dates')
+                    ->label(__('forms.project.settings.save_dates'))
                     ->action(fn () => $this->saveDates()),
             ]);
     }
 
     protected function dangerSection(): Section
     {
-        return Section::make('Danger zone')
-            ->description('Delete the project and all of its data. This action cannot be undone.')
+        return Section::make(__('forms.project.settings.danger_zone'))
+            ->description(__('forms.project.settings.danger_zone_description'))
             ->footerActions([
                 Action::make('delete')
-                    ->label('Delete project')
+                    ->label(__('forms.project.settings.delete'))
                     ->color('danger')
                     ->requiresConfirmation()
                     ->action(fn () => $this->deleteProject()),

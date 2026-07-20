@@ -41,8 +41,8 @@ class CreateProject extends CreateRecord
     protected function getSteps(): array
     {
         return [
-            Step::make('Details')
-                ->description('Project basics')
+            Step::make(__('forms.project.create_wizard.details_step'))
+                ->description(__('forms.project.create_wizard.details_step_description'))
                 ->schema([
                     TextInput::make('name')
                         ->required()
@@ -55,24 +55,24 @@ class CreateProject extends CreateRecord
                         ->afterOrEqual('beginning_date'),
                     Select::make('project_type')
                         ->options([
-                            'mobility' => 'Mobility',
-                            'cooperation' => 'Cooperation partnership',
-                            'small_scale' => 'Small-scale partnership',
-                            'youth' => 'Youth exchange',
+                            'mobility' => __('forms.project.types.mobility'),
+                            'cooperation' => __('forms.project.types.cooperation'),
+                            'small_scale' => __('forms.project.types.small_scale'),
+                            'youth' => __('forms.project.types.youth'),
                         ]),
                     Textarea::make('description')
                         ->maxLength(2000)
                         ->rows(3)
                         ->columnSpanFull(),
                 ]),
-            Step::make('Countries')
-                ->description('Participating countries and travel-expense limits')
+            Step::make(__('forms.project.create_wizard.countries_step'))
+                ->description(__('forms.project.create_wizard.countries_step_description'))
                 ->schema([
                     Repeater::make('project_countries')
                         ->label(false)
                         ->dehydrated(false)
                         ->defaultItems(0)
-                        ->addActionLabel('Add country')
+                        ->addActionLabel(__('forms.project.create_wizard.add_country'))
                         ->schema([
                             Select::make('country_id')
                                 ->label(__('forms.common.country'))
@@ -91,7 +91,7 @@ class CreateProject extends CreateRecord
                                 ->numeric()
                                 ->minValue(0)
                                 ->step(0.01)
-                                ->prefix('€'),
+                                ->prefix(__('forms.common.currency_prefix')),
                         ])
                         ->columns(2),
                 ]),

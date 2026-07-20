@@ -26,7 +26,7 @@ class ListTravelExpenses extends ListRecords
             Action::make('editCountryLimits')
                 ->label(__('forms.travel.country_limits'))
                 ->icon('lucide-globe')
-                ->modalHeading('Per-country default travel expense limits')
+                ->modalHeading(__('forms.travel.country_limits_modal'))
                 ->fillForm(fn (): array => $this->countryLimitsForm())
                 ->form(fn (): array => $this->countryLimitFields())
                 ->action(fn (array $data) => $this->saveCountryLimits($data)),
@@ -78,7 +78,7 @@ class ListTravelExpenses extends ListRecords
                 ->numeric()
                 ->minValue(0)
                 ->step(0.01)
-                ->prefix('€');
+                ->prefix(__('forms.common.currency_prefix'));
         }
 
         return $fields;

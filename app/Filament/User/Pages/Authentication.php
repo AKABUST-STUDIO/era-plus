@@ -19,7 +19,7 @@ class Authentication extends Page
 
     public function getTitle(): string
     {
-        return 'Authentication';
+        return __('user.authentication.title');
     }
 
     /**
@@ -46,6 +46,6 @@ class Authentication extends Page
 
         $user->passkeys()->whereKey($id)->delete();
 
-        Notification::make()->title('Passkey removed.')->success()->send();
+        Notification::make()->title(__('notifications.passkey_removed'))->success()->send();
     }
 }

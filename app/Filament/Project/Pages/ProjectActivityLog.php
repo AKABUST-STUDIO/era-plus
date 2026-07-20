@@ -39,7 +39,7 @@ class ProjectActivityLog extends Page implements HasTable
 
     public function getTitle(): string
     {
-        return 'Project activity log';
+        return __('forms.project.activity_log.title');
     }
 
     public function table(Table $table): Table
@@ -56,19 +56,19 @@ class ProjectActivityLog extends Page implements HasTable
             )
             ->columns([
                 TextColumn::make('created_at')->label(__('forms.common.when'))->dateTime()->sortable(),
-                TextColumn::make('user.name')->label(__('forms.common.user'))->placeholder('System')->searchable(),
+                TextColumn::make('user.name')->label(__('forms.common.user'))->placeholder(__('forms.project.activity_log.system'))->searchable(),
                 TextColumn::make('event')->label(__('forms.common.type'))->badge()->toggleable(),
-                TextColumn::make('description')->label('Action')->searchable()->wrap(),
+                TextColumn::make('description')->label(__('forms.project.activity_log.action'))->searchable()->wrap(),
             ])
             ->filters([
                 SelectFilter::make('user_id')
                     ->label(__('forms.common.user'))
                     ->relationship('user', 'name'),
                 Filter::make('last_3_days')
-                    ->label('Last 3 days')
+                    ->label(__('forms.project.activity_log.last_3_days'))
                     ->query(fn (Builder $q): Builder => $q->where('created_at', '>=', now()->subDays(3))),
                 Filter::make('last_30_days')
-                    ->label('Last 30 days')
+                    ->label(__('forms.project.activity_log.last_30_days'))
                     ->query(fn (Builder $q): Builder => $q->where('created_at', '>=', now()->subDays(30))),
             ]);
     }

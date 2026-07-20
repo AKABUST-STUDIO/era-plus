@@ -18,7 +18,7 @@ class ProjectMemberForm
         return $schema
             ->components([
                 Select::make('user_id')
-                    ->label('Member')
+                    ->label(__('forms.common.member'))
                     ->options(fn (): Arrayable => self::orgMembersNotYetInProject())
                     ->searchable()
                     ->required()

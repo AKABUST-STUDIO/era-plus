@@ -88,7 +88,7 @@ class Billing extends Page
             })
             ->footerActions([
                 Action::make('checkoutPro')
-                    ->label('Upgrade to Pro')
+                    ->label(__('settings.billing.plan.upgrade_pro'))
                     ->color('primary')
                     ->visible(fn (): bool => $isBasic && filled(config('services.stripe.prices.pro')))
                     ->action(fn () => $this->checkout(config('services.stripe.prices.pro'))),
@@ -107,7 +107,7 @@ class Billing extends Page
                 Action::make('managePaymentMethod')
                     ->label(__('settings.billing.payment_method.manage'))
                     ->disabled()
-                    ->tooltip('Stripe payment method UI coming soon'),
+                    ->tooltip(__('settings.billing.payment_method.coming_soon')),
             ]);
     }
 
@@ -134,7 +134,7 @@ class Billing extends Page
                 TextInput::make('address_country')
                     ->label(__('settings.billing.address.country'))
                     ->maxLength(2)
-                    ->helperText('ISO 3166-1 alpha-2 code (e.g. EE, DE).'),
+                    ->helperText(__('settings.billing.address.country_helper')),
             ])
             ->footerActions([
                 Action::make('saveAddress')

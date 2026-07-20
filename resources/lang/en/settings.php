@@ -96,7 +96,15 @@ return [
             'heading' => 'Two-factor authentication',
             'description' => 'Require every member to set up two-factor authentication before accessing this organization.',
             'label' => 'Enforce two-factor authentication for all members.',
+            'action' => 'Save 2FA setting',
             'coming_soon' => 'Coming soon',
+        ],
+
+        'email_verification' => [
+            'heading' => 'Email verification',
+            'description' => 'Require members to verify their email before accessing the organization.',
+            'label' => 'Require verified email for all members',
+            'action' => 'Save email verification setting',
         ],
     ],
 
@@ -109,6 +117,7 @@ return [
             'current_label' => 'Current plan',
             'basic_pitch' => 'Upgrade to Pro for unlimited projects, advanced reporting, and priority support.',
             'upgrade' => 'Upgrade plan',
+            'upgrade_pro' => 'Upgrade to Pro',
             'manage' => 'Manage subscription',
             'pro_active' => 'You are on the Pro plan. Unlimited projects.',
         ],
@@ -119,6 +128,7 @@ return [
             'none' => 'No payment method on file.',
             'card_on_file' => ':type ending in :last4',
             'manage' => 'Manage payment method',
+            'coming_soon' => 'Stripe payment method UI coming soon',
         ],
 
         'address' => [
@@ -130,6 +140,7 @@ return [
             'state' => 'State or region',
             'postal_code' => 'Postal code',
             'country' => 'Country',
+            'country_helper' => 'ISO 3166-1 alpha-2 code (e.g. EE, DE).',
             'action' => 'Save billing address',
             'saved' => 'Billing address updated',
         ],
@@ -154,6 +165,13 @@ return [
     'activity' => [
         'navigation_label' => 'Activity',
         'title' => 'Activity',
+        'action' => 'Action',
+        'system' => 'System',
+        'filters' => [
+            'event_type' => 'Event type',
+            'last_3_days' => 'Last 3 days',
+            'last_30_days' => 'Last 30 days',
+        ],
     ],
 
     'two_factor_required' => [

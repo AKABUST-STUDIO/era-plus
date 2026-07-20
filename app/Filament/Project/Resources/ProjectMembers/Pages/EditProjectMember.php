@@ -18,7 +18,7 @@ class EditProjectMember extends EditRecord
     {
         return $schema->components([
             Placeholder::make('user_name')
-                ->label('Member')
+                ->label(__('forms.common.member'))
                 ->content(fn (): string => $this->getRecord()->user->name),
             Select::make('role')
                 ->options(ProjectRole::class)

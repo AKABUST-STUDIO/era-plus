@@ -35,7 +35,7 @@ class Settings extends Page
 
     public function getTitle(): string
     {
-        return 'Settings';
+        return __('user.settings.title');
     }
 
     public function form(Schema $schema): Schema
@@ -54,8 +54,8 @@ class Settings extends Page
 
     protected function avatarSection(): Section
     {
-        return Section::make('Avatar')
-            ->description('Your face across organizations.')
+        return Section::make(__('forms.user.settings.avatar_heading'))
+            ->description(__('forms.user.settings.avatar_description'))
             ->schema([
                 SpatieMediaLibraryFileUpload::make('avatar')
                     ->hiddenLabel()
@@ -67,62 +67,62 @@ class Settings extends Page
                     ->circleCropper(),
             ])
             ->footerActions([
-                Action::make('saveAvatar')->label('Save avatar')->action(fn () => $this->saveAvatar()),
+                Action::make('saveAvatar')->label(__('forms.user.settings.save_avatar'))->action(fn () => $this->saveAvatar()),
             ]);
     }
 
     protected function profileSection(): Section
     {
-        return Section::make('Profile')
-            ->description('How others see you across organizations.')
+        return Section::make(__('forms.user.settings.profile_heading'))
+            ->description(__('forms.user.settings.profile_description'))
             ->schema([
-                TextInput::make('name')->label('Display name')->required()->maxLength(255),
+                TextInput::make('name')->label(__('forms.user.settings.display_name'))->required()->maxLength(255),
             ])
             ->footerActions([
-                Action::make('saveProfile')->label('Save profile')->action(fn () => $this->saveProfile()),
+                Action::make('saveProfile')->label(__('forms.user.settings.save_profile'))->action(fn () => $this->saveProfile()),
             ]);
     }
 
     protected function emailSection(): Section
     {
-        return Section::make('Email')
-            ->description('Primary contact and sign-in address.')
+        return Section::make(__('forms.user.settings.email_heading'))
+            ->description(__('forms.user.settings.email_description'))
             ->schema([
                 TextInput::make('email')->email()->required()->maxLength(255),
             ])
             ->footerActions([
-                Action::make('saveEmail')->label('Save email')->action(fn () => $this->saveEmail()),
+                Action::make('saveEmail')->label(__('forms.user.settings.save_email'))->action(fn () => $this->saveEmail()),
             ]);
     }
 
     protected function defaultOrganizationSection(): Section
     {
-        return Section::make('Default organization')
-            ->description('Where you land after sign-in.')
+        return Section::make(__('forms.user.settings.default_org_heading'))
+            ->description(__('forms.user.settings.default_org_description'))
             ->schema([
                 Select::make('default_organization_id')
-                    ->label('Default organization')
+                    ->label(__('forms.user.settings.default_org'))
                     ->options(fn (): array => $this->user
                         ->organizations()
                         ->orderBy('name')
                         ->pluck('name', 'organizations.id')
                         ->all())
-                    ->placeholder('Pick on sign-in'),
+                    ->placeholder(__('forms.user.settings.default_org_placeholder')),
             ])
             ->footerActions([
                 Action::make('saveDefaultOrganization')
-                    ->label('Save default organization')
+                    ->label(__('forms.user.settings.save_default_org'))
                     ->action(fn () => $this->saveDefaultOrganization()),
             ]);
     }
 
     protected function deleteSection(): Section
     {
-        return Section::make('Delete account')
-            ->description('Permanently remove your account. Cannot be undone.')
+        return Section::make(__('forms.user.settings.delete_heading'))
+            ->description(__('forms.user.settings.delete_description'))
             ->footerActions([
                 Action::make('deleteAccount')
-                    ->label('Delete account')
+                    ->label(__('forms.user.settings.delete_account'))
                     ->color('danger')
                     ->requiresConfirmation()
                     ->action(fn () => $this->deleteAccount()),

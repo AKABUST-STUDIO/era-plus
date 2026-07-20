@@ -63,10 +63,10 @@ class Activity extends Page implements HasTable
             )
             ->columns([
                 TextColumn::make('created_at')->label(__('forms.common.when'))->dateTime()->sortable(),
-                TextColumn::make('user.name')->label(__('forms.common.user'))->placeholder('System')->searchable(),
+                TextColumn::make('user.name')->label(__('forms.common.user'))->placeholder(__('settings.activity.system'))->searchable(),
                 TextColumn::make('project.name')->label(__('forms.common.project'))->placeholder('—')->toggleable(),
                 TextColumn::make('event')->label(__('forms.common.type'))->badge()->toggleable(),
-                TextColumn::make('description')->label('Action')->searchable()->wrap(),
+                TextColumn::make('description')->label(__('settings.activity.action'))->searchable()->wrap(),
             ])
             ->filters([
                 SelectFilter::make('causer_id')
@@ -85,7 +85,7 @@ class Activity extends Page implements HasTable
                     ->label(__('forms.common.project'))
                     ->relationship('project', 'name'),
                 SelectFilter::make('event')
-                    ->label('Event type')
+                    ->label(__('settings.activity.filters.event_type'))
                     ->options(fn (): array => ActivityLog::query()
                         ->where('organization_id', $this->organization->id)
                         ->whereNotNull('event')
@@ -93,10 +93,10 @@ class Activity extends Page implements HasTable
                         ->pluck('event', 'event')
                         ->all()),
                 Filter::make('last_3_days')
-                    ->label('Last 3 days')
+                    ->label(__('settings.activity.filters.last_3_days'))
                     ->query(fn (Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(3))),
                 Filter::make('last_30_days')
-                    ->label('Last 30 days')
+                    ->label(__('settings.activity.filters.last_30_days'))
                     ->query(fn (Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(30))),
             ]);
     }

@@ -36,6 +36,7 @@ return [
         'default_travel_expense_limit' => 'Default travel expense limit',
         'first_name' => 'First name',
         'last_name' => 'Last name',
+        'member' => 'Member',
         'assigned_to' => 'Assigned to',
         'assigned_by' => 'Assigned by',
         'due_date' => 'Due date',
@@ -53,6 +54,17 @@ return [
         'export_excel' => 'Export Excel',
         'audit_export' => 'Audit-ready export',
         'flag_tooltip' => 'Subtract entry missing a category',
+        'total' => 'Total',
+        'stats' => [
+            'balance' => 'Balance',
+            'balance_description' => 'Income minus expenses',
+            'income' => 'Income',
+            'income_description' => 'Total Add entries',
+            'expenses' => 'Expenses',
+            'participants' => 'Participants',
+            'countries' => '{0} no countries|{1} 1 country|[2,*] :count countries',
+            'no_categorised_spend' => 'No categorised spend yet',
+        ],
     ],
     'travel' => [
         'participant' => 'Participant',
@@ -61,6 +73,19 @@ return [
         'country_limits_modal' => 'Per-country default travel expense limits',
     ],
     'project' => [
+        'types' => [
+            'mobility' => 'Mobility',
+            'cooperation' => 'Cooperation partnership',
+            'small_scale' => 'Small-scale partnership',
+            'youth' => 'Youth exchange',
+        ],
+        'activity_log' => [
+            'title' => 'Project activity log',
+            'action' => 'Action',
+            'system' => 'System',
+            'last_3_days' => 'Last 3 days',
+            'last_30_days' => 'Last 30 days',
+        ],
         'create_wizard' => [
             'details_step' => 'Details',
             'details_step_description' => 'Project basics',
@@ -69,6 +94,7 @@ return [
             'add_country' => 'Add country',
         ],
         'settings' => [
+            'title' => 'Project settings',
             'details_heading' => 'Details',
             'details_description' => 'Project name, slug, type, and description.',
             'dates_heading' => 'Dates',

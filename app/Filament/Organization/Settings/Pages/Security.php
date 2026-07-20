@@ -67,18 +67,18 @@ class Security extends Page
                     ])
                     ->footerActions([
                         Action::make('saveTwoFactor')
-                            ->label('Save 2FA setting')
+                            ->label(__('settings.security.two_factor.action'))
                             ->action(fn () => $this->saveTwoFactor()),
                     ]),
-                Section::make('Email verification')
-                    ->description('Require members to verify their email before accessing the organization.')
+                Section::make(__('settings.security.email_verification.heading'))
+                    ->description(__('settings.security.email_verification.description'))
                     ->schema([
                         Toggle::make('enforce_email_verification')
-                            ->label('Require verified email for all members'),
+                            ->label(__('settings.security.email_verification.label')),
                     ])
                     ->footerActions([
                         Action::make('saveEmailVerification')
-                            ->label('Save email verification setting')
+                            ->label(__('settings.security.email_verification.action'))
                             ->action(fn () => $this->saveEmailVerification()),
                     ]),
             ]);

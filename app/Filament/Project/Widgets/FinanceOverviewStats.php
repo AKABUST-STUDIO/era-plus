@@ -28,18 +28,18 @@ class FinanceOverviewStats extends StatsOverviewWidget
         $countryCount = $project->countries()->count();
 
         return [
-            Stat::make('Balance', $this->formatEuro($balance))
+            Stat::make(__('forms.finance.stats.balance'), $this->formatEuro($balance))
                 ->color(bccomp($balance, '0', 2) >= 0 ? 'success' : 'danger')
-                ->description('Income minus expenses'),
-            Stat::make('Income', $this->formatEuro($income))
+                ->description(__('forms.finance.stats.balance_description')),
+            Stat::make(__('forms.finance.stats.income'), $this->formatEuro($income))
                 ->color('success')
-                ->description('Total Add entries'),
-            Stat::make('Expenses', $this->formatEuro($expenses))
+                ->description(__('forms.finance.stats.income_description')),
+            Stat::make(__('forms.finance.stats.expenses'), $this->formatEuro($expenses))
                 ->color('danger')
                 ->description($this->categorySummary($byCategory)),
-            Stat::make('Participants', (string) $participantCount)
+            Stat::make(__('forms.finance.stats.participants'), (string) $participantCount)
                 ->color('info')
-                ->description($countryCount.' country/countries'),
+                ->description(trans_choice('forms.finance.stats.countries', $countryCount)),
         ];
     }
 
@@ -73,7 +73,7 @@ class FinanceOverviewStats extends StatsOverviewWidget
             ->take(3);
 
         if ($tops->isEmpty()) {
-            return 'No categorised spend yet';
+            return __('forms.finance.stats.no_categorised_spend');
         }
 
         return $tops->map(function (string $value, string $key): string {

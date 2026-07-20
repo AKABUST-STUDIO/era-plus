@@ -218,7 +218,7 @@ class Users extends Page implements HasTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     BulkAction::make('removeBulk')
-                        ->label('Remove')
+                        ->label(__('settings.users.actions.remove'))
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each(

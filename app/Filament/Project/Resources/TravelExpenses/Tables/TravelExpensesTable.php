@@ -37,7 +37,7 @@ class TravelExpensesTable
                 TextColumn::make('amount')
                     ->money('EUR')
                     ->sortable()
-                    ->summarize(Sum::make()->money('EUR')->label('Total')),
+                    ->summarize(Sum::make()->money('EUR')->label(__('forms.finance.total'))),
                 IconColumn::make('over_limit')
                     ->label(__('forms.common.over_limit'))
                     ->state(fn (TravelExpense $record): bool => $record->exceedsCountryLimit())

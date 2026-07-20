@@ -78,6 +78,18 @@ return [
 
     'authentication' => [
         'title' => 'Authentication',
+        'passkeys' => [
+            'heading' => 'Passkeys',
+            'description' => 'Sign in without a password using your device\'s biometric sensor or a security key.',
+            'register' => 'Register a passkey',
+            'name_prompt' => 'Name this passkey (e.g. My MacBook)',
+            'register_failed' => 'Could not register passkey',
+            'empty' => 'You haven\'t registered any passkeys yet.',
+            'added' => 'Added :time',
+            'last_used' => 'last used :time',
+            'remove' => 'Remove',
+            'remove_confirm' => 'Remove this passkey?',
+        ],
     ],
 
     'billing' => [
