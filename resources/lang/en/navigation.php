@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'back' => 'Back',
     'finance' => 'Finance',
     'finance_entry' => 'finance entry',
     'finance_entries' => 'finance entries',

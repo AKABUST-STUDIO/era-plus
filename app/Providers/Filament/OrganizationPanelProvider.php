@@ -10,8 +10,10 @@ use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Http\Middleware\ApplyTenantContext;
 use App\Http\Middleware\EnforceOrganizationEmailVerification;
 use App\Http\Middleware\EnforceOrganizationTwoFactor;
+use App\Http\Middleware\RegisterSpotlightCommands;
 use App\Models\Organization;
 use App\Providers\Filament\Organization\SettingsPanelProvider;
+use Filament\Enums\GlobalSearchPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
@@ -51,6 +53,7 @@ class OrganizationPanelProvider extends BasePanelProvider
             ->pages([
                 Overview::class,
             ])
+            ->tenantMenu()
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
                 fn (): View => view('filament.auth.login-container-footer'),
@@ -79,6 +82,7 @@ class OrganizationPanelProvider extends BasePanelProvider
                 ApplyTenantContext::class,
                 EnforceOrganizationEmailVerification::class,
                 EnforceOrganizationTwoFactor::class,
+                RegisterSpotlightCommands::class,
             ], isPersistent: true);
     }
 

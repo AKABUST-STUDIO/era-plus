@@ -6,8 +6,11 @@ use App\Http\Middleware\ApplyTenantContext;
 use App\Http\Middleware\EnforceOrganizationEmailVerification;
 use App\Http\Middleware\EnforceOrganizationTwoFactor;
 use App\Http\Middleware\RedirectToOrganizationLogin;
+use App\Http\Middleware\RegisterSpotlightCommands;
 use App\Providers\Filament\BasePanelProvider;
 use Filament\Panel;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\View\View;
 
 class SettingsPanelProvider extends BasePanelProvider
 {
@@ -34,7 +37,8 @@ class SettingsPanelProvider extends BasePanelProvider
                 ApplyTenantContext::class,
                 EnforceOrganizationEmailVerification::class,
                 EnforceOrganizationTwoFactor::class,
-            ])
+                RegisterSpotlightCommands::class,
+            ], isPersistent: true)
             ->authMiddleware([
                 RedirectToOrganizationLogin::class,
             ]);

@@ -7,6 +7,7 @@
             ->label(__('filament-panels::auth/pages/login.actions.register.label'))
             ->url(filament()->getRegistrationUrl())
             ->outlined()
+            ->extraAttributes(['class' => 'drop-shadow-none ring-0 shadow-none'])
             ->size('xs')
             ->toHtml() !!}
         @elif (request()->route()->getName() === 'filament.organization.auth.register')
@@ -14,6 +15,7 @@
             ->label(__('filament-panels::auth/pages/register.actions.login.label'))
             ->url(filament()->getLoginUrl())
             ->outlined()
+            ->extraAttributes(['class' => 'drop-shadow-none ring-0 shadow-none'])
             ->size('xs')
             ->toHtml() !!}
         @endif

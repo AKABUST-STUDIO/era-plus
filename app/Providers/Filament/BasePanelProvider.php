@@ -2,9 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Panels\SpotlightPlugin;
 use App\Filament\Panels\UserMenu;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Enums\DatabaseNotificationsPosition;
+use Filament\Enums\GlobalSearchPosition;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -47,6 +49,7 @@ abstract class BasePanelProvider extends PanelProvider
 
             ->revealablePasswords()
             ->passwordReset(RequestPasswordReset::class)
+            ->globalSearch(provider: true, position: GlobalSearchPosition::Sidebar)
 
             ->brandName(config('app.name'))
             ->viteTheme('resources/css/filament/app/theme.css')
@@ -61,6 +64,9 @@ abstract class BasePanelProvider extends PanelProvider
             ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->userMenuItems(UserMenu::items())
+            ->plugins([
+                SpotlightPlugin::make(),
+            ])
             ->middleware(static::SHARED_MIDDLEWARE);
     }
 

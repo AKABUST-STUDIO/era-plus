@@ -2,7 +2,8 @@
 
 return [
     'register' => [
-        'label' => 'Choose a plan',
+        'label' => 'Create your first organization',
+        'action' => 'Continue',
         'info' => 'You will pay once trial expires',
         'plans' => [
             'trial' => [

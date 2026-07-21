@@ -10,6 +10,7 @@ use App\Http\Middleware\ApplyTenantContext;
 use App\Http\Middleware\EnforceOrganizationEmailVerification;
 use App\Http\Middleware\EnforceOrganizationTwoFactor;
 use App\Http\Middleware\RedirectToOrganizationLogin;
+use App\Http\Middleware\RegisterSpotlightCommands;
 use App\Models\Project;
 use Filament\Facades\Filament;
 use Filament\Panel;
@@ -57,6 +58,7 @@ class ProjectPanelProvider extends BasePanelProvider
                 ApplyTenantContext::class,
                 EnforceOrganizationEmailVerification::class,
                 EnforceOrganizationTwoFactor::class,
+                RegisterSpotlightCommands::class,
             ], isPersistent: true);
     }
 }
