@@ -16,6 +16,7 @@ use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class SettingsBreadcrumbsTest extends TestCase
@@ -56,9 +57,7 @@ class SettingsBreadcrumbsTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider pageProvider
-     */
+    #[DataProvider('pageProvider')]
     public function test_breadcrumbs_have_three_segments(string $page, string $expectedTitle): void
     {
         $breadcrumbs = Livewire::test($page)
@@ -73,8 +72,17 @@ class SettingsBreadcrumbsTest extends TestCase
     }
 
     /**
-     * @dataProvider pageProvider
+     * @return array<string, array{0: class-string}>
      */
+    public static function pageClassProvider(): array
+    {
+        return array_map(
+            static fn (array $case): array => [$case[0]],
+            static::pageProvider()
+        );
+    }
+
+    #[DataProvider('pageClassProvider')]
     public function test_organization_segment_is_a_link_to_org_panel_dashboard(string $page): void
     {
         $breadcrumbs = Livewire::test($page)
