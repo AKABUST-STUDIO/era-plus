@@ -1,16 +1,16 @@
 <x-mail::message>
-# You've been added to {{ $organizationName }}
+# {{ __('emails.organization_invitation.heading', ['organization' => $organizationName]) }}
 
-{{ $inviterName }} added you to **{{ $organizationName }}** as **{{ $roleLabel }}**.
+{!! __('emails.organization_invitation.intro', ['inviter' => $inviterName, 'organization' => $organizationName, 'role' => $roleLabel]) !!}
 
-Set your password to sign in for the first time:
+{{ __('emails.organization_invitation.sign_in_intro') }}
 
-<x-mail::button :url="$resetUrl">
-Set your password
+<x-mail::button :url="$signInUrl">
+{{ __('emails.organization_invitation.sign_in_action') }}
 </x-mail::button>
 
-If you weren't expecting this, you can safely ignore the email.
+{{ __('emails.organization_invitation.ignore') }}
 
-Thanks,<br>
+{{ __('emails.organization_invitation.outro') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

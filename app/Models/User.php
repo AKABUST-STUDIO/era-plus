@@ -6,6 +6,7 @@ use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Events\UserUpdated;
 use App\Facades\ProjectAccess;
+use App\Models\Organization\OrganizationMember;
 use App\Observers\UserObserver;
 use App\Traits\User\HasAuthenticationMailable;
 use Database\Factories\UserFactory;
@@ -95,6 +96,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'organization_user')
+            ->using(OrganizationMember::class)
+            ->as('member')
             ->withPivot('role_id')
             ->withTimestamps();
     }
@@ -111,9 +114,11 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
 
     public function roleFor(Organization|Project $tenant): ?Role
     {
-        $relation = $tenant instanceof Organization ? $this->organizations() : $this->projects();
-
-        $roleId = $relation->whereKey($tenant->getKey())->first()?->pivot->role_id;
+        if ($tenant instanceof Organization) {
+            $roleId = $this->organizations()->whereKey($tenant->getKey())->first()?->member->role_id;
+        } else {
+            $roleId = $this->projects()->whereKey($tenant->getKey())->first()?->pivot->role_id;
+        }
 
         return $roleId !== null ? Role::find($roleId) : null;
     }

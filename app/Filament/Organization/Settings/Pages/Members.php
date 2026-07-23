@@ -9,6 +9,7 @@ use App\Mail\OrganizationInvitation;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\EmailUsername;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -19,31 +20,41 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\TextSize;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
-class Users extends Page implements HasTable
+class Members extends Page implements HasTable
 {
     use HasOrgSettingsBreadcrumbs;
     use InteractsWithTable;
 
-    protected static ?string $slug = 'users';
+    public const TAB_MEMBERS = 'members';
+
+    public const TAB_INVITATIONS = 'invitations';
+
+    protected static ?string $slug = 'members';
 
     protected static ?int $navigationSort = 10;
 
-    protected string $view = 'filament.organization.settings.pages.users';
+    protected string $view = 'filament.organization.settings.pages.members';
 
     public ?Organization $organization = null;
+
+    public string $activeTab = self::TAB_MEMBERS;
 
     /**
      * @var array<string, mixed>
@@ -71,6 +82,32 @@ class Users extends Page implements HasTable
         $this->inviteForm->fill(['role' => OrganizationRole::Member->value]);
     }
 
+    public function switchTab(string $tab): void
+    {
+        $this->activeTab = in_array($tab, [self::TAB_MEMBERS, self::TAB_INVITATIONS], true)
+            ? $tab
+            : self::TAB_MEMBERS;
+
+        $this->resetTable();
+    }
+
+    /**
+     * @return array<string, array{label: string, count: int}>
+     */
+    public function getTabs(): array
+    {
+        return [
+            self::TAB_MEMBERS => [
+                'label' => __('settings.users.tabs.members'),
+                'count' => $this->tabQuery(self::TAB_MEMBERS)->count(),
+            ],
+            self::TAB_INVITATIONS => [
+                'label' => __('settings.users.tabs.invitations'),
+                'count' => $this->tabQuery(self::TAB_INVITATIONS)->count(),
+            ],
+        ];
+    }
+
     public function inviteForm(Schema $schema): Schema
     {
         return $schema
@@ -78,6 +115,7 @@ class Users extends Page implements HasTable
             ->components([
                 Section::make(__('settings.users.invite.heading'))
                     ->description(__('settings.users.invite.description'))
+                    ->visible(fn (): bool => auth()->user()->can('inviteMember', $this->organization))
                     ->schema([
                         TextInput::make('email')
                             ->label(__('settings.users.invite.email'))
@@ -98,17 +136,24 @@ class Users extends Page implements HasTable
 
     public function invite(): void
     {
+        if (auth()->user()->cannot('inviteMember', $this->organization)) {
+            Notification::make()
+                ->title(__('notifications.cannot_invite'))
+                ->danger()
+                ->send();
+
+            return;
+        }
+
         $data = $this->inviteForm->getState();
 
-        $user = User::query()->where('email', $data['email'])->first();
-
-        if (! $user) {
-            $user = User::create([
-                'name' => Str::before($data['email'], '@'),
-                'email' => $data['email'],
-                'password' => bcrypt(Str::random(40)),
-            ]);
-        }
+        $user = User::query()->firstOrCreate(
+            ['email' => $data['email']],
+            [
+                'name' => EmailUsername::toDisplayName($data['email']),
+                'password' => Str::random(64),
+            ],
+        );
 
         if ($this->organization->users()->whereKey($user->id)->exists()) {
             Notification::make()->title(__('notifications.already_member'))->warning()->send();
@@ -148,7 +193,17 @@ class Users extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn (): BelongsToMany => $this->organization->users())
+            ->query(fn (): BelongsToMany => $this->tabQuery($this->activeTab))
+            ->defaultSort('organization_user.created_at', 'desc')
+            ->defaultSortOptionLabel(__('settings.users.sort.date'))
+            ->emptyStateIcon($this->activeTab === self::TAB_INVITATIONS ? 'lucide-mail' : 'lucide-users-round')
+            ->emptyStateHeading($this->activeTab === self::TAB_INVITATIONS
+                ? __('settings.users.empty.invitations_heading')
+                : __('settings.users.empty.members_heading'))
+            ->emptyStateDescription($this->activeTab === self::TAB_INVITATIONS
+                ? __('settings.users.empty.invitations_description')
+                : __('settings.users.empty.members_description'))
+            ->checkIfRecordIsSelectableUsing(fn (User $record): bool => auth()->user()->can('removeMember', [$this->organization, $record]))
             ->columns([
                 Split::make([
                     ImageColumn::make('avatar')
@@ -156,53 +211,77 @@ class Users extends Page implements HasTable
                         ->circular()
                         ->grow(false),
                     Stack::make([
-                        TextColumn::make('name')
-                            ->label(__('settings.users.table.name'))
-                            ->weight('bold')
-                            ->searchable(['name', 'email'])
-                            ->sortable(),
+                        Split::make([])
+                            ->grow(false)
+                            ->schema([
+                                TextColumn::make('name')
+                                    ->weight('bold')
+                                    ->searchable(['name', 'email'])
+                                    ->sortable(),
+                                TextColumn::make('you_badge')
+                                    ->getStateUsing(fn (User $record): ?string => $record->is(auth()->user())
+                                        ? __('settings.users.table.you')
+                                        : null)
+                                    ->badge()
+                                    ->color('gray')
+                                    ->grow(false),
+                            ]),
                         TextColumn::make('email')
                             ->color('gray')
                             ->searchable(),
                     ]),
-                    TextColumn::make('you_badge')
-                        ->label('')
-                        ->state(fn (User $user): ?string => $user->is($this->authUser())
-                            ? __('settings.users.table.you')
-                            : null)
+                    TextColumn::make('role_label')
+                        ->getStateUsing(fn (User $record): ?string => OrganizationRole::tryFrom((string) $record->member?->role?->name)?->getLabel())
                         ->badge()
                         ->color('gray')
                         ->grow(false),
-                    TextColumn::make('pivot.role_id')
-                        ->label(__('forms.common.role'))
+                    TextColumn::make('two_factor_label')
+                        ->getStateUsing(fn (): string => __('settings.users.table.two_factor'))
                         ->badge()
-                        ->formatStateUsing(fn (?int $state): string => OrganizationRole::tryFrom((string) $this->roleName($state))?->getLabel() ?? '—')
-                        ->color(fn (?int $state): string => OrganizationRole::tryFrom((string) $this->roleName($state))?->getColor() ?? 'gray')
-                        ->grow(false),
-                    TextColumn::make('pivot.created_at')
-                        ->label(__('settings.users.table.joined'))
-                        ->date()
                         ->color('gray')
+                        ->size(TextSize::Small)
+                        ->icon(fn (User $record): string => $record->two_factor_confirmed_at !== null
+                            ? 'lucide-check-circle'
+                            : 'lucide-x-circle')
+                        ->tooltip(fn (User $record): string => $record->two_factor_confirmed_at !== null
+                            ? __('settings.users.table.two_factor_on')
+                            : __('settings.users.table.two_factor_off'))
                         ->grow(false),
                 ]),
             ])
+            ->filtersLayout(FiltersLayout::AboveContent)
+            ->deferFilters(false)
             ->filters([
                 SelectFilter::make('role')
+                    ->label(__('forms.common.role'))
                     ->options(OrganizationRole::class)
                     ->query(fn ($query, array $data) => filled($data['value'] ?? null)
                         ? $query->where('organization_user.role_id', $this->organization->roleFor($data['value'])?->id)
                         : $query),
+                TernaryFilter::make('two_factor_confirmed_at')
+                    ->label(__('settings.users.filters.two_factor'))
+                    ->placeholder(__('settings.users.filters.two_factor_any'))
+                    ->trueLabel(__('settings.users.filters.two_factor_on'))
+                    ->falseLabel(__('settings.users.filters.two_factor_off'))
+                    ->queries(
+                        true: fn (Builder $query): Builder => $query->whereNotNull('two_factor_confirmed_at'),
+                        false: fn (Builder $query): Builder => $query->whereNull('two_factor_confirmed_at'),
+                        blank: fn (Builder $query): Builder => $query,
+                    ),
             ])
             ->recordActions([
                 ActionGroup::make([
                     Action::make('changeRole')
                         ->label(__('settings.users.actions.change_role'))
                         ->icon('lucide-refresh-cw')
-                        ->visible(fn (User $user): bool => ! $user->is($this->authUser()))
+                        ->disabled(fn (User $user): bool => auth()->user()->cannot('changeMemberRole', [$this->organization, $user]))
+                        ->tooltip(fn (User $user): ?string => auth()->user()->cannot('changeMemberRole', [$this->organization, $user])
+                            ? __('settings.users.actions.sole_admin_locked')
+                            : null)
                         ->form([
                             Select::make('role')
                                 ->options(OrganizationRole::class)
-                                ->default(fn (User $user): ?string => $this->roleName($user->pivot->role_id))
+                                ->default(fn (User $user): ?string => $user->member?->role?->name)
                                 ->required(),
                         ])
                         ->action(fn (User $user, array $data) => $this->changeRole($user, OrganizationRole::from($data['role']))),
@@ -211,7 +290,10 @@ class Users extends Page implements HasTable
                         ->icon('lucide-trash-2')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->visible(fn (User $user): bool => ! $user->is($this->authUser()))
+                        ->disabled(fn (User $user): bool => auth()->user()->cannot('removeMember', [$this->organization, $user]))
+                        ->tooltip(fn (User $user): ?string => auth()->user()->cannot('removeMember', [$this->organization, $user])
+                            ? __('settings.users.actions.sole_admin_locked')
+                            : null)
                         ->action(fn (User $user) => $this->removeMember($user)),
                 ]),
             ])
@@ -222,7 +304,9 @@ class Users extends Page implements HasTable
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each(
-                            fn (User $user) => $user->is($this->authUser()) ? null : $this->removeMember($user)
+                            fn (User $user) => auth()->user()->can('removeMember', [$this->organization, $user])
+                                ? $this->removeMember($user)
+                                : null
                         )),
                 ]),
             ]);
@@ -230,6 +314,15 @@ class Users extends Page implements HasTable
 
     public function changeRole(User $user, OrganizationRole $role): void
     {
+        if (auth()->user()->cannot('changeMemberRole', [$this->organization, $user])) {
+            Notification::make()
+                ->title(__('notifications.cannot_remove_last_admin'))
+                ->danger()
+                ->send();
+
+            return;
+        }
+
         $this->organization->users()->updateExistingPivot($user->id, [
             'role_id' => $this->organization->roleFor($role)?->id,
         ]);
@@ -247,11 +340,7 @@ class Users extends Page implements HasTable
 
     public function removeMember(User $user): void
     {
-        if ($user->is($this->authUser())) {
-            return;
-        }
-
-        if ($user->isOrgAdmin($this->organization) && $this->organization->admins()->count() <= 1) {
+        if (auth()->user()->cannot('removeMember', [$this->organization, $user])) {
             Notification::make()
                 ->title(__('notifications.cannot_remove_last_admin'))
                 ->danger()
@@ -268,26 +357,16 @@ class Users extends Page implements HasTable
             eventType: 'organization.member.removed',
             target: $user,
         );
+
     }
 
-    private function authUser(): User
+    private function tabQuery(string $tab): BelongsToMany
     {
-        return auth()->user();
-    }
+        $query = $this->organization->users();
 
-    /**
-     * @var array<int, string>|null
-     */
-    private ?array $roleNameMap = null;
-
-    private function roleName(?int $roleId): ?string
-    {
-        if ($roleId === null) {
-            return null;
-        }
-
-        $this->roleNameMap ??= $this->organization->roles()->pluck('name', 'id')->all();
-
-        return $this->roleNameMap[$roleId] ?? null;
+        return match ($tab) {
+            self::TAB_INVITATIONS => $query->whereNull('users.email_verified_at'),
+            default => $query->whereNotNull('users.email_verified_at'),
+        };
     }
 }

@@ -2,7 +2,7 @@
 
 return [
     'roles' => [
-        'admin' => 'Organization Admin',
+        'admin' => 'Admin',
         'member' => 'Member',
     ],
     'register' => [

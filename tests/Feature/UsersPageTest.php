@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
-use App\Filament\Organization\Settings\Pages\Users as UsersPage;
+use App\Filament\Organization\Settings\Pages\Members as MembersPage;
+use App\Mail\OrganizationInvitation;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -36,12 +38,12 @@ class UsersPageTest extends TestCase
 
     public function test_page_renders(): void
     {
-        Livewire::test(UsersPage::class)->assertSuccessful();
+        Livewire::test(MembersPage::class)->assertSuccessful();
     }
 
     public function test_invite_creates_new_user_and_attaches_to_org(): void
     {
-        Livewire::test(UsersPage::class)
+        Livewire::test(MembersPage::class)
             ->fillForm(['email' => 'newbie@example.com', 'role' => OrganizationRole::Admin->value], 'inviteForm')
             ->call('invite');
 
@@ -61,7 +63,7 @@ class UsersPageTest extends TestCase
 
         $countBefore = User::query()->count();
 
-        Livewire::test(UsersPage::class)
+        Livewire::test(MembersPage::class)
             ->fillForm(['email' => 'old@example.com', 'role' => OrganizationRole::Member->value], 'inviteForm')
             ->call('invite');
 
@@ -74,7 +76,7 @@ class UsersPageTest extends TestCase
         $member = User::factory()->create();
         $member->joinOrganization($this->organization, OrganizationRole::Member);
 
-        Livewire::test(UsersPage::class)
+        Livewire::test(MembersPage::class)
             ->instance()
             ->changeRole($member, OrganizationRole::Admin);
 
@@ -90,7 +92,7 @@ class UsersPageTest extends TestCase
         $member = User::factory()->create();
         $member->joinOrganization($this->organization, OrganizationRole::Member);
 
-        Livewire::test(UsersPage::class)
+        Livewire::test(MembersPage::class)
             ->instance()
             ->removeMember($member);
 
@@ -102,7 +104,7 @@ class UsersPageTest extends TestCase
 
     public function test_cannot_remove_last_admin(): void
     {
-        Livewire::test(UsersPage::class)
+        Livewire::test(MembersPage::class)
             ->instance()
             ->removeMember($this->user);
 
@@ -117,9 +119,77 @@ class UsersPageTest extends TestCase
         $other = User::factory()->create(['name' => 'Anne']);
         $other->joinOrganization($this->organization, OrganizationRole::Member);
 
-        Livewire::test(UsersPage::class)
+        Livewire::test(MembersPage::class)
             ->assertSee('Maria')
             ->assertSee('Anne')
             ->assertSee(__('settings.users.table.you'));
+    }
+
+    public function test_invite_new_user_sends_invitation_mail(): void
+    {
+        Mail::fake();
+
+        Livewire::test(MembersPage::class)
+            ->fillForm(['email' => 'fresh@example.com', 'role' => OrganizationRole::Member->value], 'inviteForm')
+            ->call('invite');
+
+        Mail::assertQueued(
+            OrganizationInvitation::class,
+            fn (OrganizationInvitation $mail): bool => $mail->hasTo('fresh@example.com'),
+        );
+    }
+
+    public function test_invite_existing_user_sends_invitation_mail(): void
+    {
+        $existing = User::factory()->create(['email' => 'known@example.com']);
+        Mail::fake();
+
+        Livewire::test(MembersPage::class)
+            ->fillForm(['email' => 'known@example.com', 'role' => OrganizationRole::Member->value], 'inviteForm')
+            ->call('invite');
+
+        Mail::assertQueued(
+            OrganizationInvitation::class,
+            fn (OrganizationInvitation $mail) => $mail->hasTo($existing->email),
+        );
+    }
+
+    public function test_two_factor_filter_narrows_to_users_with_two_factor(): void
+    {
+        $secured = User::factory()->create([
+            'name' => 'Sofia',
+            'two_factor_confirmed_at' => now(),
+        ]);
+        $secured->joinOrganization($this->organization, OrganizationRole::Member);
+
+        $insecure = User::factory()->create(['name' => 'Ivan']);
+        $insecure->joinOrganization($this->organization, OrganizationRole::Member);
+
+        Livewire::test(MembersPage::class)
+            ->filterTable('two_factor_confirmed_at', true)
+            ->assertCanSeeTableRecords([$secured])
+            ->assertCanNotSeeTableRecords([$insecure]);
+    }
+
+    public function test_sole_admin_is_not_selectable(): void
+    {
+        $page = Livewire::test(MembersPage::class)->instance();
+
+        $this->assertFalse($page->getTable()->isRecordSelectable($this->user));
+    }
+
+    public function test_name_column_is_sortable(): void
+    {
+        User::query()->update(['email_verified_at' => now()]);
+
+        $zack = User::factory()->create(['name' => 'Zack', 'email_verified_at' => now()]);
+        $zack->joinOrganization($this->organization, OrganizationRole::Member);
+
+        $anne = User::factory()->create(['name' => 'Anne', 'email_verified_at' => now()]);
+        $anne->joinOrganization($this->organization, OrganizationRole::Member);
+
+        Livewire::test(MembersPage::class)
+            ->sortTable('name', 'asc')
+            ->assertCanSeeTableRecords([$anne, $zack], inOrder: true);
     }
 }

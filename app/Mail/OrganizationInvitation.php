@@ -29,7 +29,7 @@ class OrganizationInvitation extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'You\'ve been added to '.$this->organization->name,
+            subject: __('emails.organization_invitation.subject', ['organization' => $this->organization->name]),
         );
     }
 
@@ -40,8 +40,8 @@ class OrganizationInvitation extends Mailable implements ShouldQueue
             with: [
                 'organizationName' => $this->organization->name,
                 'roleLabel' => $this->role->getLabel(),
-                'inviterName' => $this->invitedBy?->name ?? 'A coordinator',
-                'resetUrl' => route('filament.organization.auth.password-reset.request'),
+                'inviterName' => $this->invitedBy?->name ?? __('emails.organization_invitation.default_inviter'),
+                'signInUrl' => route('filament.organization.auth.login', ['email' => $this->invitee->email]),
             ],
         );
     }

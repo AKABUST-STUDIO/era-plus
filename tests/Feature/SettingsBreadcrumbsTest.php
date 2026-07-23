@@ -7,9 +7,9 @@ use App\Filament\Organization\Settings\Pages\Activity;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Filament\Organization\Settings\Pages\Invoices;
+use App\Filament\Organization\Settings\Pages\Members;
 use App\Filament\Organization\Settings\Pages\Notifications;
 use App\Filament\Organization\Settings\Pages\Security;
-use App\Filament\Organization\Settings\Pages\Users;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -48,7 +48,7 @@ class SettingsBreadcrumbsTest extends TestCase
     {
         return [
             'general' => [GeneralSettings::class, 'General settings'],
-            'users' => [Users::class, 'Users'],
+            'members' => [Members::class, 'Members'],
             'notifications' => [Notifications::class, 'Notifications'],
             'security' => [Security::class, 'Security'],
             'billing' => [Billing::class, 'Billing'],

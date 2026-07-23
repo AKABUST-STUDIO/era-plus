@@ -78,6 +78,26 @@ return [
 
     ],
 
+    'organization_invitation' => [
+
+        'subject' => 'You\'ve been added to :organization',
+
+        'heading' => 'You\'ve been added to :organization',
+
+        'intro' => ':inviter added you to **:organization** as **:role**.',
+
+        'sign_in_intro' => 'Sign in with your email to open the workspace. We\'ll send you a one-time code — no password required.',
+
+        'sign_in_action' => 'Sign in',
+
+        'ignore' => 'If you weren\'t expecting this, you can safely ignore the email.',
+
+        'outro' => 'Thanks,',
+
+        'default_inviter' => 'A coordinator',
+
+    ],
+
     'welcome' => [
 
         'subject' => 'Welcome to :app',

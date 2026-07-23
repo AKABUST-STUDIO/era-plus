@@ -4,12 +4,15 @@ namespace App\Models;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Subscription\SubscriptionTier;
+use App\Models\Organization\OrganizationMember;
 use App\Observers\OrganizationObserver;
+use App\Policies\OrganizationPolicy;
 use App\Services\ProjectAccess;
 use Database\Factories\OrganizationFactory;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +33,7 @@ use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
 #[ObservedBy(OrganizationObserver::class)]
+#[UsePolicy(OrganizationPolicy::class)]
 class Organization extends Model implements HasAvatar, HasMedia
 {
     /** @use HasFactory<OrganizationFactory> */
@@ -133,6 +137,8 @@ class Organization extends Model implements HasAvatar, HasMedia
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'organization_user')
+            ->using(OrganizationMember::class)
+            ->as('member')
             ->withPivot('role_id')
             ->withTimestamps();
     }

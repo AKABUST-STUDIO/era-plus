@@ -13,7 +13,6 @@ use App\Http\Middleware\EnforceOrganizationTwoFactor;
 use App\Http\Middleware\RegisterSpotlightCommands;
 use App\Models\Organization;
 use App\Providers\Filament\Organization\SettingsPanelProvider;
-use Filament\Enums\GlobalSearchPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;

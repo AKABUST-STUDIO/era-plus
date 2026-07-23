@@ -64,8 +64,8 @@ return [
     ],
 
     'users' => [
-        'navigation_label' => 'Users',
-        'title' => 'Users',
+        'navigation_label' => 'Members',
+        'title' => 'Members',
 
         'invite' => [
             'heading' => 'Invite people',
@@ -80,6 +80,38 @@ return [
             'email' => 'Email',
             'joined' => 'Joined',
             'you' => 'You',
+            'two_factor' => '2FA',
+            'two_factor_on' => '2FA enabled',
+            'two_factor_off' => '2FA disabled',
+        ],
+
+        'filters' => [
+            'two_factor' => '2FA',
+            'two_factor_any' => 'Any',
+            'two_factor_on' => 'Enabled',
+            'two_factor_off' => 'Disabled',
+        ],
+
+        'sort' => [
+            'date' => 'Date joined',
+        ],
+
+        'empty' => [
+            'members_heading' => 'No members yet',
+            'members_description' => 'Invite people above to build out your organization.',
+            'invitations_heading' => 'No pending invitations',
+            'invitations_description' => 'Invitees will show up here until they set their password and sign in.',
+        ],
+
+        'actions' => [
+            'change_role' => 'Change role',
+            'remove' => 'Remove from organization',
+            'sole_admin_locked' => 'Cannot change or remove the only Admin. Promote another member first.',
+        ],
+
+        'tabs' => [
+            'members' => 'Members',
+            'invitations' => 'Pending',
         ],
     ],
 

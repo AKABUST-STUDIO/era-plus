@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Organization\OrganizationRole;
 use App\Enums\Subscription\SubscriptionTier;
 use App\Filament\Organization\Pages\Overview;
 use App\Models\Organization;
@@ -64,5 +65,20 @@ class OrganizationService
 
         return $organization instanceof Organization
             && $organization->subscription_tier === SubscriptionTier::Basic;
+    }
+
+    public function isSoleAdmin(Organization $organization, User $user): bool
+    {
+        $adminRoleId = $organization->roleFor(OrganizationRole::Admin)?->id;
+
+        if ($adminRoleId === null) {
+            return false;
+        }
+
+        if ($organization->users()->wherePivot('role_id', $adminRoleId)->whereKey($user->id)->doesntExist()) {
+            return false;
+        }
+
+        return $organization->users()->wherePivot('role_id', $adminRoleId)->count() <= 1;
     }
 }
