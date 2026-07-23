@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
 use App\Exports\TravelExpensesExport;
 use App\Filament\Project\Resources\TravelExpenses\Pages\CreateTravelExpense;
 use App\Filament\Project\Resources\TravelExpenses\Pages\EditTravelExpense;
@@ -52,7 +52,7 @@ class TravelExpenseTest extends TestCase
         $this->organization = Organization::factory()->create();
         $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->user->joinProject($this->project, ProjectRole::Coordinator);
+        $this->user->joinProject($this->project, ProjectRole::Admin);
 
         ProjectCountry::create([
             'project_id' => $this->project->id,

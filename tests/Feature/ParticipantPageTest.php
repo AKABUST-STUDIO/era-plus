@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
 use App\Filament\Project\Resources\Participants\Pages\CreateParticipant;
 use App\Filament\Project\Resources\Participants\Pages\EditParticipant;
 use App\Filament\Project\Resources\Participants\Pages\ListParticipants;
@@ -51,7 +51,7 @@ class ParticipantPageTest extends TestCase
         $this->organization = Organization::factory()->create();
         $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->user->joinProject($this->project, ProjectRole::Coordinator);
+        $this->user->joinProject($this->project, ProjectRole::Admin);
 
         ProjectCountry::create(['project_id' => $this->project->id, 'country_id' => $this->estonia->id]);
         ProjectCountry::create(['project_id' => $this->project->id, 'country_id' => $this->germany->id]);

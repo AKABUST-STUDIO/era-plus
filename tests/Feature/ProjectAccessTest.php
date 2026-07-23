@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
 use App\Filament\Project\Resources\FinanceEntries\FinanceEntryResource;
 use App\Models\Organization;
 use App\Models\Project;
@@ -43,26 +43,28 @@ class ProjectAccessTest extends TestCase
         $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
     }
 
-    public function test_coordinator_can_manage_finance(): void
+    public function test_project_admin_can_manage_finance(): void
     {
-        $coordinator = User::factory()->create();
-        $coordinator->joinOrganization($this->organization);
-        $coordinator->joinProject($this->project, ProjectRole::Coordinator);
+        $projectAdmin = User::factory()->create();
+        $projectAdmin->joinOrganization($this->organization);
+        $projectAdmin->joinProject($this->project, ProjectRole::Admin);
 
-        $this->assertTrue($this->access->can($coordinator, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
-        $this->assertTrue($this->access->can($coordinator, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
-        $this->assertTrue($this->access->can($coordinator, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
+        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
+        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
+        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
     }
 
-    public function test_leader_can_view_finance_but_not_manage(): void
+    public function test_participant_granted_view_finance_cannot_manage(): void
     {
-        $leader = User::factory()->create();
-        $leader->joinOrganization($this->organization);
-        $leader->joinProject($this->project, ProjectRole::Leader);
+        $participant = User::factory()->create();
+        $participant->joinOrganization($this->organization);
+        $participant->joinProject($this->project, ProjectRole::Participant);
 
-        $this->assertTrue($this->access->can($leader, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
-        $this->assertFalse($this->access->can($leader, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
-        $this->assertFalse($this->access->can($leader, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
+        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(ProjectAccess::ABILITY_VIEW_FINANCE);
+
+        $this->assertTrue($this->access->can($participant, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
+        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
+        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
     }
 
     public function test_participant_cannot_view_finance(): void
@@ -85,11 +87,13 @@ class ProjectAccessTest extends TestCase
 
     public function test_finance_resource_can_view_any_uses_gate(): void
     {
-        $leader = User::factory()->create();
-        $leader->joinOrganization($this->organization);
-        $leader->joinProject($this->project, ProjectRole::Leader);
+        $viewer = User::factory()->create();
+        $viewer->joinOrganization($this->organization);
+        $viewer->joinProject($this->project, ProjectRole::Participant);
 
-        $this->actingAs($leader);
+        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(ProjectAccess::ABILITY_VIEW_FINANCE);
+
+        $this->actingAs($viewer);
         Filament::setCurrentPanel(Filament::getPanel('project'));
         Filament::setTenant($this->project);
 

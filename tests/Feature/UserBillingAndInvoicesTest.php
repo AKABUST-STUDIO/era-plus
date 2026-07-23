@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
-use App\Enums\SubscriptionTier;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Facades\OrganizationService;
 use App\Filament\User\Pages\Billing;
 use App\Filament\User\Pages\Invoices;

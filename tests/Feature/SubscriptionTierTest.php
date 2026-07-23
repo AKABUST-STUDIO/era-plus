@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SubscriptionTier;
+use App\Enums\Subscription\SubscriptionTier;
 use Tests\TestCase;
 
 class SubscriptionTierTest extends TestCase

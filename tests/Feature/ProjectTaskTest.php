@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
-use App\Enums\ProjectTaskStatus;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
+use App\Enums\ProjectTask\ProjectTaskStatus;
 use App\Filament\Project\Resources\ProjectTasks\Pages\CreateProjectTask;
 use App\Filament\Project\Resources\ProjectTasks\Pages\EditProjectTask;
 use App\Filament\Project\Resources\ProjectTasks\Pages\ListProjectTasks;
@@ -40,7 +40,7 @@ class ProjectTaskTest extends TestCase
         $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->assignee->joinOrganization($this->organization);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->user->joinProject($this->project, ProjectRole::Coordinator);
+        $this->user->joinProject($this->project, ProjectRole::Admin);
         $this->assignee->joinProject($this->project);
 
         $this->actingAs($this->user);

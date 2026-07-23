@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\SupportRequestStatus;
+use App\Enums\SupportRequest\SupportRequestStatus;
+use Database\Factories\SupportRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SupportRequest extends Model
 {
-    /** @use HasFactory<\Database\Factories\SupportRequestFactory> */
+    /** @use HasFactory<SupportRequestFactory> */
     use HasFactory;
 
     protected $fillable = [

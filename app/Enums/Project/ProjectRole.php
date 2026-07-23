@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums;
+namespace App\Enums\Project;
 
 use App\Services\ProjectAccess;
 use Filament\Support\Contracts\HasColor;
@@ -8,24 +8,18 @@ use Filament\Support\Contracts\HasLabel;
 
 enum ProjectRole: string implements HasColor, HasLabel
 {
-    case Coordinator = 'coordinator';
-    case Leader = 'leader';
+    case Admin = 'admin';
     case Participant = 'participant';
 
     public function getLabel(): string
     {
-        return match ($this) {
-            self::Coordinator => 'Coordinator',
-            self::Leader => 'Leader',
-            self::Participant => 'Participant',
-        };
+        return __('forms.project.roles.'.$this->value);
     }
 
     public function getColor(): string
     {
         return match ($this) {
-            self::Coordinator => 'primary',
-            self::Leader => 'info',
+            self::Admin => 'danger',
             self::Participant => 'gray',
         };
     }
@@ -36,8 +30,7 @@ enum ProjectRole: string implements HasColor, HasLabel
     public function defaultPermissions(): array
     {
         return match ($this) {
-            self::Coordinator => [ProjectAccess::ABILITY_ADMINISTER_PROJECT],
-            self::Leader => [ProjectAccess::ABILITY_VIEW_FINANCE, ProjectAccess::ABILITY_MANAGE_TASKS],
+            self::Admin => [ProjectAccess::ABILITY_ADMINISTER_PROJECT],
             self::Participant => [],
         };
     }

@@ -2,8 +2,8 @@
 
 namespace App\Filament\Organization\Pages\Tenancy;
 
-use App\Enums\OrganizationRole;
-use App\Enums\SubscriptionTier;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Models\Organization;
 use Filament\Actions\Action;

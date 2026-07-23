@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\BudgetCategory;
-use App\Enums\OrganizationRole;
+use App\Enums\FinanceEntry\BudgetCategory;
+use App\Enums\Organization\OrganizationRole;
 use App\Filament\Project\Widgets\FinanceOverviewStats;
 use App\Models\FinanceEntry;
 use App\Models\Organization;

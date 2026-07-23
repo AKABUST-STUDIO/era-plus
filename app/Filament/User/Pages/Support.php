@@ -2,7 +2,7 @@
 
 namespace App\Filament\User\Pages;
 
-use App\Enums\SupportRequestStatus;
+use App\Enums\SupportRequest\SupportRequestStatus;
 use App\Mail\SupportRequestReceived;
 use App\Models\SupportRequest;
 use App\Models\SupportRequestMessage;

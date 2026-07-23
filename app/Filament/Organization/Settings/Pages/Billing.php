@@ -2,7 +2,7 @@
 
 namespace App\Filament\Organization\Settings\Pages;
 
-use App\Enums\SubscriptionTier;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Facades\OrganizationService;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;

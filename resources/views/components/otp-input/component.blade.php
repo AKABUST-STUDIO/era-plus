@@ -17,6 +17,7 @@
     $inputType = $getType();
     $autocomplete = $getAutocomplete();
     $isRtl = $getInputsContainerDirection();
+    $submitAction = $getSubmitAction();
 @endphp
 
 <x-dynamic-component
@@ -28,6 +29,8 @@
     	    length: {{$numberInput}},
     	    autoFocus: '{{$isAutofocused}}',
     	    type: '{{$inputType}}',
+            isDisabled: {{ $isDisabled ? 'true' : 'false' }},
+            isLoading: false,
             init: function(){
                 if (this.autoFocus){
                     this.$refs[1].focus();
@@ -50,7 +53,7 @@
                     this.$refs[i+1].select();
                 }
                 if(i == this.length){
-                    @this.set('{{ $getStatePath() }}', this.state)
+                    this.complete();
                 }
             },
 
@@ -70,8 +73,21 @@
                 this.$refs[focused].select();
 
                 if (paste.length === this.length) {
-                    @this.set('{{ $getStatePath() }}', this.state)
+                    this.complete();
                 }
+            },
+
+            complete() {
+                @this.set('{{ $statePath }}', this.state)
+
+                @if ($submitAction)
+                    this.isLoading = true;
+
+                    @this.call('{{ $submitAction }}').finally(() => {
+                        this.isLoading = false;
+                        this.$refs[this.length].focus();
+                    })
+                @endif
             },
 
             handleBackspace(e) {
@@ -82,8 +98,12 @@
                 this.$refs[previous] && this.$refs[previous].select();
                 e.preventDefault();
             },
-        }">
-        <div class="flex justify-between gap-4 fi-otp-input-container" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+        }" class="relative">
+        <div
+            class="flex justify-between gap-4 fi-otp-input-container transition duration-75"
+            dir="{{ $isRtl ? 'rtl' : 'ltr' }}"
+            x-bind:class="isLoading && 'opacity-25'"
+        >
 
             @foreach(range(1, $numberInput) as $column)
 
@@ -106,7 +126,7 @@
                     "
                 >
                     <input
-                        {{$isDisabled ? 'disabled' : ''}}
+                        x-bind:disabled="isDisabled || isLoading"
                         type="{{$inputType}}"
                         maxlength="1"
                         x-ref="{{$column}}"
@@ -121,6 +141,14 @@
                 </x-filament::input.wrapper>
             @endforeach
 
+        </div>
+
+        <div
+            class="absolute inset-0 flex items-center justify-center"
+            x-cloak
+            x-show="isLoading"
+        >
+            <x-filament::loading-indicator class="h-6 w-6 text-gray-400 dark:text-gray-500" />
         </div>
     </div>
 </x-dynamic-component>

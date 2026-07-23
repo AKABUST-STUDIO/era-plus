@@ -13,10 +13,18 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
+            $table->string('project_reference', 64)->nullable();
+            $table->string('erasmus_field', 8)->nullable();
+            $table->string('erasmus_key_action', 8)->nullable();
+            $table->string('erasmus_action', 16)->nullable();
+            $table->string('erasmus_managing_body', 8)->nullable();
+            $table->string('status', 16)->default('draft');
+            $table->unsignedSmallInteger('call_year')->nullable();
             $table->date('beginning_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->string('project_type', 64)->nullable();
-            $table->text('description')->nullable();
+            $table->unsignedSmallInteger('duration_months')->nullable();
+            $table->decimal('requested_grant', 12, 2)->nullable();
+            $table->decimal('awarded_grant', 12, 2)->nullable();
             $table->timestamps();
 
             $table->unique(['organization_id', 'slug']);

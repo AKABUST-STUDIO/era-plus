@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SupportRequestStatus;
+use App\Enums\SupportRequest\SupportRequestStatus;
 use App\Filament\User\Pages\Support;
 use App\Models\SupportRequest;
 use App\Models\SupportRequestMessage;
@@ -10,6 +10,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class SupportThreadTest extends TestCase
@@ -75,7 +76,7 @@ class SupportThreadTest extends TestCase
             'status' => SupportRequestStatus::Open->value,
         ]);
 
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        $this->expectException(HttpException::class);
 
         Livewire::test(Support::class)
             ->instance()

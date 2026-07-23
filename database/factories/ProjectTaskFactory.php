@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Enums\ProjectTaskStatus;
+use App\Enums\ProjectTask\ProjectTaskStatus;
 use App\Models\Project;
+use App\Models\ProjectTask;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProjectTask>
+ * @extends Factory<ProjectTask>
  */
 class ProjectTaskFactory extends Factory
 {

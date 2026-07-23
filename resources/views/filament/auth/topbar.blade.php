@@ -10,7 +10,7 @@
             ->extraAttributes(['class' => 'drop-shadow-none ring-0 shadow-none'])
             ->size('xs')
             ->toHtml() !!}
-        @elif (request()->route()->getName() === 'filament.organization.auth.register')
+        @elseif (request()->route()->getName() === 'filament.organization.auth.register')
             {!! \Filament\Actions\Action::make('register')
             ->label(__('filament-panels::auth/pages/register.actions.login.label'))
             ->url(filament()->getLoginUrl())

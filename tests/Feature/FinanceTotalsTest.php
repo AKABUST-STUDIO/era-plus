@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
+use App\Enums\Organization\OrganizationRole;
 use App\Filament\Project\Resources\FinanceEntries\Pages\ListFinanceEntries;
 use App\Models\FinanceEntry;
 use App\Models\Organization;

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
-use App\Enums\SubscriptionTier;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
@@ -69,7 +69,7 @@ class OrganizationSubscriptionTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->assertNotNull($project->roleFor(ProjectRole::Coordinator));
+        $this->assertNotNull($project->roleFor(ProjectRole::Admin));
         $this->assertNotNull($project->roleFor(ProjectRole::Participant));
     }
 }

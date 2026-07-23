@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Enums\FinanceOperation;
+use App\Enums\FinanceEntry\FinanceOperation;
 use App\Models\FinanceEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

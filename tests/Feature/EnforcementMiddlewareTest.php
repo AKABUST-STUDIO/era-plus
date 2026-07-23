@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
+use App\Enums\Organization\OrganizationRole;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

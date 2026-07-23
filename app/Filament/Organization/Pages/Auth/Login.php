@@ -84,9 +84,7 @@ class Login extends BaseLogin
             ->autocomplete('one-time-code')
             ->autofocus()
             ->maxLength(6)
-            ->afterStateUpdated(function () {
-                $this->login();
-            });
+            ->submitAction('login');
     }
 
     public function requestLogin(): void
@@ -141,7 +139,7 @@ class Login extends BaseLogin
     {
         return Action::make('requestLogin')
             ->label(__('filament-panels::auth/pages/login.form.actions.request_code.label'))
-            ->extraAttributes(['class' => 'w-full mb-6 border border-b'])
+            ->extraAttributes(['class' => 'w-full mb-6'])
             ->submit('requestLogin');
     }
 
@@ -165,7 +163,7 @@ class Login extends BaseLogin
                 Actions::make($this->getFormActions())
                     ->alignment($this->getFormActionsAlignment())
                     ->fullWidth($this->hasFullWidthFormActions())
-                    ->extraAttributes(fn () => $this->step == 'email' ? ['class' => 'border-b border-gray-100'] : [])
+                    ->extraAttributes(fn () => $this->step == 'email' ? ['class' => 'border-b border-gray-100 dark:border-gray-900'] : [])
                     ->key('form-actions'),
             ]);
     }

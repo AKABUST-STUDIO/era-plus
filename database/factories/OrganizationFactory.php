@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\SubscriptionTier;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Models\Organization;
 use App\Models\Subscription;
 use App\Models\User;

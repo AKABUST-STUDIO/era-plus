@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'roles' => [
+        'admin' => 'Organization Admin',
+        'member' => 'Member',
+    ],
     'register' => [
         'label' => 'Create your first organization',
         'action' => 'Continue',

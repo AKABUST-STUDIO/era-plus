@@ -74,9 +74,7 @@ class Register extends BaseRegister
             ->autocomplete('one-time-code')
             ->autofocus()
             ->maxLength(6)
-            ->afterStateUpdated(function () {
-                $this->register();
-            });
+            ->submitAction('register');
     }
 
     protected function setStep(string $step): void

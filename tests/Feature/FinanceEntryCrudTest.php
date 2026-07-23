@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\FinanceOperation;
-use App\Enums\OrganizationRole;
+use App\Enums\FinanceEntry\FinanceOperation;
+use App\Enums\Organization\OrganizationRole;
 use App\Filament\Project\Resources\FinanceEntries\FinanceEntryResource;
 use App\Filament\Project\Resources\FinanceEntries\Pages\CreateFinanceEntry;
 use App\Filament\Project\Resources\FinanceEntries\Pages\EditFinanceEntry;

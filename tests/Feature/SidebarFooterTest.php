@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SubscriptionTier;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Facades\OrganizationService;
 use App\Livewire\UserFooter;
 use App\Models\Organization;

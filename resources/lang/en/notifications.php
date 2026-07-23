@@ -7,6 +7,7 @@ return [
     'default_org_saved' => 'Default organization saved',
     'avatar_saved' => 'Avatar saved',
     'project_details_saved' => 'Project details saved',
+    'project_programme_saved' => 'Project programme saved',
     'project_dates_saved' => 'Project dates saved',
     'project_deleted' => 'Project deleted',
     'invitation_sent' => 'Invitation sent',

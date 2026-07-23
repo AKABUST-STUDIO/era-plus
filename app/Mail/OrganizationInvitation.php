@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Enums\OrganizationRole;
+use App\Enums\Organization\OrganizationRole;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Bus\Queueable;

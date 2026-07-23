@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SupportRequestStatus;
+use App\Enums\SupportRequest\SupportRequestStatus;
 use App\Filament\User\Pages\Support;
 use App\Models\SupportRequest;
 use App\Models\User;

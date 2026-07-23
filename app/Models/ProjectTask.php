@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use App\Enums\ProjectTaskStatus;
+use App\Enums\ProjectTask\ProjectTaskStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\BelongsToProject;
+use Database\Factories\ProjectTaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProjectTask extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProjectTaskFactory> */
+    /** @use HasFactory<ProjectTaskFactory> */
     use BelongsToOrganization;
 
     use BelongsToProject;

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Organization\Settings\Pages;
 
-use App\Enums\OrganizationRole;
+use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Mail\OrganizationInvitation;

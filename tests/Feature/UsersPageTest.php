@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
+use App\Enums\Organization\OrganizationRole;
 use App\Filament\Organization\Settings\Pages\Users as UsersPage;
 use App\Models\Organization;
 use App\Models\User;
@@ -42,7 +42,7 @@ class UsersPageTest extends TestCase
     public function test_invite_creates_new_user_and_attaches_to_org(): void
     {
         Livewire::test(UsersPage::class)
-            ->fillForm(['email' => 'newbie@example.com', 'role' => OrganizationRole::Coordinator->value], 'inviteForm')
+            ->fillForm(['email' => 'newbie@example.com', 'role' => OrganizationRole::Admin->value], 'inviteForm')
             ->call('invite');
 
         $this->assertDatabaseHas('users', ['email' => 'newbie@example.com']);
@@ -51,7 +51,7 @@ class UsersPageTest extends TestCase
         $this->assertDatabaseHas('organization_user', [
             'organization_id' => $this->organization->id,
             'user_id' => $newbie->id,
-            'role_id' => $this->organization->roleFor(OrganizationRole::Coordinator)->id,
+            'role_id' => $this->organization->roleFor(OrganizationRole::Admin)->id,
         ]);
     }
 
@@ -76,12 +76,12 @@ class UsersPageTest extends TestCase
 
         Livewire::test(UsersPage::class)
             ->instance()
-            ->changeRole($member, OrganizationRole::Leader);
+            ->changeRole($member, OrganizationRole::Admin);
 
         $this->assertDatabaseHas('organization_user', [
             'organization_id' => $this->organization->id,
             'user_id' => $member->id,
-            'role_id' => $this->organization->roleFor(OrganizationRole::Leader)->id,
+            'role_id' => $this->organization->roleFor(OrganizationRole::Admin)->id,
         ]);
     }
 

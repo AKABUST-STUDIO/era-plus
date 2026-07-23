@@ -38,7 +38,7 @@ class LoginCodeStepTest extends TestCase
 
         Livewire::test(Login::class)
             ->fillForm(['email' => $user->email])
-            ->call('requestCode')
+            ->call('requestLogin')
             ->assertSuccessful()
             ->assertSet('step', 'code')
             ->assertSet('emailForCode', $user->email)
@@ -52,7 +52,7 @@ class LoginCodeStepTest extends TestCase
 
         Livewire::test(Login::class)
             ->fillForm(['email' => $user->email])
-            ->call('requestCode')
+            ->call('requestLogin')
             ->call('useDifferentEmail')
             ->assertSuccessful()
             ->assertSet('step', 'email')
@@ -67,7 +67,7 @@ class LoginCodeStepTest extends TestCase
 
         Livewire::test(Login::class)
             ->fillForm(['email' => 'nobody@akabust.studio'])
-            ->call('requestCode')
+            ->call('requestLogin')
             ->assertSuccessful()
             ->assertNoRedirect()
             ->assertSet('step', 'code')
@@ -80,7 +80,7 @@ class LoginCodeStepTest extends TestCase
 
         Livewire::test(Login::class)
             ->fillForm(['email' => 'nobody@akabust.studio'])
-            ->call('requestCode');
+            ->call('requestLogin');
 
         Mail::assertQueued(
             MissingAccountSignInAttempt::class,
@@ -107,8 +107,40 @@ class LoginCodeStepTest extends TestCase
 
         Livewire::test(Login::class)
             ->fillForm(['email' => $user->email])
-            ->call('requestCode');
+            ->call('requestLogin');
 
         Mail::assertNotQueued(MissingAccountSignInAttempt::class);
+    }
+
+    public function test_submitting_a_valid_code_authenticates_and_redirects(): void
+    {
+        $user = User::factory()->create(['email' => 'simon@akabust.studio']);
+
+        $component = Livewire::test(Login::class)
+            ->fillForm(['email' => $user->email])
+            ->call('requestLogin');
+
+        $component->fillForm(['code' => $user->oneTimePasswords()->latest('id')->firstOrFail()->password])
+            ->call('login')
+            ->assertSuccessful()
+            ->assertRedirect(Filament::getUrl());
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_submitting_an_invalid_code_keeps_the_user_on_the_code_step(): void
+    {
+        $user = User::factory()->create(['email' => 'simon@akabust.studio']);
+
+        Livewire::test(Login::class)
+            ->fillForm(['email' => $user->email])
+            ->call('requestLogin')
+            ->fillForm(['code' => '000000'])
+            ->call('login')
+            ->assertHasErrors('data.code')
+            ->assertNoRedirect()
+            ->assertSet('step', 'code');
+
+        $this->assertGuest();
     }
 }

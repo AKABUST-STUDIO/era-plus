@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Role;

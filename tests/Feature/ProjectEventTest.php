@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
 use App\Filament\Project\Resources\ProjectEvents\Pages\CreateProjectEvent;
 use App\Filament\Project\Resources\ProjectEvents\Pages\ListProjectEvents;
 use App\Models\Organization;
@@ -34,7 +34,7 @@ class ProjectEventTest extends TestCase
         $this->organization = Organization::factory()->create();
         $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->user->joinProject($this->project, ProjectRole::Coordinator);
+        $this->user->joinProject($this->project, ProjectRole::Admin);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));

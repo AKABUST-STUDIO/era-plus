@@ -2,9 +2,16 @@
 
 namespace App\Models;
 
-use App\Enums\BudgetCategory;
-use App\Enums\FinanceOperation;
-use App\Enums\ProjectRole;
+use App\Enums\FinanceEntry\BudgetCategory;
+use App\Enums\FinanceEntry\FinanceOperation;
+use App\Enums\Project\ErasmusActionType;
+use App\Enums\Project\ErasmusField;
+use App\Enums\Project\ErasmusKeyAction;
+use App\Enums\Project\ErasmusManagingBody;
+use App\Enums\Project\ProjectRole;
+use App\Enums\Project\ProjectStatus;
+use App\Models\Project\ErasmusField as ErasmusFieldModel;
+use App\Models\Project\ErasmusPriority;
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Scopes\ProjectScope;
 use App\Observers\ProjectObserver;
@@ -35,7 +42,22 @@ class Project extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'slug', 'beginning_date', 'end_date', 'project_type', 'description'])
+            ->logOnly([
+                'name',
+                'slug',
+                'project_reference',
+                'erasmus_field',
+                'erasmus_key_action',
+                'erasmus_action',
+                'erasmus_managing_body',
+                'status',
+                'call_year',
+                'beginning_date',
+                'end_date',
+                'duration_months',
+                'requested_grant',
+                'awarded_grant',
+            ])
             ->logOnlyDirty()
             ->useLogName('project')
             ->dontLogEmptyChanges();
@@ -51,10 +73,25 @@ class Project extends Model
         'organization_id',
         'name',
         'slug',
+        'project_reference',
+        'erasmus_field',
+        'erasmus_key_action',
+        'erasmus_action',
+        'erasmus_managing_body',
+        'status',
+        'call_year',
         'beginning_date',
         'end_date',
-        'project_type',
-        'description',
+        'duration_months',
+        'requested_grant',
+        'awarded_grant',
+    ];
+
+    protected $attributes = [
+        'erasmus_field' => ErasmusField::Youth->value,
+        'erasmus_key_action' => ErasmusKeyAction::KeyAction1->value,
+        'erasmus_managing_body' => ErasmusManagingBody::NationalAgency->value,
+        'status' => ProjectStatus::Draft->value,
     ];
 
     /**
@@ -63,8 +100,17 @@ class Project extends Model
     protected function casts(): array
     {
         return [
+            'erasmus_field' => ErasmusField::class,
+            'erasmus_key_action' => ErasmusKeyAction::class,
+            'erasmus_action' => ErasmusActionType::class,
+            'erasmus_managing_body' => ErasmusManagingBody::class,
+            'status' => ProjectStatus::class,
+            'call_year' => 'integer',
             'beginning_date' => 'date',
             'end_date' => 'date',
+            'duration_months' => 'integer',
+            'requested_grant' => 'decimal:2',
+            'awarded_grant' => 'decimal:2',
         ];
     }
 
@@ -152,6 +198,23 @@ class Project extends Model
     public function financeEntries(): HasMany
     {
         return $this->hasMany(FinanceEntry::class);
+    }
+
+    /**
+     * @return BelongsToMany<ErasmusPriority, $this>
+     */
+    public function priorities(): BelongsToMany
+    {
+        return $this->belongsToMany(ErasmusPriority::class, 'priority_project', 'project_id', 'priority_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<ErasmusFieldModel, $this>
+     */
+    public function fields(): HasMany
+    {
+        return $this->hasMany(ErasmusFieldModel::class);
     }
 
     /**

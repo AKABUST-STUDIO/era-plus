@@ -25,6 +25,20 @@ class OtpInput extends Field implements Contracts\CanBeLengthConstrained
 
     protected string|\Closure|null $type = 'number';
 
+    protected string|\Closure|null $submitAction = null;
+
+    public function submitAction(string|\Closure|null $action): static
+    {
+        $this->submitAction = $action;
+
+        return $this;
+    }
+
+    public function getSubmitAction(): ?string
+    {
+        return $this->evaluate($this->submitAction);
+    }
+
     public function numberInput(int|\Closure $number = 4): static
     {
         $this->numberInput = $number;

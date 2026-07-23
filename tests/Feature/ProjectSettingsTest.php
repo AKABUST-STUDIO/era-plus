@@ -2,9 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Project\ErasmusActionType;
+use App\Enums\Project\ErasmusField;
+use App\Enums\Project\ErasmusKeyAction;
+use App\Enums\Project\ErasmusManagingBody;
+use App\Enums\Project\ErasmusPriority;
+use App\Enums\Project\ProjectStatus;
 use App\Filament\Project\Pages\ProjectSettings;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Project\ErasmusPriority as ErasmusPriorityModel;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,8 +59,8 @@ class ProjectSettingsTest extends TestCase
             ->fillForm([
                 'name' => 'Renamed',
                 'slug' => 'renamed',
-                'project_type' => 'cooperation',
-                'description' => 'Updated description',
+                'project_reference' => '2026-1-EE01-KA122-SCH-000001',
+                'status' => ProjectStatus::Running->value,
             ])
             ->call('saveDetails');
 
@@ -61,9 +68,34 @@ class ProjectSettingsTest extends TestCase
             'id' => $this->project->id,
             'name' => 'Renamed',
             'slug' => 'renamed',
-            'project_type' => 'cooperation',
-            'description' => 'Updated description',
+            'project_reference' => '2026-1-EE01-KA122-SCH-000001',
+            'status' => ProjectStatus::Running->value,
         ]);
+    }
+
+    public function test_can_save_programme(): void
+    {
+        $priority = ErasmusPriorityModel::query()
+            ->whereNull('organization_id')
+            ->where('name', ErasmusPriority::InclusionAndDiversity->getLabel())
+            ->firstOrFail();
+
+        Livewire::test(ProjectSettings::class)
+            ->fillForm([
+                'erasmus_field' => ErasmusField::Youth->value,
+                'erasmus_key_action' => ErasmusKeyAction::KeyAction1->value,
+                'erasmus_action' => ErasmusActionType::Ka152->value,
+                'erasmus_managing_body' => ErasmusManagingBody::NationalAgency->value,
+                'priorities' => [$priority->id],
+            ])
+            ->call('saveProgramme');
+
+        $project = $this->project->fresh();
+
+        $this->assertSame(ErasmusActionType::Ka152, $project->erasmus_action);
+        $this->assertSame(ErasmusField::Youth, $project->erasmus_field);
+        $this->assertSame(ErasmusKeyAction::KeyAction1, $project->erasmus_key_action);
+        $this->assertSame([$priority->id], $project->priorities()->pluck('priorities.id')->all());
     }
 
     public function test_can_save_dates(): void

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
 use App\Filament\Project\Resources\ProjectMembers\Pages\CreateProjectMember;
 use App\Filament\Project\Resources\ProjectMembers\Pages\EditProjectMember;
 use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
@@ -35,7 +35,7 @@ class ProjectMemberTest extends TestCase
         $this->organization = Organization::factory()->create();
         $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
-        $this->user->joinProject($this->project, ProjectRole::Coordinator);
+        $this->user->joinProject($this->project, ProjectRole::Admin);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('project'));
@@ -48,7 +48,7 @@ class ProjectMemberTest extends TestCase
         Livewire::test(ListProjectMembers::class)
             ->assertSuccessful()
             ->assertSee($this->user->name)
-            ->assertSee('Coordinator');
+            ->assertSee('Project Admin');
     }
 
     public function test_list_only_shows_current_project_members(): void
@@ -71,7 +71,7 @@ class ProjectMemberTest extends TestCase
         Livewire::test(CreateProjectMember::class)
             ->fillForm([
                 'user_id' => $newMember->id,
-                'role' => ProjectRole::Leader->value,
+                'role' => ProjectRole::Admin->value,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
@@ -79,7 +79,7 @@ class ProjectMemberTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'project_id' => $this->project->id,
             'user_id' => $newMember->id,
-            'role_id' => $this->project->roleFor(ProjectRole::Leader)->id,
+            'role_id' => $this->project->roleFor(ProjectRole::Admin)->id,
         ]);
     }
 
@@ -94,14 +94,14 @@ class ProjectMemberTest extends TestCase
             ->first();
 
         Livewire::test(EditProjectMember::class, ['record' => $pivot->getRouteKey()])
-            ->fillForm(['role' => ProjectRole::Leader->value])
+            ->fillForm(['role' => ProjectRole::Admin->value])
             ->call('save')
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas('project_user', [
             'project_id' => $this->project->id,
             'user_id' => $member->id,
-            'role_id' => $this->project->roleFor(ProjectRole::Leader)->id,
+            'role_id' => $this->project->roleFor(ProjectRole::Admin)->id,
         ]);
     }
 
@@ -122,12 +122,12 @@ class ProjectMemberTest extends TestCase
         ]);
     }
 
-    public function test_creator_is_attached_as_coordinator(): void
+    public function test_creator_is_attached_as_project_admin(): void
     {
         $this->assertDatabaseHas('project_user', [
             'project_id' => $this->project->id,
             'user_id' => $this->user->id,
-            'role_id' => $this->project->roleFor(ProjectRole::Coordinator)->id,
+            'role_id' => $this->project->roleFor(ProjectRole::Admin)->id,
         ]);
     }
 }

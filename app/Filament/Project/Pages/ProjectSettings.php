@@ -2,12 +2,13 @@
 
 namespace App\Filament\Project\Pages;
 
+use App\Enums\Project\ProjectStatus;
+use App\Filament\Resources\Projects\Schemas\ProjectForm;
 use App\Models\Project;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -55,6 +56,7 @@ class ProjectSettings extends Page
             ->statePath('data')
             ->components([
                 $this->detailsSection(),
+                $this->programmeSection(),
                 $this->datesSection(),
                 $this->dangerSection(),
             ]);
@@ -71,18 +73,32 @@ class ProjectSettings extends Page
                     ->alphaDash()
                     ->maxLength(255)
                     ->unique(Project::class, 'slug', ignoreRecord: true),
-                Select::make('project_type')->options([
-                    'mobility' => __('forms.project.types.mobility'),
-                    'cooperation' => __('forms.project.types.cooperation'),
-                    'small_scale' => __('forms.project.types.small_scale'),
-                    'youth' => __('forms.project.types.youth'),
-                ]),
-                Textarea::make('description')->maxLength(2000)->rows(3)->columnSpanFull(),
+                TextInput::make('project_reference')
+                    ->label(__('forms.project.fields.project_reference'))
+                    ->maxLength(64),
+                Select::make('status')
+                    ->label(__('forms.project.fields.status'))
+                    ->options(ProjectStatus::options())
+                    ->required(),
             ])
+            ->columns(2)
             ->footerActions([
                 Action::make('saveDetails')
                     ->label(__('forms.project.settings.save_details'))
                     ->action(fn () => $this->saveDetails()),
+            ]);
+    }
+
+    protected function programmeSection(): Section
+    {
+        return Section::make(__('forms.project.sections.programme'))
+            ->description(__('forms.project.sections.programme_description'))
+            ->schema(ProjectForm::programmeComponents())
+            ->columns(2)
+            ->footerActions([
+                Action::make('saveProgramme')
+                    ->label(__('forms.project.settings.save_programme'))
+                    ->action(fn () => $this->saveProgramme()),
             ]);
     }
 
@@ -121,11 +137,27 @@ class ProjectSettings extends Page
         $this->project->update([
             'name' => $data['name'],
             'slug' => $data['slug'],
-            'project_type' => $data['project_type'] ?? null,
-            'description' => $data['description'] ?? null,
+            'project_reference' => $data['project_reference'] ?? null,
+            'status' => $data['status'] ?? null,
         ]);
 
         Notification::make()->title(__('notifications.project_details_saved'))->success()->send();
+    }
+
+    public function saveProgramme(): void
+    {
+        $data = $this->form->getState();
+
+        $this->project->update(array_intersect_key($data, array_flip([
+            'erasmus_field',
+            'erasmus_key_action',
+            'erasmus_action',
+            'erasmus_managing_body',
+        ])));
+
+        $this->project->priorities()->sync($this->data['priorities'] ?? []);
+
+        Notification::make()->title(__('notifications.project_programme_saved'))->success()->send();
     }
 
     public function saveDates(): void

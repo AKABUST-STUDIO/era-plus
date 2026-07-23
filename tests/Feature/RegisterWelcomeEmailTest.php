@@ -33,7 +33,7 @@ class RegisterWelcomeEmailTest extends TestCase
 
         $component = Livewire::test(Register::class)
             ->fillForm(['email' => 'newbie@akabust.studio'])
-            ->call('registerAndSendCode')
+            ->call('requestRegister')
             ->assertSet('step', 'code');
 
         $user = User::query()->where('email', 'newbie@akabust.studio')->firstOrFail();
@@ -42,7 +42,8 @@ class RegisterWelcomeEmailTest extends TestCase
 
         $component
             ->fillForm(['code' => $this->currentCodeFor($user)])
-            ->call('verifyCode');
+            ->call('register')
+            ->assertRedirect(Filament::getUrl());
 
         $this->assertNotNull($user->fresh()->email_verified_at);
 
@@ -59,13 +60,13 @@ class RegisterWelcomeEmailTest extends TestCase
 
         $component = Livewire::test(Register::class)
             ->fillForm(['email' => 'newbie@akabust.studio'])
-            ->call('registerAndSendCode');
+            ->call('requestRegister');
 
         $user = User::query()->where('email', 'newbie@akabust.studio')->firstOrFail();
 
         $component
             ->fillForm(['code' => $this->currentCodeFor($user)])
-            ->call('verifyCode');
+            ->call('register');
 
         Mail::assertQueuedCount(1);
 
@@ -73,7 +74,7 @@ class RegisterWelcomeEmailTest extends TestCase
 
         $component
             ->fillForm(['code' => $this->currentCodeFor($user->fresh())])
-            ->call('verifyCode');
+            ->call('register');
 
         Mail::assertQueuedCount(1);
     }

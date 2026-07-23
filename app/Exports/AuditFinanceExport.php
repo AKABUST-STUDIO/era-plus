@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Enums\FinanceEntry\BudgetCategory;
 use App\Models\FinanceEntry;
 use App\Models\Project;
 use App\Models\TravelExpense;
@@ -115,7 +116,7 @@ class AuditCategoryTotalsSheet implements FromCollection, WithHeadings, WithMapp
         $key = (string) $this->collection()->search($row);
 
         return [
-            \App\Enums\BudgetCategory::from($key)->getLabel(),
+            BudgetCategory::from($key)->getLabel(),
             $row,
         ];
     }

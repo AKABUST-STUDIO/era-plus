@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SubscriptionTier;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;

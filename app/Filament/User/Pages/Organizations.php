@@ -2,7 +2,7 @@
 
 namespace App\Filament\User\Pages;
 
-use App\Enums\OrganizationRole;
+use App\Enums\Organization\OrganizationRole;
 use App\Filament\Organization\Pages\Overview;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Models\Organization;

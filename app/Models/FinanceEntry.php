@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use App\Enums\BudgetCategory;
-use App\Enums\FinanceOperation;
+use App\Enums\FinanceEntry\BudgetCategory;
+use App\Enums\FinanceEntry\FinanceOperation;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\BelongsToProject;
+use Database\Factories\FinanceEntryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class FinanceEntry extends Model implements HasMedia
 {
-    /** @use HasFactory<\Database\Factories\FinanceEntryFactory> */
+    /** @use HasFactory<FinanceEntryFactory> */
     use BelongsToOrganization;
 
     use BelongsToProject;

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\OrganizationRole;
-use App\Enums\ProjectRole;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Project\ProjectRole;
 use App\Events\UserUpdated;
 use App\Facades\ProjectAccess;
 use App\Observers\UserObserver;
@@ -35,11 +35,11 @@ use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia, HasTenants, MustVerifyEmail, PasskeyUser
 {
     use Billable;
-
     use HasAuthenticationMailable;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasOneTimePasswords;
     use InteractsWithMedia;
     use Notifiable;

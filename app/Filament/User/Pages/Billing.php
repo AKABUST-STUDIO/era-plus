@@ -2,7 +2,7 @@
 
 namespace App\Filament\User\Pages;
 
-use App\Enums\SubscriptionTier;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Models\Organization;
 use App\Models\Subscription;
 use Filament\Pages\Page;

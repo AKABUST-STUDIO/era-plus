@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\OrganizationRole;
-use App\Enums\SubscriptionTier;
+use App\Enums\Organization\OrganizationRole;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Observers\OrganizationObserver;
 use App\Services\ProjectAccess;
 use Database\Factories\OrganizationFactory;

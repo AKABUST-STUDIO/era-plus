@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Enums\BudgetCategory;
-use App\Enums\FinanceOperation;
-use App\Enums\OrganizationRole;
+use App\Enums\FinanceEntry\BudgetCategory;
+use App\Enums\FinanceEntry\FinanceOperation;
+use App\Enums\Organization\OrganizationRole;
 use App\Exports\FinanceEntriesExport;
 use App\Filament\Project\Resources\FinanceEntries\Pages\ListFinanceEntries;
 use App\Models\FinanceEntry;

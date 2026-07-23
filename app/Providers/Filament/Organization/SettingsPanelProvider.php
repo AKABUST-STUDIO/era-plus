@@ -33,6 +33,10 @@ class SettingsPanelProvider extends BasePanelProvider
                 in: app_path('Filament/Organization/Settings/Widgets'),
                 for: 'App\\Filament\\Organization\\Settings\\Widgets',
             )
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_LOGO_BEFORE,
+                fn (): View => view('filament.user.components.back'),
+            )
             ->middleware([
                 ApplyTenantContext::class,
                 EnforceOrganizationEmailVerification::class,

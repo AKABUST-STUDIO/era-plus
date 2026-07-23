@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Enums\BudgetCategory;
-use App\Enums\FinanceOperation;
+use App\Enums\FinanceEntry\BudgetCategory;
+use App\Enums\FinanceEntry\FinanceOperation;
+use App\Models\FinanceEntry;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\FinanceEntry>
+ * @extends Factory<FinanceEntry>
  */
 class FinanceEntryFactory extends Factory
 {

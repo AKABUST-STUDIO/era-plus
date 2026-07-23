@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\SubscriptionTier;
+use App\Enums\Subscription\SubscriptionTier;
 use App\Filament\Organization\Pages\Overview;
 use App\Models\Organization;
 use App\Models\Project;
