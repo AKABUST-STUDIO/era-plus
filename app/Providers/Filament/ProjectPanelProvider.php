@@ -3,8 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Panels\ProjectPanel;
-use App\Filament\Project\Widgets\ProjectCalendar;
-use App\Filament\Project\Widgets\ProjectInfoOverview;
 use App\Http\Middleware\ApplyTenantContext;
 use App\Http\Middleware\EnforceOrganizationEmailVerification;
 use App\Http\Middleware\EnforceOrganizationTwoFactor;
@@ -13,7 +11,6 @@ use App\Http\Middleware\RegisterSpotlightCommands;
 use App\Models\Project;
 use Filament\Facades\Filament;
 use Filament\Panel;
-use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class ProjectPanelProvider extends BasePanelProvider
 {
@@ -40,15 +37,6 @@ class ProjectPanelProvider extends BasePanelProvider
                 in: app_path('Filament/Project/Pages'),
                 for: 'App\\Filament\\Project\\Pages',
             )
-            ->discoverWidgets(
-                in: app_path('Filament/Project/Widgets'),
-                for: 'App\\Filament\\Project\\Widgets',
-            )
-            ->widgets([
-                ProjectInfoOverview::class,
-                ProjectCalendar::class,
-            ])
-            ->plugin(FilamentFullCalendarPlugin::make())
             ->authMiddleware([
                 RedirectToOrganizationLogin::class,
             ])

@@ -22,7 +22,6 @@ class TenantRoleProvisioner
             ProjectAccess::ABILITY_ADMINISTER_PROJECT,
             ProjectAccess::ABILITY_MANAGE_MEMBERS,
             ProjectAccess::ABILITY_MANAGE_PARTICIPANTS,
-            ProjectAccess::ABILITY_MANAGE_TASKS,
             ProjectAccess::ABILITY_MANAGE_SETTINGS,
         ];
     }

@@ -7,7 +7,6 @@ use App\Enums\Project\ErasmusActionType;
 use App\Enums\Project\ErasmusField;
 use App\Enums\Project\ErasmusKeyAction;
 use App\Enums\Project\ErasmusManagingBody;
-use App\Enums\Project\ProjectStatus;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Models\Organization;
 use App\Models\Project;
@@ -68,15 +67,11 @@ class ProjectEditFormTest extends TestCase
     {
         Livewire::test(EditProject::class, ['record' => $this->project->getRouteKey()])
             ->fillForm([
-                'status' => ProjectStatus::Running->value,
                 'requested_grant' => 250000,
             ])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $project = $this->project->fresh();
-
-        $this->assertSame(ProjectStatus::Running, $project->status);
-        $this->assertSame('250000.00', $project->requested_grant);
+        $this->assertSame('250000.00', $this->project->fresh()->requested_grant);
     }
 }

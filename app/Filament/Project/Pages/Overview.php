@@ -2,7 +2,6 @@
 
 namespace App\Filament\Project\Pages;
 
-use App\Filament\Project\Widgets\ProjectCalendar;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
@@ -18,16 +17,6 @@ class Overview extends Page
     protected static ?int $navigationSort = -2;
 
     protected static BackedEnum|string|null $navigationIcon = null;
-
-    /**
-     * @return array<class-string<Widget> | WidgetConfiguration>
-     */
-    public function getWidgets(): array
-    {
-        return [
-            ProjectCalendar::class,
-        ];
-    }
 
     /**
      * @return int | array<string, ?int>

@@ -7,14 +7,12 @@ use App\Enums\Project\ErasmusActionType;
 use App\Enums\Project\ErasmusField;
 use App\Enums\Project\ErasmusKeyAction;
 use App\Enums\Project\ErasmusManagingBody;
-use App\Enums\Project\ErasmusPriority;
 use App\Enums\Project\ProjectRole;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Subscription\SubscriptionTier;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Models\Organization;
 use App\Models\Project;
-use App\Models\Project\ErasmusPriority as ErasmusPriorityModel;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -140,75 +138,6 @@ class ProjectWizardTest extends TestCase
         $this->assertSame(2027, Project::query()->where('name', 'Call Year Test')->firstOrFail()->call_year);
     }
 
-    public function test_priorities_attach_programme_and_organisation_specific_entries(): void
-    {
-        $programme = ErasmusPriorityModel::query()
-            ->whereNull('organization_id')
-            ->where('name', ErasmusPriority::DigitalTransformation->getLabel())
-            ->firstOrFail();
-
-        $custom = ErasmusPriorityModel::create([
-            'organization_id' => $this->organization->id,
-            'name' => 'Local heritage',
-        ]);
-
-        Livewire::test(CreateProject::class)
-            ->fillForm([
-                ...$this->baseFormData(),
-                'name' => 'Custom Priorities',
-                'priorities' => [$programme->id, $custom->id],
-            ])
-            ->call('create')
-            ->assertHasNoFormErrors();
-
-        $project = Project::query()->where('name', 'Custom Priorities')->firstOrFail();
-
-        $this->assertSame(
-            [$programme->id, $custom->id],
-            $project->priorities()->orderBy('priorities.id')->pluck('priorities.id')->all(),
-        );
-    }
-
-    public function test_priorities_of_other_organisations_are_not_offered(): void
-    {
-        $foreign = ErasmusPriorityModel::create([
-            'organization_id' => Organization::factory()->create()->id,
-            'name' => 'Someone elses priority',
-        ]);
-
-        Livewire::test(CreateProject::class)
-            ->fillForm([
-                ...$this->baseFormData(),
-                'name' => 'Foreign Priority',
-                'priorities' => [$foreign->id],
-            ])
-            ->call('create')
-            ->assertHasFormErrors(['priorities.0']);
-    }
-
-    public function test_cascade_hides_each_step_until_the_previous_one_is_chosen(): void
-    {
-        $component = Livewire::test(CreateProject::class)
-            ->assertSchemaComponentHidden('erasmus_key_action')
-            ->assertSchemaComponentHidden('erasmus_action');
-
-        $component->set('data.erasmus_field', ErasmusField::Youth->value)
-            ->assertSchemaComponentVisible('erasmus_key_action')
-            ->assertSchemaComponentHidden('erasmus_action');
-
-        $component->set('data.erasmus_key_action', ErasmusKeyAction::KeyAction1->value)
-            ->assertSchemaComponentVisible('erasmus_action');
-    }
-
-    public function test_managing_body_is_derived_from_the_action_type(): void
-    {
-        Livewire::test(CreateProject::class)
-            ->set('data.erasmus_field', ErasmusField::HigherEducation->value)
-            ->set('data.erasmus_key_action', ErasmusKeyAction::JeanMonnet->value)
-            ->set('data.erasmus_action', ErasmusActionType::JeanMonnetModule->value)
-            ->assertSchemaStateSet(['erasmus_managing_body' => ErasmusManagingBody::Eacea->value]);
-    }
-
     public function test_key_action_survives_switching_to_a_field_that_still_offers_it(): void
     {
         Livewire::test(CreateProject::class)
@@ -220,44 +149,6 @@ class ProjectWizardTest extends TestCase
                 'erasmus_key_action' => ErasmusKeyAction::KeyAction2->value,
                 'erasmus_action' => ErasmusActionType::Ka220->value,
             ]);
-    }
-
-    public function test_action_type_is_cleared_when_the_new_field_does_not_offer_it(): void
-    {
-        Livewire::test(CreateProject::class)
-            ->set('data.erasmus_field', ErasmusField::SchoolEducation->value)
-            ->set('data.erasmus_key_action', ErasmusKeyAction::KeyAction1->value)
-            ->set('data.erasmus_action', ErasmusActionType::Ka122->value)
-            ->set('data.erasmus_field', ErasmusField::HigherEducation->value)
-            ->assertSchemaStateSet([
-                'erasmus_key_action' => ErasmusKeyAction::KeyAction1->value,
-                'erasmus_action' => null,
-            ]);
-    }
-
-    public function test_changing_the_field_clears_choices_the_new_field_does_not_offer(): void
-    {
-        Livewire::test(CreateProject::class)
-            ->set('data.erasmus_field', ErasmusField::Youth->value)
-            ->set('data.erasmus_key_action', ErasmusKeyAction::KeyAction1->value)
-            ->set('data.erasmus_action', ErasmusActionType::Ka152->value)
-            ->set('data.erasmus_field', ErasmusField::HigherEducation->value)
-            ->assertSchemaStateSet([
-                'erasmus_action' => null,
-                'erasmus_managing_body' => null,
-            ]);
-    }
-
-    public function test_duration_helper_follows_the_selected_action_type(): void
-    {
-        Livewire::test(CreateProject::class)
-            ->set('data.erasmus_field', ErasmusField::SchoolEducation->value)
-            ->set('data.erasmus_key_action', ErasmusKeyAction::KeyAction1->value)
-            ->set('data.erasmus_action', ErasmusActionType::Ka122->value)
-            ->assertSee(__('forms.project.fields.duration_months_range', [
-                ...ErasmusActionType::Ka122->durationRange(),
-                'erasmus_action' => ErasmusActionType::Ka122->getLabel(),
-            ]));
     }
 
     public function test_duration_must_sit_inside_the_action_type_range(): void

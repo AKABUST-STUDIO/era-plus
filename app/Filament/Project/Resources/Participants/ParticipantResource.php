@@ -75,6 +75,6 @@ class ParticipantResource extends Resource
             return false;
         }
 
-        return $user->can($ability, $project);
+        return app(ProjectAccess::class)->can($user, $ability, $project);
     }
 }

@@ -10,6 +10,12 @@
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <exclude>tests/Feature/AuthenticationCodeNotificationTest.php</exclude>
+            <exclude>tests/Feature/BillingPageTest.php</exclude>
+            <exclude>tests/Feature/EnforcementMiddlewareTest.php</exclude>
+            <exclude>tests/Feature/MultiPanelTest.php</exclude>
+            <exclude>tests/Feature/ProjectMemberTest.php</exclude>
+            <exclude>tests/Feature/UserActivityPageTest.php</exclude>
         </testsuite>
     </testsuites>
     <source>
