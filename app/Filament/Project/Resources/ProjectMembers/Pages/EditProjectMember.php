@@ -2,7 +2,7 @@
 
 namespace App\Filament\Project\Resources\ProjectMembers\Pages;
 
-use App\Enums\ProjectRole;
+use App\Enums\Project\ProjectRole;
 use App\Filament\Project\Resources\ProjectMembers\ProjectMemberResource;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Placeholder;

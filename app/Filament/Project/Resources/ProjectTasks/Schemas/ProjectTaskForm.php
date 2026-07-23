@@ -2,7 +2,7 @@
 
 namespace App\Filament\Project\Resources\ProjectTasks\Schemas;
 
-use App\Enums\ProjectTaskStatus;
+use App\Enums\ProjectTask\ProjectTaskStatus;
 use App\Models\Project;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;

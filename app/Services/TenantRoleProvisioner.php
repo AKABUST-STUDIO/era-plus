@@ -20,8 +20,6 @@ class TenantRoleProvisioner
         return [
             ProjectAccess::ABILITY_ADMINISTER_ORGANIZATION,
             ProjectAccess::ABILITY_ADMINISTER_PROJECT,
-            ProjectAccess::ABILITY_VIEW_FINANCE,
-            ProjectAccess::ABILITY_MANAGE_FINANCE,
             ProjectAccess::ABILITY_MANAGE_MEMBERS,
             ProjectAccess::ABILITY_MANAGE_PARTICIPANTS,
             ProjectAccess::ABILITY_MANAGE_TASKS,

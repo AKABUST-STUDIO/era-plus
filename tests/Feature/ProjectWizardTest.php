@@ -18,10 +18,8 @@ use App\Models\Project\ErasmusPriority as ErasmusPriorityModel;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
-use Nnjeim\World\Models\Country;
 use Tests\TestCase;
 
 class ProjectWizardTest extends TestCase
@@ -32,21 +30,9 @@ class ProjectWizardTest extends TestCase
 
     private Organization $organization;
 
-    private Country $estonia;
-
-    private Country $germany;
-
     protected function setUp(): void
     {
         parent::setUp();
-
-        DB::table('countries')->insert([
-            ['iso2' => 'EE', 'iso3' => 'EST', 'name' => 'Estonia', 'status' => 1, 'phone_code' => '372', 'region' => 'Europe', 'subregion' => 'Northern Europe'],
-            ['iso2' => 'DE', 'iso3' => 'DEU', 'name' => 'Germany', 'status' => 1, 'phone_code' => '49', 'region' => 'Europe', 'subregion' => 'Western Europe'],
-        ]);
-
-        $this->estonia = Country::query()->where('iso2', 'EE')->firstOrFail();
-        $this->germany = Country::query()->where('iso2', 'DE')->firstOrFail();
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->subscribed(SubscriptionTier::Pro)->create();
@@ -63,16 +49,12 @@ class ProjectWizardTest extends TestCase
         Livewire::test(CreateProject::class)->assertSuccessful();
     }
 
-    public function test_wizard_creates_project_with_countries(): void
+    public function test_wizard_creates_project(): void
     {
         Livewire::test(CreateProject::class)
             ->fillForm([
                 ...$this->baseFormData(),
                 'name' => 'Mobility 2026',
-                'project_countries' => [
-                    ['country_id' => $this->estonia->id, 'default_travel_expense_limit' => 350.00],
-                    ['country_id' => $this->germany->id, 'default_travel_expense_limit' => 600.00],
-                ],
             ])
             ->call('create')
             ->assertHasNoFormErrors();
@@ -88,17 +70,6 @@ class ProjectWizardTest extends TestCase
         $this->assertSame(12, $project->duration_months);
         $this->assertSame('2026-09-01', $project->beginning_date->toDateString());
         $this->assertSame('2027-06-30', $project->end_date->toDateString());
-
-        $this->assertDatabaseHas('project_countries', [
-            'project_id' => $project->id,
-            'country_id' => $this->estonia->id,
-            'default_travel_expense_limit' => '350.00',
-        ]);
-        $this->assertDatabaseHas('project_countries', [
-            'project_id' => $project->id,
-            'country_id' => $this->germany->id,
-            'default_travel_expense_limit' => '600.00',
-        ]);
     }
 
     public function test_creator_attached_as_project_admin_via_wizard(): void

@@ -13,13 +13,12 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('country_id')->constrained()->cascadeOnDelete();
             $table->string('first_name', 120);
             $table->string('last_name', 120);
             $table->string('email')->nullable();
             $table->timestamps();
 
-            $table->index(['project_id', 'country_id']);
+            $table->index(['project_id', 'last_name']);
         });
     }
 

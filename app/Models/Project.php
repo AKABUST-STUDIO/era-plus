@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\FinanceEntry\BudgetCategory;
-use App\Enums\FinanceEntry\FinanceOperation;
 use App\Enums\Project\ErasmusActionType;
 use App\Enums\Project\ErasmusField;
 use App\Enums\Project\ErasmusKeyAction;
@@ -12,8 +10,6 @@ use App\Enums\Project\ProjectRole;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Project\ErasmusField as ErasmusFieldModel;
 use App\Models\Project\ErasmusPriority;
-use App\Models\Scopes\OrganizationScope;
-use App\Models\Scopes\ProjectScope;
 use App\Observers\ProjectObserver;
 use Database\Factories\ProjectFactory;
 use Filament\Facades\Filament;
@@ -193,14 +189,6 @@ class Project extends Model
     }
 
     /**
-     * @return HasMany<FinanceEntry, $this>
-     */
-    public function financeEntries(): HasMany
-    {
-        return $this->hasMany(FinanceEntry::class);
-    }
-
-    /**
      * @return BelongsToMany<ErasmusPriority, $this>
      */
     public function priorities(): BelongsToMany
@@ -218,60 +206,10 @@ class Project extends Model
     }
 
     /**
-     * @return HasMany<ProjectCountry, $this>
-     */
-    public function countries(): HasMany
-    {
-        return $this->hasMany(ProjectCountry::class);
-    }
-
-    /**
      * @return HasMany<Participant, $this>
      */
     public function participants(): HasMany
     {
         return $this->hasMany(Participant::class);
-    }
-
-    public function financeTotal(): string
-    {
-        $query = $this->financeEntries()
-            ->withoutGlobalScopes([OrganizationScope::class, ProjectScope::class]);
-
-        $added = (string) (clone $query)
-            ->where('operation', FinanceOperation::Add->value)
-            ->sum('amount');
-
-        $subtracted = (string) (clone $query)
-            ->where('operation', FinanceOperation::Subtract->value)
-            ->sum('amount');
-
-        return bcsub($added ?: '0', $subtracted ?: '0', 2);
-    }
-
-    /**
-     * @return array<string, string> Category value => signed total
-     */
-    public function financeTotalsByCategory(): array
-    {
-        $totals = [];
-
-        foreach (BudgetCategory::cases() as $category) {
-            $query = $this->financeEntries()
-                ->withoutGlobalScopes([OrganizationScope::class, ProjectScope::class])
-                ->where('cost_category', $category->value);
-
-            $added = (string) (clone $query)
-                ->where('operation', FinanceOperation::Add->value)
-                ->sum('amount');
-
-            $subtracted = (string) (clone $query)
-                ->where('operation', FinanceOperation::Subtract->value)
-                ->sum('amount');
-
-            $totals[$category->value] = bcsub($added ?: '0', $subtracted ?: '0', 2);
-        }
-
-        return $totals;
     }
 }

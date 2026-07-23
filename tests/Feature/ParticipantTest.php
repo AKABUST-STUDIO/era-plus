@@ -7,33 +7,19 @@ use App\Models\Participant;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
-use Nnjeim\World\Models\Country;
 use Tests\TestCase;
 
 class ParticipantTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        DB::table('countries')->insert([
-            ['iso2' => 'EE', 'iso3' => 'EST', 'name' => 'Estonia', 'status' => 1, 'phone_code' => '372', 'region' => 'Europe', 'subregion' => 'Northern Europe'],
-            ['iso2' => 'DE', 'iso3' => 'DEU', 'name' => 'Germany', 'status' => 1, 'phone_code' => '49', 'region' => 'Europe', 'subregion' => 'Western Europe'],
-        ]);
-    }
-
-    public function test_participant_belongs_to_project_organization_country(): void
+    public function test_participant_belongs_to_project_and_organization(): void
     {
         $project = Project::factory()->create();
-        $country = Country::query()->where('iso2', 'EE')->firstOrFail();
 
         $participant = Participant::create([
             'organization_id' => $project->organization_id,
             'project_id' => $project->id,
-            'country_id' => $country->id,
             'first_name' => 'Maria',
             'last_name' => 'Tamm',
             'email' => 'maria@example.com',
@@ -41,19 +27,16 @@ class ParticipantTest extends TestCase
 
         $this->assertTrue($participant->project->is($project));
         $this->assertSame($project->organization_id, $participant->organization_id);
-        $this->assertTrue($participant->country->is($country));
     }
 
     public function test_participant_can_be_linked_to_user(): void
     {
         $project = Project::factory()->create();
-        $country = Country::query()->where('iso2', 'EE')->firstOrFail();
         $user = User::factory()->create();
 
         $participant = Participant::create([
             'organization_id' => $project->organization_id,
             'project_id' => $project->id,
-            'country_id' => $country->id,
             'user_id' => $user->id,
             'first_name' => 'A',
             'last_name' => 'B',

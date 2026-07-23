@@ -2,7 +2,7 @@
 
 namespace App\Filament\Project\Resources\ProjectMembers\Schemas;
 
-use App\Enums\ProjectRole;
+use App\Enums\Project\ProjectRole;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;

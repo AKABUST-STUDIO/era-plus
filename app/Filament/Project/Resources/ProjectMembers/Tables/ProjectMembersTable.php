@@ -2,7 +2,7 @@
 
 namespace App\Filament\Project\Resources\ProjectMembers\Tables;
 
-use App\Enums\ProjectRole;
+use App\Enums\Project\ProjectRole;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;

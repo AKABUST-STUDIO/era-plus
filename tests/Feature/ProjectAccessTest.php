@@ -4,7 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
-use App\Filament\Project\Resources\FinanceEntries\FinanceEntryResource;
+use App\Filament\Project\Resources\Participants\ParticipantResource;
+use App\Filament\Project\Resources\ProjectTasks\ProjectTaskResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
@@ -38,70 +39,72 @@ class ProjectAccessTest extends TestCase
         $admin = User::factory()->create();
         $admin->joinOrganization($this->organization, OrganizationRole::Admin);
 
-        $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
-        $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
+        $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
+        $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_MANAGE_TASKS, $this->project));
         $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
     }
 
-    public function test_project_admin_can_manage_finance(): void
+    public function test_project_admin_can_manage_participants(): void
     {
         $projectAdmin = User::factory()->create();
         $projectAdmin->joinOrganization($this->organization);
         $projectAdmin->joinProject($this->project, ProjectRole::Admin);
 
-        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
-        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
+        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
+        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_TASKS, $this->project));
         $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
     }
 
-    public function test_participant_granted_view_finance_cannot_manage(): void
+    public function test_participant_granted_manage_participants_cannot_manage_tasks(): void
     {
         $participant = User::factory()->create();
         $participant->joinOrganization($this->organization);
         $participant->joinProject($this->project, ProjectRole::Participant);
 
-        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(ProjectAccess::ABILITY_VIEW_FINANCE);
+        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
 
-        $this->assertTrue($this->access->can($participant, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
-        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
+        $this->assertTrue($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
+        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_TASKS, $this->project));
         $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
     }
 
-    public function test_participant_cannot_view_finance(): void
+    public function test_participant_cannot_manage_participants(): void
     {
         $participant = User::factory()->create();
         $participant->joinOrganization($this->organization);
         $participant->joinProject($this->project, ProjectRole::Participant);
 
-        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
-        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
+        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
+        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_TASKS, $this->project));
     }
 
     public function test_non_member_has_no_abilities(): void
     {
         $stranger = User::factory()->create();
 
-        $this->assertFalse($this->access->can($stranger, ProjectAccess::ABILITY_VIEW_FINANCE, $this->project));
-        $this->assertFalse($this->access->can($stranger, ProjectAccess::ABILITY_MANAGE_FINANCE, $this->project));
+        $this->assertFalse($this->access->can($stranger, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
+        $this->assertFalse($this->access->can($stranger, ProjectAccess::ABILITY_MANAGE_TASKS, $this->project));
     }
 
-    public function test_finance_resource_can_view_any_uses_gate(): void
+    public function test_participant_resource_can_view_any_uses_gate(): void
     {
         $viewer = User::factory()->create();
         $viewer->joinOrganization($this->organization);
         $viewer->joinProject($this->project, ProjectRole::Participant);
 
-        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(ProjectAccess::ABILITY_VIEW_FINANCE);
+        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
 
         $this->actingAs($viewer);
         Filament::setCurrentPanel(Filament::getPanel('project'));
         Filament::setTenant($this->project);
 
-        $this->assertTrue(FinanceEntryResource::canViewAny());
-        $this->assertFalse(FinanceEntryResource::canCreate());
+        $this->assertTrue(ParticipantResource::canViewAny());
+        $this->assertTrue(ParticipantResource::canCreate());
+        $this->assertFalse(ProjectTaskResource::canViewAny());
+        $this->assertFalse(ProjectTaskResource::canCreate());
     }
 
-    public function test_finance_resource_denies_participant(): void
+    public function test_participant_resource_denies_participant(): void
     {
         $participant = User::factory()->create();
         $participant->joinOrganization($this->organization);
@@ -111,6 +114,6 @@ class ProjectAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('project'));
         Filament::setTenant($this->project);
 
-        $this->assertFalse(FinanceEntryResource::canViewAny());
+        $this->assertFalse(ParticipantResource::canViewAny());
     }
 }

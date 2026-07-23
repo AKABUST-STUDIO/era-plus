@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Panels\ProjectPanel;
-use App\Filament\Project\Widgets\FinanceOverviewStats;
 use App\Filament\Project\Widgets\ProjectCalendar;
 use App\Filament\Project\Widgets\ProjectInfoOverview;
 use App\Http\Middleware\ApplyTenantContext;
@@ -47,7 +46,6 @@ class ProjectPanelProvider extends BasePanelProvider
             )
             ->widgets([
                 ProjectInfoOverview::class,
-                FinanceOverviewStats::class,
                 ProjectCalendar::class,
             ])
             ->plugin(FilamentFullCalendarPlugin::make())

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Project\Resources\ProjectTasks\Tables;
 
-use App\Enums\ProjectTaskStatus;
+use App\Enums\ProjectTask\ProjectTaskStatus;
 use App\Models\ProjectTask;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;

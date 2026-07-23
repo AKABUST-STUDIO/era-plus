@@ -16,7 +16,6 @@ return [
     'cannot_remove_last_admin' => 'Cannot remove the last Organization Admin',
     'two_factor_saved' => '2FA setting saved',
     'email_verification_saved' => 'Email verification setting saved',
-    'country_limits_saved' => 'Country travel limits updated',
     'support_submitted' => 'Support request submitted',
     'member_added' => 'Member added',
     'organization_created' => 'Organization created',

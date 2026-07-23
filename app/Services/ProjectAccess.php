@@ -8,10 +8,6 @@ use App\Models\User;
 
 class ProjectAccess
 {
-    public const ABILITY_VIEW_FINANCE = 'project.view_finance';
-
-    public const ABILITY_MANAGE_FINANCE = 'project.manage_finance';
-
     public const ABILITY_MANAGE_MEMBERS = 'project.manage_members';
 
     public const ABILITY_MANAGE_PARTICIPANTS = 'project.manage_participants';

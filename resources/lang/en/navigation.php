@@ -2,12 +2,6 @@
 
 return [
     'back' => 'Back',
-    'finance' => 'Finance',
-    'finance_entry' => 'finance entry',
-    'finance_entries' => 'finance entries',
-    'travel' => 'Travel',
-    'travel_expense' => 'travel expense',
-    'travel_expenses' => 'travel expenses',
     'members' => 'Members',
     'member' => 'member',
     'tasks' => 'Tasks',

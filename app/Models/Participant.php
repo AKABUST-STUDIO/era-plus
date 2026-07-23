@@ -4,15 +4,15 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\BelongsToProject;
+use Database\Factories\ParticipantFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Nnjeim\World\Models\Country;
 
 class Participant extends Model
 {
-    /** @use HasFactory<\Database\Factories\ParticipantFactory> */
+    /** @use HasFactory<ParticipantFactory> */
     use BelongsToOrganization;
 
     use BelongsToProject;
@@ -22,7 +22,6 @@ class Participant extends Model
         'organization_id',
         'project_id',
         'user_id',
-        'country_id',
         'first_name',
         'last_name',
         'email',
@@ -34,14 +33,6 @@ class Participant extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    /**
-     * @return BelongsTo<Country, $this>
-     */
-    public function country(): BelongsTo
-    {
-        return $this->belongsTo(Country::class);
     }
 
     protected function fullName(): Attribute
