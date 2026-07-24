@@ -24,6 +24,14 @@ enum ProjectRole: string implements HasColor, HasLabel
         };
     }
 
+    public function isLocked(): bool
+    {
+        return match ($this) {
+            self::Admin => true,
+            self::Participant => false,
+        };
+    }
+
     /**
      * @return list<string>
      */

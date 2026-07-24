@@ -12,23 +12,9 @@ use Spatie\Permission\PermissionRegistrar;
 
 class TenantRoleProvisioner
 {
-    /**
-     * @return list<string>
-     */
-    public static function permissionNames(): array
-    {
-        return [
-            ProjectAccess::ABILITY_ADMINISTER_ORGANIZATION,
-            ProjectAccess::ABILITY_ADMINISTER_PROJECT,
-            ProjectAccess::ABILITY_MANAGE_MEMBERS,
-            ProjectAccess::ABILITY_MANAGE_PARTICIPANTS,
-            ProjectAccess::ABILITY_MANAGE_SETTINGS,
-        ];
-    }
-
     public function ensurePermissions(): void
     {
-        foreach (self::permissionNames() as $name) {
+        foreach (PermissionRegistry::all() as $name) {
             Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
 
@@ -47,10 +33,22 @@ class TenantRoleProvisioner
             /** @var Role $role */
             $role = $tenant->roles()->firstOrCreate(
                 ['name' => $case->value, 'guard_name' => 'web'],
-                ['locked' => true],
+                ['label' => $case->getLabel(), 'locked' => $case->isLocked()],
             );
 
             $role->syncPermissions($case->defaultPermissions());
         }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    public function reprovisionAll(): void
+    {
+        $this->ensurePermissions();
+
+        Organization::query()->each(fn (Organization $org) => $this->provision($org));
+        Project::query()->each(fn (Project $project) => $this->provision($project));
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

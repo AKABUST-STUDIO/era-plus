@@ -15,6 +15,7 @@ return [
     'role_updated' => 'Role updated',
     'cannot_remove_last_admin' => 'Cannot remove the last Organization Admin',
     'cannot_invite' => 'You do not have permission to invite members to this organization.',
+    'invalid_role' => 'That role does not belong to this organization.',
     'two_factor_saved' => '2FA setting saved',
     'email_verification_saved' => 'Email verification setting saved',
     'support_submitted' => 'Support request submitted',

@@ -5,10 +5,12 @@ namespace App\Filament\Organization\Settings\Pages;
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
+use App\Filament\Organization\Settings\Resources\Roles\RoleResource;
 use App\Mail\OrganizationInvitation;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
+use App\Providers\Filament\Organization\SettingsPanelProvider;
 use App\Support\EmailUsername;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -79,7 +81,7 @@ class Members extends Page implements HasTable
 
         $this->organization = $organization;
 
-        $this->inviteForm->fill(['role' => OrganizationRole::Member->value]);
+        $this->inviteForm->fill(['role' => $this->defaultRoleId()]);
     }
 
     public function switchTab(string $tab): void
@@ -116,15 +118,22 @@ class Members extends Page implements HasTable
                 Section::make(__('settings.users.invite.heading'))
                     ->description(__('settings.users.invite.description'))
                     ->visible(fn (): bool => auth()->user()->can('inviteMember', $this->organization))
+                    ->columns(4)
                     ->schema([
                         TextInput::make('email')
-                            ->label(__('settings.users.invite.email'))
+                            ->hiddenLabel()
+                            ->placeholder(__('settings.users.invite.email'))
+                            ->prefixIcon('lucide-mail')
+                            ->columnSpan(2)
                             ->email()
                             ->required(),
                         Select::make('role')
-                            ->options(OrganizationRole::class)
-                            ->default(OrganizationRole::Member)
-                            ->required(),
+                            ->hiddenLabel()
+                            ->prefix('Role')
+                            ->options(fn (): array => $this->organization->roleOptions())
+                            ->default(fn (): ?int => $this->defaultRoleId())
+                            ->required()
+                            ->suffixActions($this->roleSelectSuffixActions('inviteData.role')),
                     ])
                     ->footerActions([
                         Action::make('invite')
@@ -161,14 +170,16 @@ class Members extends Page implements HasTable
             return;
         }
 
-        $role = $data['role'] ?? null;
-        $role = $role instanceof OrganizationRole
-            ? $role
-            : (OrganizationRole::tryFrom((string) $role) ?? OrganizationRole::Member);
+        $roleId = (int) ($data['role'] ?? $this->defaultRoleId());
+        $role = $this->organization->roles()->find($roleId);
 
-        $this->organization->users()->attach($user, [
-            'role_id' => $this->organization->roleFor($role)?->id,
-        ]);
+        if ($role === null) {
+            Notification::make()->title(__('notifications.invalid_role'))->danger()->send();
+
+            return;
+        }
+
+        $this->organization->users()->attach($user, ['role_id' => $role->id]);
 
         Mail::to($user->email)->queue(new OrganizationInvitation(
             $this->organization,
@@ -177,17 +188,42 @@ class Members extends Page implements HasTable
             auth()->user(),
         ));
 
+        $roleLabel = OrganizationRole::tryFrom($role->name)?->getLabel() ?? $role->name;
+
         ActivityLog::record(
             $this->organization,
-            "Invited {$user->email} as {$role->getLabel()}",
+            "Invited {$user->email} as {$roleLabel}",
             eventType: 'organization.member.invited',
             target: $user,
-            data: ['email' => $user->email, 'role' => $role->value],
+            data: ['email' => $user->email, 'role' => $role->name],
         );
 
         Notification::make()->title(__('notifications.invitation_sent'))->success()->send();
 
-        $this->inviteForm->fill(['role' => OrganizationRole::Member->value]);
+        $this->inviteForm->fill(['role' => $this->defaultRoleId()]);
+    }
+
+    private function defaultRoleId(): ?int
+    {
+        $firstCustom = $this->organization->roles()->where('locked', false)->orderBy('id')->value('id');
+
+        return $firstCustom
+            ?? $this->organization->roleFor(OrganizationRole::Admin)?->id;
+    }
+
+    /**
+     * @return array<int, Action>
+     */
+    private function roleSelectSuffixActions(string $statePath): array
+    {
+        return [
+            Action::make('manageRoles')
+                ->icon('lucide-external-link')
+                ->color('gray')
+                ->tooltip(__('settings.users.role_select.manage'))
+                ->url(fn (): string => RoleResource::getUrl(panel: SettingsPanelProvider::PANEL_ID))
+                ->openUrlInNewTab(),
+        ];
     }
 
     public function table(Table $table): Table
@@ -231,7 +267,7 @@ class Members extends Page implements HasTable
                             ->searchable(),
                     ]),
                     TextColumn::make('role_label')
-                        ->getStateUsing(fn (User $record): ?string => OrganizationRole::tryFrom((string) $record->member?->role?->name)?->getLabel())
+                        ->getStateUsing(fn (User $record): ?string => $record->member?->role?->displayLabel())
                         ->badge()
                         ->color('gray')
                         ->grow(false),
@@ -254,9 +290,9 @@ class Members extends Page implements HasTable
             ->filters([
                 SelectFilter::make('role')
                     ->label(__('forms.common.role'))
-                    ->options(OrganizationRole::class)
+                    ->options($this->organization->roleOptions())
                     ->query(fn ($query, array $data) => filled($data['value'] ?? null)
-                        ? $query->where('organization_user.role_id', $this->organization->roleFor($data['value'])?->id)
+                        ? $query->where('organization_user.role_id', $data['value'])
                         : $query),
                 TernaryFilter::make('two_factor_confirmed_at')
                     ->label(__('settings.users.filters.two_factor'))
@@ -280,11 +316,12 @@ class Members extends Page implements HasTable
                             : null)
                         ->form([
                             Select::make('role')
-                                ->options(OrganizationRole::class)
-                                ->default(fn (User $user): ?string => $user->member?->role?->name)
-                                ->required(),
+                                ->options(fn (): array => $this->organization->roleOptions())
+                                ->default(fn (User $user): ?int => $user->member?->role_id)
+                                ->required()
+                                ->suffixActions($this->roleSelectSuffixActions('mountedActions.0.data.role')),
                         ])
-                        ->action(fn (User $user, array $data) => $this->changeRole($user, OrganizationRole::from($data['role']))),
+                        ->action(fn (User $user, array $data) => $this->changeRole($user, (int) $data['role'])),
                     Action::make('remove')
                         ->label(__('settings.users.actions.remove'))
                         ->icon('lucide-trash-2')
@@ -312,7 +349,7 @@ class Members extends Page implements HasTable
             ]);
     }
 
-    public function changeRole(User $user, OrganizationRole $role): void
+    public function changeRole(User $user, int $roleId): void
     {
         if (auth()->user()->cannot('changeMemberRole', [$this->organization, $user])) {
             Notification::make()
@@ -323,16 +360,24 @@ class Members extends Page implements HasTable
             return;
         }
 
-        $this->organization->users()->updateExistingPivot($user->id, [
-            'role_id' => $this->organization->roleFor($role)?->id,
-        ]);
+        $role = $this->organization->roles()->find($roleId);
+
+        if ($role === null) {
+            Notification::make()->title(__('notifications.invalid_role'))->danger()->send();
+
+            return;
+        }
+
+        $this->organization->users()->updateExistingPivot($user->id, ['role_id' => $role->id]);
+
+        $roleLabel = OrganizationRole::tryFrom($role->name)?->getLabel() ?? $role->name;
 
         ActivityLog::record(
             $this->organization,
-            "Set {$user->email} role to {$role->getLabel()}",
+            "Set {$user->email} role to {$roleLabel}",
             eventType: 'organization.member.role_changed',
             target: $user,
-            data: ['role' => $role->value],
+            data: ['role' => $role->name],
         );
 
         Notification::make()->title(__('notifications.role_updated'))->success()->send();

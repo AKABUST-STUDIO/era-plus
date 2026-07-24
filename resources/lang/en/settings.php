@@ -113,6 +113,65 @@ return [
             'members' => 'Members',
             'invitations' => 'Pending',
         ],
+
+        'role_select' => [
+            'create' => 'Create a new role',
+            'manage' => 'Manage roles',
+        ],
+    ],
+
+    'roles' => [
+        'navigation_label' => 'Roles',
+        'title' => 'Roles',
+        'singular' => 'Role',
+
+        'table' => [
+            'label' => 'Role',
+            'permissions' => 'Permissions',
+            'members' => 'Members',
+            'locked_tooltip' => 'Built-in role. Cannot be renamed or deleted.',
+        ],
+
+        'form' => [
+            'details' => 'Details',
+            'name' => 'Slug',
+            'name_helper' => 'Immutable identifier used in code and the audit log. Lowercase, digits, dot, dash or underscore.',
+            'name_readonly_helper' => 'The slug is set on creation and cannot be changed.',
+            'name_unique' => 'A role with this slug already exists in this organization.',
+            'name_regex' => 'Use lowercase letters, digits, dots, dashes or underscores.',
+            'label' => 'Label',
+            'label_helper' => 'Display name shown to members throughout the app.',
+            'permissions' => 'Permissions',
+        ],
+
+        'edit' => [
+            'title' => 'Edit :role',
+        ],
+
+        'actions' => [
+            'create' => 'New role',
+            'create_heading' => 'Create role',
+            'create_submit' => 'Create',
+            'edit' => 'Edit',
+            'delete' => 'Delete',
+            'save' => 'Save',
+            'cancel' => 'Cancel',
+            'back' => 'Back',
+            'locked_tooltip' => 'Built-in Admin role cannot be edited or deleted.',
+            'has_members_tooltip' => 'Reassign members off this role before deleting.',
+        ],
+
+        'empty' => [
+            'heading' => 'No roles yet',
+            'description' => 'The built-in Admin role is always present. Create additional roles for narrower permissions.',
+        ],
+
+        'notifications' => [
+            'created' => 'Role created',
+            'updated' => 'Role updated',
+            'deleted' => 'Role deleted',
+            'delete_has_members' => 'Cannot delete role',
+        ],
     ],
 
     'notifications' => [

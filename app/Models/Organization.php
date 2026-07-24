@@ -158,6 +158,11 @@ class Organization extends Model implements HasAvatar, HasMedia
         return $this->roles()->where('name', $name)->first();
     }
 
+    public function defaultMemberRole(): ?Role
+    {
+        return $this->roleFor(OrganizationRole::Member);
+    }
+
     /**
      * @return array<int, string>
      */
@@ -166,9 +171,7 @@ class Organization extends Model implements HasAvatar, HasMedia
         return $this->roles()
             ->orderBy('id')
             ->get()
-            ->mapWithKeys(fn (Role $role): array => [
-                $role->id => OrganizationRole::tryFrom($role->name)?->getLabel() ?? $role->name,
-            ])
+            ->mapWithKeys(fn (Role $role): array => [$role->id => $role->displayLabel()])
             ->all();
     }
 

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Providers\Filament\Organization\SettingsPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -21,6 +22,8 @@ class SettingsUsersTest extends TestCase
     {
         $this->actingAs($user);
         Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));
+        Filament::setTenant($organization);
+        URL::defaults(['organization' => $organization->slug]);
         OrganizationService::remember($organization);
     }
 

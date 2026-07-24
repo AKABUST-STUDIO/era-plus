@@ -128,10 +128,14 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         return ProjectAccess::administersOrganization($this, $organization);
     }
 
-    public function joinOrganization(Organization $organization, OrganizationRole $role = OrganizationRole::Member): void
+    public function joinOrganization(Organization $organization, OrganizationRole|Role $role = OrganizationRole::Member): void
     {
+        $roleId = $role instanceof Role
+            ? $role->id
+            : $organization->roleFor($role)?->id;
+
         $this->organizations()->syncWithoutDetaching([
-            $organization->getKey() => ['role_id' => $organization->roleFor($role)?->id],
+            $organization->getKey() => ['role_id' => $roleId],
         ]);
     }
 

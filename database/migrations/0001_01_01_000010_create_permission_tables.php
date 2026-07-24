@@ -30,6 +30,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->nullableMorphs('roleable');
             $table->string('name');
+            $table->string('label')->nullable();
             $table->string('guard_name');
             $table->boolean('locked')->default(false);
             $table->timestamps();
