@@ -2,87 +2,156 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Project\ProjectRole;
 use App\Models\Organization;
-use App\Models\Participant;
 use App\Models\Project;
+use App\Models\Project\Participant;
+use App\Models\Project\ParticipantOrganization;
+use App\Models\Project\ProjectParticipant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class ParticipantTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_participant_belongs_to_project_and_organization(): void
+    private function countryId(): int
     {
-        $project = Project::factory()->create();
+        $existing = DB::table('countries')->value('id');
 
-        $participant = Participant::create([
-            'organization_id' => $project->organization_id,
-            'project_id' => $project->id,
-            'first_name' => 'Maria',
-            'last_name' => 'Tamm',
-            'email' => 'maria@example.com',
+        if ($existing !== null) {
+            return (int) $existing;
+        }
+
+        DB::table('countries')->insert([
+            'iso2' => 'ES',
+            'name' => 'Spain',
+            'status' => 1,
+            'phone_code' => '0',
+            'iso3' => 'ESP',
+            'region' => 'Europe',
+            'subregion' => 'Europe',
         ]);
 
-        $this->assertTrue($participant->project->is($project));
-        $this->assertSame($project->organization_id, $participant->organization_id);
+        return (int) DB::table('countries')->where('iso2', 'ES')->value('id');
     }
 
-    public function test_participant_can_be_linked_to_user(): void
+    private function sendingOrganization(string $name = 'Universidad'): ParticipantOrganization
+    {
+        return ParticipantOrganization::create(['name' => $name]);
+    }
+
+    public function test_participants_table_has_no_project_organization_or_user_columns(): void
+    {
+        $this->assertFalse(Schema::hasColumn('participants', 'project_id'));
+        $this->assertFalse(Schema::hasColumn('participants', 'organization_id'));
+        $this->assertFalse(Schema::hasColumn('participants', 'user_id'));
+    }
+
+    public function test_participant_email_is_nullable(): void
+    {
+        $participant = Participant::factory()->create(['email' => null]);
+
+        $this->assertNull($participant->email);
+    }
+
+    public function test_participant_participates_in_multiple_projects_through_pivot(): void
+    {
+        $organization = Organization::factory()->create();
+        $projectA = Project::factory()->for($organization)->create();
+        $projectB = Project::factory()->for($organization)->create();
+
+        $participant = Participant::factory()->create();
+
+        $projectA->addParticipant($participant, $this->countryId(), $this->sendingOrganization('Universidad A'));
+        $projectB->addParticipant($participant, $this->countryId(), $this->sendingOrganization('Universidad B'));
+
+        $this->assertCount(2, $participant->fresh()->projects);
+        $this->assertTrue($projectA->fresh()->participants->contains($participant));
+        $this->assertTrue($projectB->fresh()->participants->contains($participant));
+    }
+
+    public function test_pivot_is_unique_per_project_and_participable(): void
+    {
+        $project = Project::factory()->create();
+        $participant = Participant::factory()->create();
+        $sending = $this->sendingOrganization();
+
+        $project->addParticipant($participant, $this->countryId(), $sending);
+        $project->addParticipant($participant, $this->countryId(), $sending);
+
+        $this->assertDatabaseCount('project_participant', 1);
+    }
+
+    public function test_pivot_stores_morph_type_and_id(): void
+    {
+        $project = Project::factory()->create();
+        $participant = Participant::factory()->create();
+
+        $project->addParticipant($participant, $this->countryId(), $this->sendingOrganization());
+
+        $this->assertDatabaseHas('project_participant', [
+            'project_id' => $project->id,
+            'participable_type' => $participant->getMorphClass(),
+            'participable_id' => $participant->id,
+        ]);
+    }
+
+    public function test_user_can_be_a_participable_via_morph(): void
     {
         $project = Project::factory()->create();
         $user = User::factory()->create();
+        $sending = $this->sendingOrganization('Employer');
 
-        $participant = Participant::create([
-            'organization_id' => $project->organization_id,
+        ProjectParticipant::create([
             'project_id' => $project->id,
-            'user_id' => $user->id,
-            'first_name' => 'A',
-            'last_name' => 'B',
+            'participable_type' => $user->getMorphClass(),
+            'participable_id' => $user->id,
+            'country_id' => $this->countryId(),
+            'sending_organization_type' => $sending->getMorphClass(),
+            'sending_organization_id' => $sending->getKey(),
         ]);
 
-        $this->assertTrue($participant->user->is($user));
+        $this->assertDatabaseHas('project_participant', [
+            'project_id' => $project->id,
+            'participable_type' => $user->getMorphClass(),
+            'participable_id' => $user->id,
+        ]);
     }
 
-    public function test_participant_user_is_optional(): void
-    {
-        $participant = Participant::factory()->create(['user_id' => null]);
-
-        $this->assertNull($participant->user);
-    }
-
-    public function test_project_has_many_participants(): void
+    public function test_project_participables_returns_all_pivot_rows(): void
     {
         $project = Project::factory()->create();
-        Participant::factory()->count(3)->create([
+        $participant = Participant::factory()->create();
+        $user = User::factory()->create();
+        $sending = $this->sendingOrganization();
+
+        $project->addParticipant($participant, $this->countryId(), $sending);
+        ProjectParticipant::create([
             'project_id' => $project->id,
-            'organization_id' => $project->organization_id,
+            'participable_type' => $user->getMorphClass(),
+            'participable_id' => $user->id,
+            'country_id' => $this->countryId(),
+            'sending_organization_type' => $sending->getMorphClass(),
+            'sending_organization_id' => $sending->getKey(),
         ]);
 
-        $this->assertCount(3, $project->fresh()->participants);
+        $this->assertCount(2, $project->fresh()->participables);
     }
 
-    public function test_full_name_accessor(): void
+    public function test_participants_by_project_read_through_pivot_not_roles(): void
     {
-        $participant = Participant::factory()->make([
-            'first_name' => 'Anne',
-            'last_name' => 'Mets',
-        ]);
+        $project = Project::factory()->create();
+        $coordinator = User::factory()->create();
+        $coordinator->joinProject($project, ProjectRole::Admin);
 
-        $this->assertSame('Anne Mets', $participant->full_name);
-    }
+        $participant = Participant::factory()->create();
+        $project->addParticipant($participant, $this->countryId(), $this->sendingOrganization());
 
-    public function test_participants_isolated_by_project(): void
-    {
-        $org = Organization::factory()->create();
-        $a = Project::factory()->for($org)->create();
-        $b = Project::factory()->for($org)->create();
-
-        Participant::factory()->count(2)->create(['project_id' => $a->id, 'organization_id' => $org->id]);
-        Participant::factory()->count(3)->create(['project_id' => $b->id, 'organization_id' => $org->id]);
-
-        $this->assertCount(2, $a->fresh()->participants);
-        $this->assertCount(3, $b->fresh()->participants);
+        $this->assertCount(1, $project->fresh()->participants);
+        $this->assertTrue($project->fresh()->participants->contains($participant));
     }
 }

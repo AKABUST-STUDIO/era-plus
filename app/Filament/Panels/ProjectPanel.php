@@ -2,7 +2,9 @@
 
 namespace App\Filament\Panels;
 
+use App\Filament\Project\Pages\Overview;
 use App\Models\Project;
+use App\Providers\Filament\ProjectPanelProvider;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Model;
@@ -16,10 +18,14 @@ class ProjectPanel extends Panel
         }
 
         if ($tenant instanceof Project) {
-            return route($this->generateRouteName('pages.dashboard'), [
-                'organization' => $tenant->organization->slug,
-                'tenant' => $tenant,
-            ]);
+            return Overview::getUrl(
+                [
+                    'organization' => $tenant->organization->slug,
+                    'tenant' => $tenant,
+                ],
+                panel: ProjectPanelProvider::PANEL_ID,
+                tenant: $tenant,
+            );
         }
 
         return parent::getUrl($tenant);

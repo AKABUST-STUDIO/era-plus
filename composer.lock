@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3939ed6b29cbd58be18d9504f847b6e6",
+    "content-hash": "a1a73c85e37283c6dc997b918135d2a5",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -7674,6 +7674,73 @@
             "time": "2026-06-29T15:41:09+00:00"
         },
         {
+            "name": "pxlrbt/filament-excel",
+            "version": "v3.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pxlrbt/filament-excel.git",
+                "reference": "9b6c922e4f60f0cff558fd3ddd823c9954b423db"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pxlrbt/filament-excel/zipball/9b6c922e4f60f0cff558fd3ddd823c9954b423db",
+                "reference": "9b6c922e4f60f0cff558fd3ddd823c9954b423db",
+                "shasum": ""
+            },
+            "require": {
+                "anourvalar/eloquent-serialize": "^1.2",
+                "filament/filament": "^4.0|^5.0",
+                "maatwebsite/excel": "^3.1",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.10"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "pxlrbt\\FilamentExcel\\FilamentExcelServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "pxlrbt\\FilamentExcel\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dennis Koch",
+                    "email": "info@pixelarbeit.de"
+                }
+            ],
+            "description": "Supercharged Excel exports for Filament Resources",
+            "keywords": [
+                "PHPExcel",
+                "actions",
+                "filament",
+                "laravel",
+                "laravel-filament",
+                "phpspreadsheet"
+            ],
+            "support": {
+                "issues": "https://github.com/pxlrbt/filament-excel/issues",
+                "source": "https://github.com/pxlrbt/filament-excel/tree/v3.6.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/pxlrbt",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-02-20T12:35:33+00:00"
+        },
+        {
             "name": "pxlrbt/filament-spotlight",
             "version": "v2.1.1",
             "source": {
@@ -9873,6 +9940,60 @@
                 "source": "https://github.com/stechstudio/filament-impersonate/tree/4.1.4"
             },
             "time": "2026-02-11T14:11:18+00:00"
+        },
+        {
+            "name": "stijnvanouplines/blade-country-flags",
+            "version": "1.0.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/stijnvanouplines/blade-country-flags.git",
+                "reference": "06b53f8ae58238c30a5eaa35fd199ffd772a83f8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/stijnvanouplines/blade-country-flags/zipball/06b53f8ae58238c30a5eaa35fd199ffd772a83f8",
+                "reference": "06b53f8ae58238c30a5eaa35fd199ffd772a83f8",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.0",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "php": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^6.18|^8.0|^9.0|^10.0|^11.0",
+                "pestphp/pest": "^1.4|^2.34|^3.0|^4.4",
+                "spatie/pest-plugin-snapshots": "^1.0|^2.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "StijnVanouplines\\BladeCountryFlags\\BladeCountryFlagsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "StijnVanouplines\\BladeCountryFlags\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A package to easily make use of country flags in your Laravel Blade views.",
+            "homepage": "https://github.com/stijnvanouplines/blade-country-flags",
+            "keywords": [
+                "blade",
+                "country flags",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/stijnvanouplines/blade-country-flags/issues",
+                "source": "https://github.com/stijnvanouplines/blade-country-flags/tree/1.0.9"
+            },
+            "time": "2026-03-03T13:15:47+00:00"
         },
         {
             "name": "stripe/stripe-php",

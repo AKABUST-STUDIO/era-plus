@@ -52,8 +52,10 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'default_organization_id',
+        'date_of_birth',
     ];
 
     /**
@@ -81,6 +83,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         return [
             'email_verified_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
+            'date_of_birth' => 'date',
             'password' => 'hashed',
         ];
     }

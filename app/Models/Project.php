@@ -10,6 +10,8 @@ use App\Enums\Project\ProjectRole;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Project\ErasmusField as ErasmusFieldModel;
 use App\Models\Project\ErasmusPriority;
+use App\Models\Project\Participant;
+use App\Models\Project\ProjectParticipant;
 use App\Observers\ProjectObserver;
 use Database\Factories\ProjectFactory;
 use Filament\Facades\Filament;
@@ -20,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -206,10 +209,56 @@ class Project extends Model
     }
 
     /**
-     * @return HasMany<Participant, $this>
+     * @return HasMany<ProjectParticipant, $this>
      */
-    public function participants(): HasMany
+    public function participables(): HasMany
     {
-        return $this->hasMany(Participant::class);
+        return $this->hasMany(ProjectParticipant::class);
+    }
+
+    /**
+     * @return MorphToMany<Participant, $this>
+     */
+    public function participants(): MorphToMany
+    {
+        return $this->morphedByMany(Participant::class, 'participable', 'project_participant')
+            ->withPivot([
+                'id',
+                'country_id',
+                'sending_organization_type',
+                'sending_organization_id',
+            ])
+            ->withTimestamps();
+    }
+
+    /**
+     * @return MorphToMany<User, $this>
+     */
+    public function participatingUsers(): MorphToMany
+    {
+        return $this->morphedByMany(User::class, 'participable', 'project_participant')
+            ->withPivot([
+                'id',
+                'country_id',
+                'sending_organization_type',
+                'sending_organization_id',
+            ])
+            ->withTimestamps();
+    }
+
+    public function addParticipant(Participant|User $participable, int $countryId, Model $sendingOrganization): ProjectParticipant
+    {
+        return ProjectParticipant::firstOrCreate(
+            [
+                'project_id' => $this->getKey(),
+                'participable_type' => $participable->getMorphClass(),
+                'participable_id' => $participable->getKey(),
+            ],
+            [
+                'country_id' => $countryId,
+                'sending_organization_type' => $sendingOrganization->getMorphClass(),
+                'sending_organization_id' => $sendingOrganization->getKey(),
+            ]
+        );
     }
 }

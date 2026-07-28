@@ -78,3 +78,127 @@
     color: var(--gray-500);
 }
 
+
+/* -------------------------------------------------------------------------- */
+/* Participant select option — big avatar + name / email / meta stack         */
+/* -------------------------------------------------------------------------- */
+.participant-select-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+}
+
+.participant-select-option__avatar {
+    height: 3rem;
+    width: 3rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+}
+
+.participant-select-option__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.participant-select-option__name {
+    font-weight: 600;
+}
+
+.participant-select-option__email {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+.participant-select-option__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
+}
+
+.participant-select-option__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    color: var(--gray-500);
+}
+
+.participant-select-option__badge--verified {
+    color: var(--primary-600);
+}
+
+.participant-select-option__icon {
+    height: 0.875rem;
+    width: 0.875rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Country option — flag icon + name inline                                   */
+/* -------------------------------------------------------------------------- */
+.participant-country-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.participant-country-option__icon {
+    height: 1rem;
+    width: 1.25rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Country option — flag icon + name inline                                   */
+/* -------------------------------------------------------------------------- */
+.participant-country-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.participant-country-option__icon {
+    height: 1rem;
+    width: 1.25rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Participant import example gif                                             */
+/* -------------------------------------------------------------------------- */
+.participant-import-example-gif {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    max-height: 24rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Participant import — widen modal on Review step                            */
+/* -------------------------------------------------------------------------- */
+.fi-modal-window:has(.participant-import-review-step.fi-active) {
+    max-width: 40rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Participant export modal — uncontained sections, hidden field labels       */
+/* -------------------------------------------------------------------------- */
+.participant-export-modal .fi-section,
+.participant-export-modal .fi-fieldset {
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+}
+
+.participant-export-modal .fi-fieldset > legend,
+.participant-export-modal .fi-fo-field-wrp-label {
+    display: none;
+}

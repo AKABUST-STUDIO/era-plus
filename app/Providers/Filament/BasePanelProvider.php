@@ -62,6 +62,7 @@ abstract class BasePanelProvider extends PanelProvider
 
             ->userMenu(false)
             ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
+            ->databaseNotificationsPolling('5s')
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->userMenuItems(UserMenu::items())
             ->plugins([

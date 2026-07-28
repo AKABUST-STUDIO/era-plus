@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Policies;
+namespace App\Policies\Project;
 
-use App\Models\Participant;
 use App\Models\Project;
+use App\Models\Project\Participant;
 use App\Models\User;
 use App\Services\ProjectAccess;
 use Filament\Facades\Filament;

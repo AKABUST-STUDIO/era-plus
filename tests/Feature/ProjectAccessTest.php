@@ -4,14 +4,15 @@ namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
-use App\Filament\Project\Resources\Participants\ParticipantResource;
 use App\Filament\Project\Resources\ProjectMembers\ProjectMemberResource;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Project\Participant;
 use App\Models\User;
 use App\Services\ProjectAccess;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
 class ProjectAccessTest extends TestCase
@@ -86,7 +87,7 @@ class ProjectAccessTest extends TestCase
         $this->assertFalse($this->access->can($stranger, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
     }
 
-    public function test_resource_gates_follow_the_granted_ability(): void
+    public function test_gates_follow_the_granted_ability(): void
     {
         $viewer = User::factory()->create();
         $viewer->joinOrganization($this->organization);
@@ -98,13 +99,13 @@ class ProjectAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('project'));
         Filament::setTenant($this->project);
 
-        $this->assertTrue(ParticipantResource::canViewAny());
-        $this->assertTrue(ParticipantResource::canCreate());
+        $this->assertTrue(Gate::allows('viewAny', Participant::class));
+        $this->assertTrue(Gate::allows('create', Participant::class));
         $this->assertFalse(ProjectMemberResource::canViewAny());
         $this->assertFalse(ProjectMemberResource::canCreate());
     }
 
-    public function test_participant_resource_denies_participant(): void
+    public function test_participant_policy_denies_bare_participant(): void
     {
         $participant = User::factory()->create();
         $participant->joinOrganization($this->organization);
@@ -114,6 +115,6 @@ class ProjectAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('project'));
         Filament::setTenant($this->project);
 
-        $this->assertFalse(ParticipantResource::canViewAny());
+        $this->assertFalse(Gate::allows('viewAny', Participant::class));
     }
 }
