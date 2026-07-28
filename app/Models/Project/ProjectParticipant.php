@@ -4,6 +4,7 @@ namespace App\Models\Project;
 
 use App\Models\Project;
 use App\Models\Scopes\ProjectScope;
+use App\Models\User;
 use App\Policies\Project\ProjectParticipantPolicy;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
@@ -53,6 +54,11 @@ class ProjectParticipant extends Model
     public function participable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->participable_type === User::class;
     }
 
     /**

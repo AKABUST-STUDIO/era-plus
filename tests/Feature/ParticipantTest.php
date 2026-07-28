@@ -142,6 +142,32 @@ class ParticipantTest extends TestCase
         $this->assertCount(2, $project->fresh()->participables);
     }
 
+    public function test_pivot_is_verified_only_when_participable_is_a_user(): void
+    {
+        $project = Project::factory()->create();
+        $participant = Participant::factory()->create();
+        $user = User::factory()->create();
+        $sending = $this->sendingOrganization();
+
+        $project->addParticipant($participant, $this->countryId(), $sending);
+        $verified = ProjectParticipant::create([
+            'project_id' => $project->id,
+            'participable_type' => $user->getMorphClass(),
+            'participable_id' => $user->id,
+            'country_id' => $this->countryId(),
+            'sending_organization_type' => $sending->getMorphClass(),
+            'sending_organization_id' => $sending->getKey(),
+        ]);
+
+        $unverified = ProjectParticipant::query()
+            ->where('participable_type', $participant->getMorphClass())
+            ->where('participable_id', $participant->id)
+            ->firstOrFail();
+
+        $this->assertTrue($verified->isVerified());
+        $this->assertFalse($unverified->isVerified());
+    }
+
     public function test_participants_by_project_read_through_pivot_not_roles(): void
     {
         $project = Project::factory()->create();
