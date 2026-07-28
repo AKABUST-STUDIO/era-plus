@@ -10,7 +10,14 @@
 
     {{-- format-ignore-start --}}
     <aside
-        x-data="{}"
+
+        {{-- CUSTOM START --}}
+        x-data="sidebarResize"
+        x-on:pointermove.window="doResize($event)"
+        x-on:pointerup.window="stopResize()"
+        x-bind:style="isResizing ? 'transition-property: none; user-select: none;' : null"
+        {{-- CUSTOM END --}}
+
         @if ($isSidebarCollapsibleOnDesktop || $isSidebarFullyCollapsibleOnDesktop)
             x-cloak
         @else
@@ -19,75 +26,30 @@
         x-bind:class="{ 'fi-sidebar-open': $store.sidebar.isOpen }"
         class="fi-sidebar fi-main-sidebar"
     >
+
+        {{-- CUSTOM START --}}
+        @assets
+            <script src="{{ asset('js/sidebar-resize.js') }}"></script>
+        @endassets
+
+        <div
+            x-on:pointerdown.prevent="startResize()"
+            x-on:dblclick="resetWidth()"
+            x-bind:class="{ 'fi-active': isResizing }"
+            class="fi-sidebar-resize-handle"
+            style="position: absolute; inset-block: 0; inset-inline-end: 0; width: 6px; cursor: col-resize; z-index: 40; touch-action: none;"
+            aria-hidden="true"
+        ></div>
+        {{-- CUSTOM END --}}
+
         {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_START) }}
 
         <div class="fi-sidebar-header-ctn">
             <header
-                class="fi-sidebar-header"
+                class="fi-sidebar-header flex-col h-auto"
             >
-                @if ((! $hasTopbar) && $isSidebarCollapsibleOnDesktop)
-                    <x-filament::icon-button
-                        color="gray"
-                        :icon="$isRtl ? \Filament\Support\Icons\Heroicon::OutlinedChevronLeft : \Filament\Support\Icons\Heroicon::OutlinedChevronRight"
-                        {{-- @deprecated Use `PanelsIconAlias::SIDEBAR_EXPAND_BUTTON_RTL` instead of `PanelsIconAlias::SIDEBAR_EXPAND_BUTTON` for RTL. --}}
-                        :icon-alias="
-                            $isRtl
-                            ? [
-                                \Filament\View\PanelsIconAlias::SIDEBAR_EXPAND_BUTTON_RTL,
-                                \Filament\View\PanelsIconAlias::SIDEBAR_EXPAND_BUTTON,
-                            ]
-                            : \Filament\View\PanelsIconAlias::SIDEBAR_EXPAND_BUTTON
-                        "
-                        icon-size="lg"
-                        :label="__('filament-panels::layout.actions.sidebar.expand.label')"
-                        x-cloak
-                        x-data="{}"
-                        x-on:click="$store.sidebar.open()"
-                        x-show="! $store.sidebar.isOpen"
-                        class="fi-sidebar-open-collapse-sidebar-btn"
-                    />
-                @endif
-
-                @if ((! $hasTopbar) && ($isSidebarCollapsibleOnDesktop || $isSidebarFullyCollapsibleOnDesktop))
-                    <x-filament::icon-button
-                        color="gray"
-                        :icon="$isRtl ? \Filament\Support\Icons\Heroicon::OutlinedChevronRight : \Filament\Support\Icons\Heroicon::OutlinedChevronLeft"
-                        {{-- @deprecated Use `PanelsIconAlias::SIDEBAR_COLLAPSE_BUTTON_RTL` instead of `PanelsIconAlias::SIDEBAR_COLLAPSE_BUTTON` for RTL. --}}
-                        :icon-alias="
-                            $isRtl
-                            ? [
-                                \Filament\View\PanelsIconAlias::SIDEBAR_COLLAPSE_BUTTON_RTL,
-                                \Filament\View\PanelsIconAlias::SIDEBAR_COLLAPSE_BUTTON,
-                            ]
-                            : \Filament\View\PanelsIconAlias::SIDEBAR_COLLAPSE_BUTTON
-                        "
-                        icon-size="lg"
-                        :label="__('filament-panels::layout.actions.sidebar.collapse.label')"
-                        x-cloak
-                        x-data="{}"
-                        x-on:click="$store.sidebar.close()"
-                        x-show="$store.sidebar.isOpen"
-                        class="fi-sidebar-close-collapse-sidebar-btn"
-                    />
-                @endif
-
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_LOGO_BEFORE) }}
-
-                <div
-                    @if ($isSidebarCollapsibleOnDesktop || $isSidebarFullyCollapsibleOnDesktop)
-                        x-show="$store.sidebar.isOpen"
-                    @endif
-                    class="fi-sidebar-header-logo-ctn"
-                >
-                    @if ($homeUrl = filament()->getHomeUrl())
-                        <a {{ \Filament\Support\generate_href_html($homeUrl) }}>
-                            <x-filament-panels::logo />
-                        </a>
-                    @else
-                        <x-filament-panels::logo />
-                    @endif
-                </div>
-
+                
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_LOGO_AFTER) }}
             </header>
         </div>
@@ -182,17 +144,21 @@
         @endphp
 
         @if ($shouldRenderFooter)
-            <div class="fi-sidebar-footer">
+            {{-- CUSTOM START --}}
+            <div class="fi-sidebar-footer flex items-center gap-1">
+                @if ($hasUserMenuInSidebar)
+                    <div class="min-w-0 flex-1">
+                        <x-filament-panels::user-menu />
+                    </div>
+                @endif
+
                 @if ($hasDatabaseNotificationsInSidebar)
                     @livewire(filament()->getDatabaseNotificationsLivewireComponent(), [
                         'lazy' => filament()->hasLazyLoadedDatabaseNotifications(),
                     ])
                 @endif
-
-                @if ($hasUserMenuInSidebar)
-                    <x-filament-panels::user-menu />
-                @endif
             </div>
+            {{-- CUSTOM END --}}
         @endif
 
         {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_FOOTER) }}

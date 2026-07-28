@@ -1,6 +1,6 @@
 <div wire:show="step !== 'code'" @class([
         "fi-auth-oauth flex flex-col gap-2",
-        "pb-6 border-b border-gray-100 dark:border-gray-900" => filled(config('services.google.client_id'))
+        "pb-6 border-b border-gray-100 dark:border-gray-800" => filled(config('services.google.client_id'))
     ])
 >
     @if (filled(config('services.google.client_id')))

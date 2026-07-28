@@ -4,7 +4,7 @@
     $suffix = filament()->getGlobalSearchFieldSuffix();
 @endphp
 
-<div class="fi-global-search-ctn m-0 w-full">
+<div class="fi-global-search-ctn ">
     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::GLOBAL_SEARCH_START) }}
 
     <div
