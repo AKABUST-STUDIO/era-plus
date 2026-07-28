@@ -4,12 +4,15 @@ namespace App\Models\Project;
 
 use App\Models\Project;
 use App\Models\Scopes\ProjectScope;
+use App\Policies\Project\ProjectParticipantPolicy;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Nnjeim\World\Models\Country;
 
+#[UsePolicy(ProjectParticipantPolicy::class)]
 class ProjectParticipant extends Model
 {
     protected $table = 'project_participant';

@@ -13,9 +13,11 @@ use App\Models\Project\ErasmusPriority;
 use App\Models\Project\Participant;
 use App\Models\Project\ProjectParticipant;
 use App\Observers\ProjectObserver;
+use App\Policies\ProjectPolicy;
 use Database\Factories\ProjectFactory;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +32,7 @@ use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
 #[ObservedBy(ProjectObserver::class)]
+#[UsePolicy(ProjectPolicy::class)]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */

@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Models\Scopes\ProjectScope;
+use App\Policies\ProjectUserPolicy;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class ProjectMember extends Pivot
+#[UsePolicy(ProjectUserPolicy::class)]
+class ProjectUser extends Pivot
 {
     protected $table = 'project_user';
 

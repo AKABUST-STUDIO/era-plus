@@ -3,16 +3,18 @@
 namespace Tests\Feature;
 
 use App\Enums\Subscription\SubscriptionTier;
-use App\Filament\Organization\Pages\Tenancy\RegisterOrganization;
+use App\Filament\Organization\Pages\Tenancy\CreateOrganization;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Tests\Concerns\FakesStripe;
 use Tests\TestCase;
 
-class RegisterOrganizationWizardTest extends TestCase
+class CreateOrganizationWizardTest extends TestCase
 {
+    use FakesStripe;
     use RefreshDatabase;
 
     private User $user;
@@ -29,12 +31,12 @@ class RegisterOrganizationWizardTest extends TestCase
 
     public function test_wizard_renders(): void
     {
-        Livewire::test(RegisterOrganization::class)->assertSuccessful();
+        Livewire::test(CreateOrganization::class)->assertSuccessful();
     }
 
     public function test_register_persists_organization_and_attaches_user_as_admin(): void
     {
-        Livewire::test(RegisterOrganization::class)
+        Livewire::test(CreateOrganization::class)
             ->fillForm([
                 'name' => 'Acme Nordic',
                 'subscription_tier' => SubscriptionTier::Basic->value,
@@ -49,7 +51,7 @@ class RegisterOrganizationWizardTest extends TestCase
 
     public function test_first_organization_becomes_default(): void
     {
-        Livewire::test(RegisterOrganization::class)
+        Livewire::test(CreateOrganization::class)
             ->fillForm(['name' => 'First Org', 'subscription_tier' => SubscriptionTier::Basic->value])
             ->call('register');
 
@@ -64,7 +66,7 @@ class RegisterOrganizationWizardTest extends TestCase
         $this->user->joinOrganization($existing);
         $this->user->update(['default_organization_id' => $existing->id]);
 
-        Livewire::test(RegisterOrganization::class)
+        Livewire::test(CreateOrganization::class)
             ->fillForm(['name' => 'Second Org', 'subscription_tier' => SubscriptionTier::Basic->value])
             ->call('register');
 
@@ -73,7 +75,7 @@ class RegisterOrganizationWizardTest extends TestCase
 
     public function test_name_is_required(): void
     {
-        Livewire::test(RegisterOrganization::class)
+        Livewire::test(CreateOrganization::class)
             ->fillForm(['name' => null])
             ->call('register')
             ->assertHasFormErrors(['name']);

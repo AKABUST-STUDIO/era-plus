@@ -30,9 +30,6 @@ class Activity extends Page implements HasTable
     }
 
     /**
-     * Organizations the user belongs to — each gets a link to its
-     * org-settings Activity page.
-     *
      * @return Collection<int, Organization>
      */
     public function getOrganizations(): Collection
@@ -47,9 +44,6 @@ class Activity extends Page implements HasTable
     }
 
     /**
-     * Projects the user belongs to — each gets a link to its
-     * project-panel Activity log page.
-     *
      * @return Collection<int, Project>
      */
     public function getProjects(): Collection
@@ -67,8 +61,8 @@ class Activity extends Page implements HasTable
     public function organizationActivityUrl(Organization $organization): ?string
     {
         try {
-            return route('filament.organization-settings.pages.activity', [
-                'organization' => $organization->slug,
+            return route('filament.'.OrganizationPanelProvider::PANEL_ID.'.pages.activity', [
+                'tenant' => $organization->slug,
             ]);
         } catch (\Throwable) {
             return null;

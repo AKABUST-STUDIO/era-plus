@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Subscription\SubscriptionTier;
-use App\Models\Organization\OrganizationMember;
+use App\Models\Organization\OrganizationUser;
 use App\Observers\OrganizationObserver;
 use App\Policies\OrganizationPolicy;
 use App\Services\ProjectAccess;
@@ -137,7 +137,7 @@ class Organization extends Model implements HasAvatar, HasMedia
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'organization_user')
-            ->using(OrganizationMember::class)
+            ->using(OrganizationUser::class)
             ->as('member')
             ->withPivot('role_id')
             ->withTimestamps();

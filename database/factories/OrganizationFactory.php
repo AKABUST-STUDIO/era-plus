@@ -20,18 +20,20 @@ class OrganizationFactory extends Factory
     {
         return [
             'name' => fake()->company(),
+            'subscription_id' => Subscription::factory()->state([
+                'stripe_price' => SubscriptionTier::Basic->stripePriceId(),
+            ]),
         ];
     }
 
     public function subscribed(SubscriptionTier $tier = SubscriptionTier::Pro, ?User $owner = null): static
     {
-        return $this->afterCreating(function (Organization $organization) use ($tier, $owner): void {
-            $subscription = Subscription::factory()
-                ->for($owner ?? User::factory()->create(), 'user')
-                ->create(['stripe_price' => $tier->stripePriceId()]);
-
-            $organization->update(['subscription_id' => $subscription->id]);
-        });
+        return $this->state(fn (): array => [
+            'subscription_id' => Subscription::factory()
+                ->for($owner ?? User::factory(), 'user')
+                ->create(['stripe_price' => $tier->stripePriceId()])
+                ->id,
+        ]);
     }
 
     public function ownedBy(User $owner, SubscriptionTier $tier = SubscriptionTier::Basic): static

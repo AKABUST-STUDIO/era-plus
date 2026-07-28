@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Organization\Settings\Pages\Activity;
+use App\Enums\Organization\OrganizationRole;
+use App\Filament\Organization\Pages\Activity;
 use App\Filament\Project\Pages\ProjectActivityLog;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
+use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
@@ -30,7 +32,7 @@ class ActivityLogTest extends TestCase
 
         $this->user = User::factory()->create(['name' => 'Maria']);
         $this->organization = Organization::factory()->create();
-        $this->user->joinOrganization($this->organization);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
         $this->project = Project::factory()->for($this->organization)->create();
         $this->user->joinProject($this->project);
 
@@ -60,7 +62,7 @@ class ActivityLogTest extends TestCase
         $otherOrg = Organization::factory()->create();
         ActivityLog::record($otherOrg, 'Stranger event');
 
-        Filament::setCurrentPanel(Filament::getPanel('organization-settings'));
+        Filament::setCurrentPanel(Filament::getPanel(OrganizationPanelProvider::PANEL_ID));
         Filament::setTenant($this->organization);
         URL::defaults(['organization' => $this->organization->slug]);
 

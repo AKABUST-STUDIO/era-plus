@@ -16,7 +16,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
-class RegisterOrganization extends RegisterTenant
+class CreateOrganization extends RegisterTenant
 {
     public ?array $data = [];
 
@@ -74,13 +74,11 @@ class RegisterOrganization extends RegisterTenant
             ? $data['subscription_tier']
             : SubscriptionTier::from($data['subscription_tier']);
 
-        $subscriptionId = app()->environment('testing')
-            ? null
-            : $user->newSubscription('default', $tier->stripePriceId())->create()->id;
+        $subscription = $user->newSubscription('default', $tier->stripePriceId())->create();
 
         $organization = Organization::create([
             'name' => $data['name'],
-            'subscription_id' => $subscriptionId,
+            'subscription_id' => $subscription->id,
         ]);
 
         $user->joinOrganization($organization, OrganizationRole::Admin);

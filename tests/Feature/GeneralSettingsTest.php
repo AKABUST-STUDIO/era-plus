@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Models\Organization;
@@ -28,11 +29,11 @@ class GeneralSettingsTest extends TestCase
     /**
      * @return array{0: User, 1: Organization}
      */
-    private function memberOfOrganization(): array
+    private function memberOfOrganization(OrganizationRole $role = OrganizationRole::Admin): array
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $user->joinOrganization($organization);
+        $user->joinOrganization($organization, $role);
 
         return [$user, $organization];
     }
@@ -50,7 +51,7 @@ class GeneralSettingsTest extends TestCase
             ]);
     }
 
-    public function test_member_can_update_the_organization_name(): void
+    public function test_admin_can_update_the_organization_name(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
@@ -67,7 +68,7 @@ class GeneralSettingsTest extends TestCase
         ]);
     }
 
-    public function test_member_can_update_the_organization_url(): void
+    public function test_admin_can_update_the_organization_url(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
@@ -112,7 +113,7 @@ class GeneralSettingsTest extends TestCase
             ->assertHasFormErrors(['slug' => 'required']);
     }
 
-    public function test_member_can_upload_an_avatar(): void
+    public function test_admin_can_upload_an_avatar(): void
     {
         Storage::fake('public');
         [$user, $organization] = $this->memberOfOrganization();
@@ -126,10 +127,10 @@ class GeneralSettingsTest extends TestCase
         $this->assertNotNull($organization->fresh()->getFirstMedia('avatar'));
     }
 
-    public function test_member_can_leave_an_organization_with_other_members(): void
+    public function test_admin_can_leave_an_organization_with_another_admin(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
-        User::factory()->create()->joinOrganization($organization);
+        User::factory()->create()->joinOrganization($organization, OrganizationRole::Admin);
         $this->actingOnSettingsPanel($user, $organization);
 
         Livewire::test(GeneralSettings::class)
@@ -140,7 +141,7 @@ class GeneralSettingsTest extends TestCase
         $this->assertFalse($organization->fresh()->users->contains($user));
     }
 
-    public function test_only_member_cannot_leave_the_organization(): void
+    public function test_sole_admin_cannot_leave_the_organization(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
@@ -151,7 +152,7 @@ class GeneralSettingsTest extends TestCase
         $this->assertTrue($organization->fresh()->users->contains($user));
     }
 
-    public function test_member_can_delete_the_organization(): void
+    public function test_admin_can_delete_the_organization(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);

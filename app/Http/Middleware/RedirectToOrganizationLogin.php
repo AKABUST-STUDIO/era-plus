@@ -4,12 +4,11 @@ namespace App\Http\Middleware;
 
 use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Facades\Filament;
-use Illuminate\Auth\Middleware\Authenticate as BaseAuthenticate;
-use Illuminate\Http\Request;
+use Filament\Http\Middleware\Authenticate as FilamentAuthenticate;
 
-class RedirectToOrganizationLogin extends BaseAuthenticate
+class RedirectToOrganizationLogin extends FilamentAuthenticate
 {
-    protected function redirectTo(Request $request): ?string
+    protected function redirectTo($request): ?string
     {
         return Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getLoginUrl();
     }

@@ -6,7 +6,7 @@ use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Events\UserUpdated;
 use App\Facades\ProjectAccess;
-use App\Models\Organization\OrganizationMember;
+use App\Models\Organization\OrganizationUser;
 use App\Observers\UserObserver;
 use App\Traits\User\HasAuthenticationMailable;
 use Database\Factories\UserFactory;
@@ -26,6 +26,7 @@ use Illuminate\Support\Collection;
 use Laravel\Cashier\Billable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
+use Propaganistas\LaravelPhone\Casts\RawPhoneNumberCast;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -85,6 +86,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
             'two_factor_confirmed_at' => 'datetime',
             'date_of_birth' => 'date',
             'password' => 'hashed',
+            'phone' => RawPhoneNumberCast::class.':ES',
         ];
     }
 
@@ -99,7 +101,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'organization_user')
-            ->using(OrganizationMember::class)
+            ->using(OrganizationUser::class)
             ->as('member')
             ->withPivot('role_id')
             ->withTimestamps();
@@ -123,7 +125,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
             $roleId = $this->projects()->whereKey($tenant->getKey())->first()?->pivot->role_id;
         }
 
-        return $roleId !== null ? Role::find($roleId) : null;
+        return $roleId !== null ? Role::with('permissions')->find($roleId) : null;
     }
 
     public function isOrgAdmin(Organization $organization): bool
@@ -183,9 +185,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'organization' => true,
+            'organization', 'user' => true,
+            'organization.settings' => $this->organizations()->exists(),
             'project' => $this->projects()->exists(),
-            'user' => true,
             default => false,
         };
     }

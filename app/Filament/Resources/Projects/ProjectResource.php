@@ -22,7 +22,9 @@ class ProjectResource extends Resource
     {
         $organization = Filament::getTenant();
 
-        return $organization instanceof Organization && $organization->canCreateProject();
+        return parent::canCreate()
+            && $organization instanceof Organization
+            && $organization->canCreateProject();
     }
 
     public static function form(Schema $schema): Schema

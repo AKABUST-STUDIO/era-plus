@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Organization\Settings\Pages;
+namespace App\Filament\Organization\Pages;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
+use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Filament\Organization\Settings\Resources\Roles\RoleResource;
 use App\Mail\OrganizationInvitation;
 use App\Models\ActivityLog;
@@ -39,29 +39,34 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
-class Members extends Page implements HasTable
+class OrganizationUsers extends Page implements HasTable
 {
-    use HasOrgSettingsBreadcrumbs;
+    use GatedByOrganizationPermission;
     use InteractsWithTable;
 
-    public const TAB_MEMBERS = 'members';
+    public const TAB_USERS = 'users';
 
     public const TAB_INVITATIONS = 'invitations';
 
-    protected static ?string $slug = 'members';
+    protected static ?string $slug = 'users';
 
     protected static ?int $navigationSort = 10;
 
-    protected string $view = 'filament.organization.settings.pages.members';
+    protected string $view = 'filament.organization.pages.users';
 
     public ?Organization $organization = null;
 
-    public string $activeTab = self::TAB_MEMBERS;
+    public string $activeTab = self::TAB_USERS;
 
     /**
      * @var array<string, mixed>
      */
     public ?array $inviteData = [];
+
+    protected static function organizationPermission(): string
+    {
+        return 'view_any_member';
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -86,9 +91,9 @@ class Members extends Page implements HasTable
 
     public function switchTab(string $tab): void
     {
-        $this->activeTab = in_array($tab, [self::TAB_MEMBERS, self::TAB_INVITATIONS], true)
+        $this->activeTab = in_array($tab, [self::TAB_USERS, self::TAB_INVITATIONS], true)
             ? $tab
-            : self::TAB_MEMBERS;
+            : self::TAB_USERS;
 
         $this->resetTable();
     }
@@ -99,9 +104,9 @@ class Members extends Page implements HasTable
     public function getTabs(): array
     {
         return [
-            self::TAB_MEMBERS => [
+            self::TAB_USERS => [
                 'label' => __('settings.users.tabs.members'),
-                'count' => $this->tabQuery(self::TAB_MEMBERS)->count(),
+                'count' => $this->tabQuery(self::TAB_USERS)->count(),
             ],
             self::TAB_INVITATIONS => [
                 'label' => __('settings.users.tabs.invitations'),
@@ -331,7 +336,7 @@ class Members extends Page implements HasTable
                         ->tooltip(fn (User $user): ?string => auth()->user()->cannot('removeMember', [$this->organization, $user])
                             ? __('settings.users.actions.sole_admin_locked')
                             : null)
-                        ->action(fn (User $user) => $this->removeMember($user)),
+                        ->action(fn (User $user) => $this->removeUser($user)),
                 ]),
             ])
             ->toolbarActions([
@@ -342,7 +347,7 @@ class Members extends Page implements HasTable
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each(
                             fn (User $user) => auth()->user()->can('removeMember', [$this->organization, $user])
-                                ? $this->removeMember($user)
+                                ? $this->removeUser($user)
                                 : null
                         )),
                 ]),
@@ -383,7 +388,7 @@ class Members extends Page implements HasTable
         Notification::make()->title(__('notifications.role_updated'))->success()->send();
     }
 
-    public function removeMember(User $user): void
+    public function removeUser(User $user): void
     {
         if (auth()->user()->cannot('removeMember', [$this->organization, $user])) {
             Notification::make()
@@ -407,7 +412,11 @@ class Members extends Page implements HasTable
 
     private function tabQuery(string $tab): BelongsToMany
     {
-        $query = $this->organization->users();
+        /**
+         * The pivot carries its own `id`, which overwrites `users.id` on the record
+         * unless the user columns are selected explicitly.
+         */
+        $query = $this->organization->users()->select('users.*');
 
         return match ($tab) {
             self::TAB_INVITATIONS => $query->whereNull('users.email_verified_at'),

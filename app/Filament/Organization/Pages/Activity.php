@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Organization\Settings\Pages;
+namespace App\Filament\Organization\Pages;
 
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
+use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
@@ -19,16 +19,21 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Activity extends Page implements HasTable
 {
-    use HasOrgSettingsBreadcrumbs;
+    use GatedByOrganizationPermission;
     use InteractsWithTable;
 
     protected static ?string $slug = 'activity';
 
     protected static ?int $navigationSort = 50;
 
-    protected string $view = 'filament.organization.settings.pages.activity';
+    protected string $view = 'filament.organization.pages.activity';
 
     public ?Organization $organization = null;
+
+    protected static function organizationPermission(): string
+    {
+        return 'view_any_setting';
+    }
 
     public function mount(): void
     {

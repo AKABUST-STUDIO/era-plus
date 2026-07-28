@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
-use App\Filament\Organization\Settings\Pages\Members as MembersPage;
+use App\Filament\Organization\Pages\OrganizationUsers as UsersPage;
 use App\Mail\OrganizationInvitation;
 use App\Models\Organization;
 use App\Models\Role;
@@ -42,12 +42,12 @@ class UsersPageTest extends TestCase
 
     public function test_page_renders(): void
     {
-        Livewire::test(MembersPage::class)->assertSuccessful();
+        Livewire::test(UsersPage::class)->assertSuccessful();
     }
 
     public function test_invite_creates_new_user_and_attaches_to_org(): void
     {
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->fillForm(['email' => 'newbie@example.com', 'role' => (string) $this->organization->roleFor(OrganizationRole::Admin)->id], 'inviteForm')
             ->call('invite');
 
@@ -67,7 +67,7 @@ class UsersPageTest extends TestCase
 
         $countBefore = User::query()->count();
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->fillForm(['email' => 'old@example.com', 'role' => (string) $this->memberRole->id], 'inviteForm')
             ->call('invite');
 
@@ -80,7 +80,7 @@ class UsersPageTest extends TestCase
         $member = User::factory()->create();
         $member->joinOrganization($this->organization, $this->memberRole);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->instance()
             ->changeRole($member, $this->organization->roleFor(OrganizationRole::Admin)->id);
 
@@ -96,9 +96,9 @@ class UsersPageTest extends TestCase
         $member = User::factory()->create();
         $member->joinOrganization($this->organization, $this->memberRole);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->instance()
-            ->removeMember($member);
+            ->removeUser($member);
 
         $this->assertDatabaseMissing('organization_user', [
             'organization_id' => $this->organization->id,
@@ -108,9 +108,9 @@ class UsersPageTest extends TestCase
 
     public function test_cannot_remove_last_admin(): void
     {
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->instance()
-            ->removeMember($this->user);
+            ->removeUser($this->user);
 
         $this->assertDatabaseHas('organization_user', [
             'organization_id' => $this->organization->id,
@@ -123,7 +123,7 @@ class UsersPageTest extends TestCase
         $other = User::factory()->create(['name' => 'Anne']);
         $other->joinOrganization($this->organization, $this->memberRole);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->assertSee('Maria')
             ->assertSee('Anne')
             ->assertSee(__('settings.users.table.you'));
@@ -133,7 +133,7 @@ class UsersPageTest extends TestCase
     {
         Mail::fake();
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->fillForm(['email' => 'fresh@example.com', 'role' => (string) $this->memberRole->id], 'inviteForm')
             ->call('invite');
 
@@ -148,7 +148,7 @@ class UsersPageTest extends TestCase
         $existing = User::factory()->create(['email' => 'known@example.com']);
         Mail::fake();
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->fillForm(['email' => 'known@example.com', 'role' => (string) $this->memberRole->id], 'inviteForm')
             ->call('invite');
 
@@ -169,7 +169,7 @@ class UsersPageTest extends TestCase
         $insecure = User::factory()->create(['name' => 'Ivan']);
         $insecure->joinOrganization($this->organization, $this->memberRole);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->filterTable('two_factor_confirmed_at', true)
             ->assertCanSeeTableRecords([$secured])
             ->assertCanNotSeeTableRecords([$insecure]);
@@ -177,7 +177,7 @@ class UsersPageTest extends TestCase
 
     public function test_sole_admin_is_not_selectable(): void
     {
-        $page = Livewire::test(MembersPage::class)->instance();
+        $page = Livewire::test(UsersPage::class)->instance();
 
         $this->assertFalse($page->getTable()->isRecordSelectable($this->user));
     }
@@ -192,7 +192,7 @@ class UsersPageTest extends TestCase
         $anne = User::factory()->create(['name' => 'Anne', 'email_verified_at' => now()]);
         $anne->joinOrganization($this->organization, $this->memberRole);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->sortTable('name', 'asc')
             ->assertCanSeeTableRecords([$anne, $zack], inOrder: true);
     }

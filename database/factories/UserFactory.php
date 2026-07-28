@@ -36,4 +36,11 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    public function withPhone(string $phone = '612 345 678'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'phone' => $phone,
+        ]);
+    }
 }

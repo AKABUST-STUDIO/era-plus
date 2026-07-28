@@ -8,7 +8,7 @@ use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
 use App\Filament\Project\Resources\ProjectMembers\Schemas\ProjectMemberForm;
 use App\Filament\Project\Resources\ProjectMembers\Tables\ProjectMembersTable;
 use App\Models\Project;
-use App\Models\ProjectMember;
+use App\Models\ProjectUser;
 use App\Services\ProjectAccess;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProjectMemberResource extends Resource
 {
-    protected static ?string $model = ProjectMember::class;
+    protected static ?string $model = ProjectUser::class;
 
     public static function getNavigationLabel(): string
     {

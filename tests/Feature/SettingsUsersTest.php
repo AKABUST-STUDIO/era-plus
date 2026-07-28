@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Settings\Pages\Members as MembersPage;
+use App\Filament\Organization\Pages\OrganizationUsers as UsersPage;
 use App\Models\Organization;
 use App\Models\User;
 use App\Providers\Filament\Organization\SettingsPanelProvider;
@@ -44,7 +44,7 @@ class SettingsUsersTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->assertOk();
     }
 
@@ -58,7 +58,7 @@ class SettingsUsersTest extends TestCase
 
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->assertCanSeeTableRecords([$user, $fellowMember])
             ->assertCanNotSeeTableRecords([$outsider]);
     }
@@ -71,7 +71,7 @@ class SettingsUsersTest extends TestCase
         ]);
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->fillForm(['email' => ''], 'inviteForm')
             ->call('invite')
             ->assertHasFormErrors(['email' => 'required'], 'inviteForm');
@@ -85,7 +85,7 @@ class SettingsUsersTest extends TestCase
         ]);
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->fillForm(['email' => 'newcomer@example.com'], 'inviteForm')
             ->call('invite')
             ->assertHasNoFormErrors()
@@ -99,7 +99,7 @@ class SettingsUsersTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(MembersPage::class)
+        Livewire::test(UsersPage::class)
             ->assertDontSee(__('settings.users.invite.heading'));
     }
 }

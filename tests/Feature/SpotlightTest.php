@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Organization\OrganizationRole;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
@@ -38,7 +39,7 @@ class SpotlightTest extends TestCase
     private function member(): User
     {
         $user = User::factory()->create();
-        $user->joinOrganization(Organization::factory()->create());
+        $user->joinOrganization(Organization::factory()->create(), OrganizationRole::Admin);
 
         return $user;
     }

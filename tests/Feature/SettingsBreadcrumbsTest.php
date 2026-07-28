@@ -3,11 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
-use App\Filament\Organization\Settings\Pages\Activity;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Filament\Organization\Settings\Pages\Invoices;
-use App\Filament\Organization\Settings\Pages\Members;
 use App\Filament\Organization\Settings\Pages\Notifications;
 use App\Filament\Organization\Settings\Pages\Security;
 use App\Models\Organization;
@@ -48,12 +46,10 @@ class SettingsBreadcrumbsTest extends TestCase
     {
         return [
             'general' => [GeneralSettings::class, 'General settings'],
-            'members' => [Members::class, 'Members'],
             'notifications' => [Notifications::class, 'Notifications'],
             'security' => [Security::class, 'Security'],
             'billing' => [Billing::class, 'Billing'],
             'invoices' => [Invoices::class, 'Invoices'],
-            'activity' => [Activity::class, 'Activity'],
         ];
     }
 

@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Facades\OrganizationService;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Role;
 use App\Models\User;
 
 class ProjectAccess
@@ -30,32 +32,52 @@ class ProjectAccess
             return false;
         }
 
-        if ($role->hasPermissionTo(self::ABILITY_ADMINISTER_PROJECT)) {
+        if ($this->grants($role, self::ABILITY_ADMINISTER_PROJECT)) {
             return true;
         }
 
-        return $role->hasPermissionTo($ability);
+        return $this->grants($role, $ability);
+    }
+
+    public function organizationAllows(User $user, string $permission, Organization $organization): bool
+    {
+        $role = $user->roleFor($organization);
+
+        if ($role === null) {
+            return false;
+        }
+
+        if ($this->grants($role, self::ABILITY_ADMINISTER_ORGANIZATION)) {
+            return true;
+        }
+
+        return $this->grants($role, $permission);
+    }
+
+    public function currentOrganizationAllows(User $user, string $permission): bool
+    {
+        $organization = OrganizationService::current();
+
+        return $organization instanceof Organization
+            && $this->organizationAllows($user, $permission, $organization);
     }
 
     public function administersOrganization(User $user, Organization $organization): bool
     {
-        if ($organization->owner()?->is($user)) {
-            return true;
-        }
-
         $role = $user->roleFor($organization);
 
-        return $role !== null && $role->hasPermissionTo(self::ABILITY_ADMINISTER_ORGANIZATION);
+        return $role !== null && $this->grants($role, self::ABILITY_ADMINISTER_ORGANIZATION);
     }
 
     public function administersProject(User $user, Project $project): bool
     {
-        if ($this->administersOrganization($user, $project->organization)) {
-            return true;
-        }
-
         $role = $user->roleFor($project);
 
-        return $role !== null && $role->hasPermissionTo(self::ABILITY_ADMINISTER_PROJECT);
+        return $role !== null && $this->grants($role, self::ABILITY_ADMINISTER_PROJECT);
+    }
+
+    private function grants(Role $role, string $permission): bool
+    {
+        return $role->permissions->contains('name', $permission);
     }
 }

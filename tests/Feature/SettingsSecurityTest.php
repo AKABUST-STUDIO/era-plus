@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
 use App\Filament\Organization\Settings\Pages\Security;
 use App\Models\Organization;
@@ -20,7 +21,7 @@ class SettingsSecurityTest extends TestCase
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
-        $user->joinOrganization($organization);
+        $user->joinOrganization($organization, OrganizationRole::Admin);
 
         $this->actingAs($user);
         Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));

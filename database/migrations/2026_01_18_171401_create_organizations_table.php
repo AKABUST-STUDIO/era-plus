@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
 
-            $table->foreignIdFor(Subscription::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(Subscription::class)->constrained()->cascadeOnDelete();
 
             $table->boolean('enforce_two_factor')->default(false);
             $table->boolean('enforce_email_verification')->default(false);

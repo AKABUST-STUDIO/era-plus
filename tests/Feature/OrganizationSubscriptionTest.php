@@ -40,19 +40,30 @@ class OrganizationSubscriptionTest extends TestCase
         $this->assertTrue($organization->fresh()->owner()->is($owner));
     }
 
-    public function test_owner_is_null_without_a_subscription(): void
+    public function test_every_organization_has_an_owner(): void
     {
         $organization = Organization::factory()->create();
 
-        $this->assertNull($organization->owner());
+        $this->assertNotNull($organization->subscription_id);
+        $this->assertTrue($organization->owner()->is($organization->subscription->user));
     }
 
-    public function test_owner_administers_the_organization_without_a_membership_role(): void
+    public function test_owner_does_not_administer_the_organization_without_a_membership_role(): void
     {
         $owner = User::factory()->create();
         $organization = Organization::factory()->ownedBy($owner)->create()->fresh();
 
         $this->assertFalse($organization->users()->whereKey($owner->id)->exists());
+        $this->assertFalse(app(ProjectAccess::class)->administersOrganization($owner, $organization));
+        $this->assertFalse($owner->isOrgAdmin($organization));
+    }
+
+    public function test_owner_administers_the_organization_once_given_the_admin_role(): void
+    {
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->ownedBy($owner)->create()->fresh();
+        $owner->joinOrganization($organization, OrganizationRole::Admin);
+
         $this->assertTrue(app(ProjectAccess::class)->administersOrganization($owner, $organization));
         $this->assertTrue($owner->isOrgAdmin($organization));
     }

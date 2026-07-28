@@ -9,7 +9,7 @@ use App\Filament\Project\Resources\ProjectMembers\Pages\EditProjectMember;
 use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
 use App\Models\Organization;
 use App\Models\Project;
-use App\Models\ProjectMember;
+use App\Models\ProjectUser;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -89,7 +89,7 @@ class ProjectMemberTest extends TestCase
         $member->joinOrganization($this->organization);
         $member->joinProject($this->project, ProjectRole::Participant);
 
-        $pivot = ProjectMember::query()
+        $pivot = ProjectUser::query()
             ->where('user_id', $member->id)
             ->first();
 
@@ -111,7 +111,7 @@ class ProjectMemberTest extends TestCase
         $member->joinOrganization($this->organization);
         $member->joinProject($this->project, ProjectRole::Participant);
 
-        $pivot = ProjectMember::query()->where('user_id', $member->id)->first();
+        $pivot = ProjectUser::query()->where('user_id', $member->id)->first();
 
         Livewire::test(EditProjectMember::class, ['record' => $pivot->getRouteKey()])
             ->callAction('delete');

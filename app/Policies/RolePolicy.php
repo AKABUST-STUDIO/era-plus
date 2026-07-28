@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Facades\OrganizationService;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Role;
@@ -15,35 +16,55 @@ class RolePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $this->isTenantAdmin($user, $this->activeTenant());
+        return $this->allows($user, 'view_any_role', $this->activeTenant());
     }
 
     public function view(User $user, Role $role): bool
     {
-        return $this->isTenantAdmin($user, $role->roleable);
+        return $this->allows($user, 'view_role', $role->roleable);
     }
 
     public function create(User $user): bool
     {
-        return $this->isTenantAdmin($user, $this->activeTenant());
+        return $this->allows($user, 'create_role', $this->activeTenant());
     }
 
     public function update(User $user, Role $role): bool
     {
-        return $this->isTenantAdmin($user, $role->roleable) && ! $role->locked;
+        return ! $role->locked && $this->allows($user, 'update_role', $role->roleable);
+    }
+
+    public function updateAny(User $user): bool
+    {
+        return $this->allows($user, 'update_any_role', $this->activeTenant());
     }
 
     public function delete(User $user, Role $role): bool
     {
-        return $this->isTenantAdmin($user, $role->roleable) && ! $role->locked;
+        return ! $role->locked && $this->allows($user, 'delete_role', $role->roleable);
     }
 
-    private function isTenantAdmin(User $user, ?object $tenant): bool
+    public function deleteAny(User $user): bool
+    {
+        return $this->allows($user, 'delete_any_role', $this->activeTenant());
+    }
+
+    public function restore(User $user, Role $role): bool
+    {
+        return $this->allows($user, 'update_role', $role->roleable);
+    }
+
+    public function forceDelete(User $user, Role $role): bool
+    {
+        return ! $role->locked && $this->allows($user, 'delete_role', $role->roleable);
+    }
+
+    private function allows(User $user, string $permission, ?object $tenant): bool
     {
         $access = app(ProjectAccess::class);
 
         return match (true) {
-            $tenant instanceof Organization => $access->administersOrganization($user, $tenant),
+            $tenant instanceof Organization => $access->organizationAllows($user, $permission, $tenant),
             $tenant instanceof Project => $access->administersProject($user, $tenant),
             default => false,
         };
@@ -53,6 +74,10 @@ class RolePolicy
     {
         $tenant = Filament::getTenant();
 
-        return $tenant instanceof Organization || $tenant instanceof Project ? $tenant : null;
+        if ($tenant instanceof Organization || $tenant instanceof Project) {
+            return $tenant;
+        }
+
+        return OrganizationService::current();
     }
 }

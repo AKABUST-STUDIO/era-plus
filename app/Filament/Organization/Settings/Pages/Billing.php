@@ -4,6 +4,7 @@ namespace App\Filament\Organization\Settings\Pages;
 
 use App\Enums\Subscription\SubscriptionTier;
 use App\Facades\OrganizationService;
+use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use Filament\Actions\Action;
@@ -17,6 +18,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class Billing extends Page
 {
+    use GatedByOrganizationPermission;
     use HasOrgSettingsBreadcrumbs;
 
     protected static ?string $slug = 'billing';
@@ -31,6 +33,11 @@ class Billing extends Page
      * @var array<string, mixed>
      */
     public ?array $data = [];
+
+    protected static function organizationPermission(): string
+    {
+        return 'view_any_setting';
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -184,6 +191,8 @@ class Billing extends Page
 
     public function saveAddress(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $data = $this->form->getState();
 
         $this->organization->update([
@@ -205,6 +214,8 @@ class Billing extends Page
 
     public function saveLanguage(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $data = $this->form->getState();
 
         $this->organization->update(['invoice_language' => $data['invoice_language']]);
@@ -217,6 +228,8 @@ class Billing extends Page
 
     public function saveTaxId(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $data = $this->form->getState();
 
         $this->organization->update(['tax_id' => $data['tax_id']]);
@@ -229,6 +242,8 @@ class Billing extends Page
 
     public function checkout(?string $priceId): RedirectResponse
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         abort_unless($priceId, 400, 'Stripe price ID not configured.');
 
         $checkout = $this->organization
@@ -243,6 +258,8 @@ class Billing extends Page
 
     public function billingPortal(): RedirectResponse
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         return auth()->user()->redirectToBillingPortal(
             route('filament.organization.home', ['tenant' => $this->organization])
         );

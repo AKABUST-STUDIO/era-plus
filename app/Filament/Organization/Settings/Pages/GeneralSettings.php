@@ -3,6 +3,7 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
+use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use App\Providers\Filament\OrganizationPanelProvider;
@@ -17,6 +18,7 @@ use Filament\Schemas\Schema;
 
 class GeneralSettings extends Page
 {
+    use GatedByOrganizationPermission;
     use HasOrgSettingsBreadcrumbs;
 
     protected static ?string $slug = 'overview';
@@ -31,6 +33,11 @@ class GeneralSettings extends Page
      * @var array<string, mixed>
      */
     public ?array $data = [];
+
+    protected static function organizationPermission(): string
+    {
+        return 'view_any_setting';
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -203,6 +210,8 @@ class GeneralSettings extends Page
 
     public function saveName(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $data = $this->form->getState();
 
         $this->organization->update(['name' => $data['name']]);
@@ -215,6 +224,8 @@ class GeneralSettings extends Page
 
     public function saveAvatar(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $this->form->getState();
         $this->form->saveRelationships();
 
@@ -226,6 +237,8 @@ class GeneralSettings extends Page
 
     public function saveUrl(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $data = $this->form->getState();
 
         $this->organization->update(['slug' => $data['slug']]);
@@ -274,6 +287,8 @@ class GeneralSettings extends Page
 
     public function delete(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $organization = $this->organization;
 
         $organization->users()->detach();

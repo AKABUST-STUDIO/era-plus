@@ -8,11 +8,9 @@ use App\Models\Role;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class OrganizationMember extends Pivot
+class OrganizationUser extends Pivot
 {
     public $incrementing = true;
-
-    protected $table = 'organization_user';
 
     /**
      * @return BelongsTo<Role, $this>

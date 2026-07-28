@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Organization\OrganizationRole;
 use App\Filament\Organization\Settings\Pages\Security;
 use App\Models\Organization;
 use App\Models\User;
@@ -25,7 +26,7 @@ class SecurityPageTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->organization = Organization::factory()->create();
-        $this->user->joinOrganization($this->organization);
+        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
 
         $this->actingAs($this->user);
         Filament::setCurrentPanel(Filament::getPanel('organization-settings'));

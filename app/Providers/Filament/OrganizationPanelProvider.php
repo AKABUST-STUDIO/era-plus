@@ -5,7 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Organization\Pages\Auth\Login;
 use App\Filament\Organization\Pages\Auth\Register;
 use App\Filament\Organization\Pages\Overview;
-use App\Filament\Organization\Pages\Tenancy\RegisterOrganization;
+use App\Filament\Organization\Pages\Tenancy\CreateOrganization;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Http\Middleware\ApplyTenantContext;
 use App\Http\Middleware\EnforceOrganizationEmailVerification;
@@ -32,7 +32,7 @@ class OrganizationPanelProvider extends BasePanelProvider
             ->login(Login::class)
             ->registration(Register::class)
             ->tenant(Organization::class, slugAttribute: 'slug')
-            ->tenantRegistration(RegisterOrganization::class)
+            ->tenantRegistration(CreateOrganization::class)
             ->discoverResources(
                 in: app_path('Filament/Organization/Resources'),
                 for: 'App\\Filament\\Organization\\Resources',
@@ -94,6 +94,7 @@ class OrganizationPanelProvider extends BasePanelProvider
             NavigationItem::make('Settings')
                 ->icon('lucide-settings')
                 ->sort(99)
+                ->visible(fn (): bool => GeneralSettings::canAccess())
                 ->url(fn (): string => GeneralSettings::getUrl(
                     panel: SettingsPanelProvider::PANEL_ID,
                 )),

@@ -3,6 +3,7 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
+use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\ActivityLog;
 use App\Models\Organization;
@@ -15,6 +16,7 @@ use Filament\Schemas\Schema;
 
 class Security extends Page
 {
+    use GatedByOrganizationPermission;
     use HasOrgSettingsBreadcrumbs;
 
     protected static ?string $slug = 'security';
@@ -29,6 +31,11 @@ class Security extends Page
      * @var array<string, mixed>
      */
     public ?array $data = [];
+
+    protected static function organizationPermission(): string
+    {
+        return 'view_any_setting';
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -86,6 +93,8 @@ class Security extends Page
 
     public function saveTwoFactor(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $value = (bool) ($this->form->getState()['enforce_two_factor'] ?? false);
 
         $this->organization->update(['enforce_two_factor' => $value]);
@@ -102,6 +111,8 @@ class Security extends Page
 
     public function saveEmailVerification(): void
     {
+        static::authorizeOrganizationPermission('update_setting');
+
         $value = (bool) ($this->form->getState()['enforce_email_verification'] ?? false);
 
         $this->organization->update(['enforce_email_verification' => $value]);
