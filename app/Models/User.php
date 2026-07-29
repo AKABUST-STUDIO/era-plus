@@ -57,6 +57,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         'password',
         'default_organization_id',
         'date_of_birth',
+        'locale',
     ];
 
     /**

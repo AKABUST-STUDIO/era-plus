@@ -5,6 +5,7 @@ return [
         'account' => 'Your account',
         'upgrade' => 'Upgrade to Pro',
         'logout' => 'Sign out',
+        'language' => 'Language',
     ],
 
     'organizations' => [

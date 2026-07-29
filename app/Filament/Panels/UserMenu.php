@@ -31,6 +31,7 @@ class UserMenu
                 })
                 ->url(fn (): string => Settings::getUrl(panel: UserPanelProvider::PANEL_ID)),
             'theme' => fn (Action $action): Action => $action->name('theme'),
+            'language' => fn (Action $action): Action => $action->name('language'),
             FeedbackAction::make(),
             CreateSupportRequestAction::make('support')
                 ->label(__('user.support.action'))

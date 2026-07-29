@@ -100,6 +100,8 @@
                     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::USER_MENU_PROFILE_AFTER) }}
                 @elseif ($key == 'theme')
                     <x-filament-panels::theme-switcher />
+                @elseif ($key == 'language')
+                    <livewire:language-switcher />
                 @else
                     {{ $item }}
                 @endif

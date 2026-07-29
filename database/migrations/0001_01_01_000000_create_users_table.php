@@ -17,6 +17,7 @@ return new class extends Migration
             $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->string('phone', 40)->nullable();
+            $table->string('locale', 5)->nullable();
             $table->string('password');
             $table->rememberToken();
 

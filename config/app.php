@@ -131,4 +131,13 @@ return [
         'recipient' => env('SUPPORT_RECIPIENT', 'support@rasmo.eu'),
     ],
 
+    'locales' => [
+        'en' => ['name' => 'English', 'flag' => 'gb'],
+        'es' => ['name' => 'Español', 'flag' => 'es'],
+        'fr' => ['name' => 'Français', 'flag' => 'fr'],
+        'de' => ['name' => 'Deutsch', 'flag' => 'de'],
+        'it' => ['name' => 'Italiano', 'flag' => 'it'],
+        'pl' => ['name' => 'Polski', 'flag' => 'pl'],
+    ],
+
 ];

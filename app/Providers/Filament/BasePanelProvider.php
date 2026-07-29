@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Panels\SpotlightPlugin;
 use App\Filament\Panels\UserMenu;
+use App\Http\Middleware\SetUserLocale;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Contracts\Plugin;
 use Filament\Enums\DatabaseNotificationsPosition;
@@ -43,6 +44,7 @@ abstract class BasePanelProvider extends PanelProvider
         SubstituteBindings::class,
         DisableBladeIconComponents::class,
         DispatchServingFilamentEvent::class,
+        SetUserLocale::class,
     ];
 
     public function panel(Panel $panel): Panel
