@@ -25,7 +25,7 @@ class UserCreationTest extends TestCase
         $this->assertTrue(Str::isUuid($user->uuid));
         $this->assertNotEmpty($user->slug);
         $this->assertStringStartsWith('ada-lovelace-', $user->slug);
-        $this->assertNull($user->username);
+        $this->assertSame($user->slug, $user->username);
     }
 
     public function test_username_can_be_persisted_and_stays_unique(): void

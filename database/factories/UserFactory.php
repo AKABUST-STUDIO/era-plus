@@ -23,10 +23,12 @@ class UserFactory extends Factory
     {
         $name = fake()->name();
         $uuid = (string) Str::uuid();
+        $slug = (Str::slug($name) ?: 'user').'-'.Str::substr($uuid, 0, 8);
 
         return [
             'uuid' => $uuid,
-            'slug' => (Str::slug($name) ?: 'user').'-'.Str::substr($uuid, 0, 8),
+            'slug' => $slug,
+            'username' => $slug,
             'name' => $name,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),

@@ -28,10 +28,12 @@ class AuthenticationService
         } catch (ModelNotFoundException $_) {
             $name = EmailUsername::toDisplayName($email);
             $uuid = (string) Str::uuid();
+            $slug = (Str::slug($name) ?: 'user').'-'.Str::substr($uuid, 0, 8);
 
             $user = User::query()->create([
                 'uuid' => $uuid,
-                'slug' => (Str::slug($name) ?: 'user').'-'.Str::substr($uuid, 0, 8),
+                'slug' => $slug,
+                'username' => $slug,
                 'email' => $email,
                 'name' => $name,
                 'password' => Str::random(64),

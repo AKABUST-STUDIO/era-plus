@@ -89,22 +89,6 @@ return [
         'submitted' => 'Thanks — your feedback has been sent.',
     ],
 
-    'authentication' => [
-        'title' => 'Authentication',
-        'passkeys' => [
-            'heading' => 'Passkeys',
-            'description' => 'Sign in without a password using your device\'s biometric sensor or a security key.',
-            'register' => 'Register a passkey',
-            'name_prompt' => 'Name this passkey (e.g. My MacBook)',
-            'register_failed' => 'Could not register passkey',
-            'empty' => 'You haven\'t registered any passkeys yet.',
-            'added' => 'Added :time',
-            'last_used' => 'last used :time',
-            'remove' => 'Remove',
-            'remove_confirm' => 'Remove this passkey?',
-        ],
-    ],
-
     'billing' => [
         'title' => 'Billing',
         'information' => [
@@ -169,14 +153,4 @@ return [
         ],
     ],
 
-    'invoices' => [
-        'title' => 'Invoices',
-        'empty_no_orgs' => 'You don\'t admin any organization yet.',
-        'empty_no_invoices' => 'No invoices yet across your organizations.',
-        'date' => 'Date',
-        'organization' => 'Organization',
-        'total' => 'Total',
-        'status' => 'Status',
-        'download' => 'Download',
-    ],
 ];
