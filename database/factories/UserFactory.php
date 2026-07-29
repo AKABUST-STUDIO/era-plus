@@ -21,8 +21,13 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->name();
+        $uuid = (string) Str::uuid();
+
         return [
-            'name' => fake()->name(),
+            'uuid' => $uuid,
+            'slug' => (Str::slug($name) ?: 'user').'-'.Str::substr($uuid, 0, 8),
+            'name' => $name,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

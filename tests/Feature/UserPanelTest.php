@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Filament\User\Pages\Activity;
-use App\Filament\User\Pages\Authentication;
 use App\Filament\User\Pages\BillingInformation;
 use App\Filament\User\Pages\BillingItems;
 use App\Filament\User\Pages\Invoices;
@@ -67,7 +66,7 @@ class UserPanelTest extends TestCase
 
     public function test_each_wip_page_renders(): void
     {
-        foreach ([Activity::class, Authentication::class, BillingInformation::class, BillingItems::class, Invoices::class] as $page) {
+        foreach ([Activity::class, BillingInformation::class, BillingItems::class, Invoices::class] as $page) {
             Livewire::test($page)->assertSuccessful();
         }
     }

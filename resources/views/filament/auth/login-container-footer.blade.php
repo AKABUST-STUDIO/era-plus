@@ -37,24 +37,6 @@
                 ->toHtml()
         !!}
     @endif
-    {!! 
-        \Filament\Actions\Action::make('passkey')
-            ->label(__('filament-panels::auth/pages/login.form.actions.passkey.label'))
-            ->icon('lucide-user-key')
-            ->color('gray')
-            ->outlined()
-            ->extraAttributes([
-                'x-data' => 'passkeySignIn(' . \Illuminate\Support\Js::from([
-                    'redirectUrl' => filament()->getUrl(),
-                    'failureTitle' => __('filament-panels::auth/pages/login.messages.passkey_failed'),
-                ]) . ')',
-                'x-bind:disabled' => 'busy',
-                'x-bind:aria-busy' => 'busy',
-                'class' => 'w-full',
-            ])
-            ->alpineClickHandler('signIn()')
-            ->toHtml() 
-    !!}
     @if (request()->route()->getName() === 'filament.organization.auth.login')
         <p class="text-center justify-center inline-flex items-baseline gap-2 mt-6">
             {{ __('filament-panels::auth/pages/login.actions.register.before') }}

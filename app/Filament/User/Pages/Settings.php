@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 
 class Settings extends Page
 {
@@ -29,7 +30,13 @@ class Settings extends Page
     {
         $this->user = auth()->user();
 
-        $this->form->fill($this->user->only(['name', 'email', 'default_organization_id']));
+        $this->form->fill($this->user->only([
+            'name',
+            'username',
+            'email',
+            'phone',
+            'default_organization_id',
+        ]));
         $this->form->loadStateFromRelationships(shouldHydrate: true);
     }
 
@@ -46,8 +53,11 @@ class Settings extends Page
             ->components([
                 $this->avatarSection(),
                 $this->profileSection(),
+                $this->usernameSection(),
                 $this->emailSection(),
+                $this->phoneSection(),
                 $this->defaultOrganizationSection(),
+                $this->userIdSection(),
                 $this->deleteSection(),
             ]);
     }
@@ -55,7 +65,9 @@ class Settings extends Page
     protected function avatarSection(): Section
     {
         return Section::make(__('forms.user.settings.avatar_heading'))
+            ->columns(4)
             ->description(__('forms.user.settings.avatar_description'))
+            ->footerActionsAlignment(Alignment::End)
             ->schema([
                 SpatieMediaLibraryFileUpload::make('avatar')
                     ->hiddenLabel()
@@ -64,55 +76,163 @@ class Settings extends Page
                     ->avatar()
                     ->image()
                     ->imageEditor()
-                    ->circleCropper(),
+                    ->circleCropper()
+                    ->afterStateHydrated(function (SpatieMediaLibraryFileUpload $component): void {
+                        if (blank($component->getState()) && blank($this->user->getFilamentAvatarUrl())) {
+                            $component->rawState(['__fallback' => '__fallback']);
+                        }
+                    })
+                    ->getUploadedFileUsing(function (SpatieMediaLibraryFileUpload $component, string $file): ?array {
+                        if ($file === '__fallback') {
+                            return [
+                                'name' => 'avatar',
+                                'size' => 0,
+                                'type' => 'image/png',
+                                'url' => $this->user->avatarUrl(),
+                            ];
+                        }
+
+                        $media = $component->getRecord()?->getRelationValue('media')->firstWhere('uuid', $file);
+
+                        if (! $media) {
+                            return null;
+                        }
+
+                        return [
+                            'name' => $media->name,
+                            'size' => $media->size,
+                            'type' => $media->mime_type,
+                            'url' => $media->getUrl($component->getConversion() ?? ''),
+                        ];
+                    }),
             ])
             ->footerActions([
-                Action::make('saveAvatar')->label(__('forms.user.settings.save_avatar'))->action(fn () => $this->saveAvatar()),
+                Action::make('saveAvatar')->label(__('forms.common.save'))->action(fn () => $this->saveAvatar()),
             ]);
     }
 
     protected function profileSection(): Section
     {
         return Section::make(__('forms.user.settings.profile_heading'))
+            ->columns(4)
             ->description(__('forms.user.settings.profile_description'))
+            ->footerActionsAlignment(Alignment::End)
             ->schema([
-                TextInput::make('name')->label(__('forms.user.settings.display_name'))->required()->maxLength(255),
+                TextInput::make('name')
+                    ->hiddenLabel()
+                    ->columnSpan(2)
+                    ->placeholder(__('forms.user.settings.display_name'))
+                    ->required()
+                    ->maxLength(255),
             ])
             ->footerActions([
-                Action::make('saveProfile')->label(__('forms.user.settings.save_profile'))->action(fn () => $this->saveProfile()),
+                Action::make('saveProfile')->label(__('forms.common.save'))->action(fn () => $this->saveProfile()),
+            ]);
+    }
+
+    protected function usernameSection(): Section
+    {
+        return Section::make(__('forms.user.settings.username_heading'))
+            ->columns(4)
+            ->description(__('forms.user.settings.username_description'))
+            ->footerActionsAlignment(Alignment::End)
+            ->schema([
+                TextInput::make('username')
+                    ->hiddenLabel()
+                    ->columnSpan(2)
+                    ->placeholder(__('forms.user.settings.username_placeholder'))
+                    ->prefix(str(parse_url(config('app.url'), PHP_URL_HOST))->append('/'))
+                    ->alphaDash()
+                    ->minLength(3)
+                    ->maxLength(48)
+                    ->unique(User::class, 'username', ignorable: fn (): User => $this->user),
+            ])
+            ->footerActions([
+                Action::make('saveUsername')->label(__('forms.common.save'))->action(fn () => $this->saveUsername()),
             ]);
     }
 
     protected function emailSection(): Section
     {
         return Section::make(__('forms.user.settings.email_heading'))
+            ->columns(4)
             ->description(__('forms.user.settings.email_description'))
+            ->footerActionsAlignment(Alignment::End)
             ->schema([
-                TextInput::make('email')->email()->required()->maxLength(255),
+                TextInput::make('email')
+                    ->hiddenLabel()
+                    ->columnSpan(2)
+                    ->placeholder(__('forms.user.settings.email_placeholder'))
+                    ->email()
+                    ->required()
+                    ->maxLength(255)
+                    ->unique(User::class, 'email', ignorable: fn (): User => $this->user),
             ])
             ->footerActions([
-                Action::make('saveEmail')->label(__('forms.user.settings.save_email'))->action(fn () => $this->saveEmail()),
+                Action::make('saveEmail')->label(__('forms.common.save'))->action(fn () => $this->saveEmail()),
+            ]);
+    }
+
+    protected function phoneSection(): Section
+    {
+        return Section::make(__('forms.user.settings.phone_heading'))
+            ->columns(4)
+            ->description(__('forms.user.settings.phone_description'))
+            ->footerActionsAlignment(Alignment::End)
+            ->schema([
+                TextInput::make('phone')
+                    ->hiddenLabel()
+                    ->columnSpan(2)
+                    ->placeholder(__('forms.user.settings.phone_placeholder'))
+                    ->tel()
+                    ->rule('phone:INTERNATIONAL')
+                    ->maxLength(40),
+            ])
+            ->footerActions([
+                Action::make('savePhone')
+                    ->label(__('forms.common.save'))
+                    ->action(fn () => $this->savePhone()),
             ]);
     }
 
     protected function defaultOrganizationSection(): Section
     {
         return Section::make(__('forms.user.settings.default_org_heading'))
+            ->columns(4)
             ->description(__('forms.user.settings.default_org_description'))
+            ->footerActionsAlignment(Alignment::End)
             ->schema([
                 Select::make('default_organization_id')
-                    ->label(__('forms.user.settings.default_org'))
+                    ->hiddenLabel()
+                    ->columnSpan(2)
+                    ->placeholder(__('forms.user.settings.default_org_placeholder'))
                     ->options(fn (): array => $this->user
                         ->organizations()
                         ->orderBy('name')
                         ->pluck('name', 'organizations.id')
-                        ->all())
-                    ->placeholder(__('forms.user.settings.default_org_placeholder')),
+                        ->all()),
             ])
             ->footerActions([
                 Action::make('saveDefaultOrganization')
-                    ->label(__('forms.user.settings.save_default_org'))
+                    ->label(__('forms.common.save'))
                     ->action(fn () => $this->saveDefaultOrganization()),
+            ]);
+    }
+
+    protected function userIdSection(): Section
+    {
+        return Section::make(__('forms.user.settings.user_id_heading'))
+            ->columns(4)
+            ->description(__('forms.user.settings.user_id_description'))
+            ->footerActionsAlignment(Alignment::End)
+            ->schema([
+                TextInput::make('user_id_display')
+                    ->hiddenLabel()
+                    ->columnSpan(2)
+                    ->default($this->user->uuid)
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->copyable(),
             ]);
     }
 
@@ -120,6 +240,7 @@ class Settings extends Page
     {
         return Section::make(__('forms.user.settings.delete_heading'))
             ->description(__('forms.user.settings.delete_description'))
+            ->footerActionsAlignment(Alignment::End)
             ->footerActions([
                 Action::make('deleteAccount')
                     ->label(__('forms.user.settings.delete_account'))
@@ -144,11 +265,25 @@ class Settings extends Page
         Notification::make()->title(__('notifications.profile_saved'))->success()->send();
     }
 
+    public function saveUsername(): void
+    {
+        $this->user->update(['username' => $this->form->getState()['username']]);
+
+        Notification::make()->title(__('notifications.saved'))->success()->send();
+    }
+
     public function saveEmail(): void
     {
         $this->user->update(['email' => $this->form->getState()['email']]);
 
         Notification::make()->title(__('notifications.email_saved'))->success()->send();
+    }
+
+    public function savePhone(): void
+    {
+        $this->user->update(['phone' => $this->form->getState()['phone']]);
+
+        Notification::make()->title(__('notifications.saved'))->success()->send();
     }
 
     public function saveDefaultOrganization(): void

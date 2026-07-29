@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Mail\AccountCreated;
 use App\Mail\MissingAccountSignInAttempt;
 use App\Models\User;
 use App\Support\EmailUsername;
@@ -28,8 +27,11 @@ class AuthenticationService
             User::query()->where('email', $email)->firstOrFail()->sendAccountAlreadyExistsMailable();
         } catch (ModelNotFoundException $_) {
             $name = EmailUsername::toDisplayName($email);
+            $uuid = (string) Str::uuid();
 
             $user = User::query()->create([
+                'uuid' => $uuid,
+                'slug' => (Str::slug($name) ?: 'user').'-'.Str::substr($uuid, 0, 8),
                 'email' => $email,
                 'name' => $name,
                 'password' => Str::random(64),

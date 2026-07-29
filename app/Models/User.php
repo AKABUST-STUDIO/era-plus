@@ -52,6 +52,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
      * @var list<string>
      */
     protected $fillable = [
+        'uuid',
+        'username',
+        'slug',
         'name',
         'email',
         'phone',

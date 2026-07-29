@@ -2,6 +2,7 @@
 
 return [
     'common' => [
+        'save' => 'Save',
         'name' => 'Name',
         'email' => 'Email',
         'description' => 'Description',
@@ -202,15 +203,26 @@ return [
     ],
     'user' => [
         'settings' => [
-            'profile_heading' => 'Profile',
-            'profile_description' => 'How others see you across organizations.',
+            'profile_heading' => 'Display name',
+            'profile_description' => 'The name others see across your organizations.',
             'display_name' => 'Display name',
+            'username_heading' => 'Username',
+            'username_description' => 'This is your URL namespace within Rasmo.',
+            'username_placeholder' => 'yourname',
+            'save_username' => 'Save',
             'email_heading' => 'Email',
             'email_description' => 'Primary contact and sign-in address.',
+            'email_placeholder' => 'you@example.com',
+            'phone_heading' => 'Your Phone Number',
+            'phone_description' => 'Enter a phone number to receive important service updates by SMS.',
+            'phone_placeholder' => '(201) 555-0123',
+            'save_phone' => 'Save',
             'default_org_heading' => 'Default organization',
             'default_org_description' => 'Where you land after sign-in.',
             'default_org' => 'Default organization',
             'default_org_placeholder' => 'Pick on sign-in',
+            'user_id_heading' => 'User ID',
+            'user_id_description' => 'This is your user ID within Rasmo. Used when interacting with the API.',
             'delete_heading' => 'Delete account',
             'delete_description' => 'Permanently remove your account. Cannot be undone.',
             'save_profile' => 'Save profile',
