@@ -10,6 +10,8 @@ return [
 
     'organizations' => [
         'title' => 'Organizations',
+        'model' => 'Organization',
+        'name' => 'Name',
         'role' => [
             'owner' => 'Owner',
             'member' => 'Member',
@@ -105,10 +107,66 @@ return [
 
     'billing' => [
         'title' => 'Billing',
-        'empty' => 'You don\'t admin any organization yet.',
-        'no_payment_method' => 'No payment method on file',
-        'manage' => 'Manage in Stripe',
-        'upgrade_pro' => 'Upgrade to Pro',
+        'information' => [
+            'title' => 'Billing Information',
+        ],
+        'items' => [
+            'title' => 'Billing Items',
+            'item_description' => 'Visit :name\'s billing settings for details.',
+            'view' => 'View Billing Settings',
+            'empty' => 'You are not the owner of any organization yet.',
+        ],
+        'invoices' => [
+            'title' => 'Invoices',
+            'heading' => 'Invoices',
+            'date' => 'Date',
+            'description' => 'Description',
+            'total' => 'Total',
+            'status' => 'Status',
+            'view' => 'Open in Stripe',
+            'empty_heading' => 'No invoices yet',
+            'empty_description' => 'Invoices will appear here once your subscription is billed.',
+        ],
+        'payment_method' => [
+            'heading' => 'Payment Method',
+            'description' => 'Payments for your subscriptions are made using the default card.',
+            'manage' => 'Manage in Stripe',
+        ],
+        'invoice_email' => [
+            'heading' => 'Invoice Email Recipient',
+            'description' => 'By default, all your invoices will be sent to your account\'s email address. If you want to use a custom email address specifically for receiving invoices, enter it here.',
+        ],
+        'company' => [
+            'heading' => 'Company Name',
+            'description' => 'By default, your account name is shown on your invoice. If you want to show a custom name instead, please enter it here.',
+        ],
+        'address' => [
+            'heading' => 'Billing Address',
+            'description' => 'Used on your invoices.',
+            'country' => 'Country',
+            'line1' => 'Address line 1',
+            'line2' => 'Address line 2',
+            'city' => 'City',
+            'state' => 'State / Province',
+            'postal_code' => 'Postal code',
+        ],
+        'invoice_language' => [
+            'heading' => 'Invoice Language',
+            'description' => 'If your billing department is using a different language, enter it here.',
+        ],
+        'purchase_order' => [
+            'heading' => 'Invoice Purchase Order',
+            'description' => 'By default, no purchase order line is shown on your account\'s billing invoices. If you want to show a purchase order line, please enter it here.',
+        ],
+        'tax_id' => [
+            'heading' => 'Tax ID',
+            'description' => 'If you would like your invoice to render a specific tax ID, enter it here.',
+            'type' => 'Type',
+            'value' => 'ID',
+        ],
+        'actions' => [
+            'save' => 'Save',
+        ],
     ],
 
     'invoices' => [

@@ -18,6 +18,20 @@ return new class extends Migration
             $table->date('date_of_birth')->nullable();
             $table->string('phone', 40)->nullable();
             $table->string('locale', 5)->nullable();
+
+            $table->string('invoice_email')->nullable();
+            $table->string('billing_company')->nullable();
+            $table->string('billing_line1')->nullable();
+            $table->string('billing_line2')->nullable();
+            $table->string('billing_city')->nullable();
+            $table->string('billing_state')->nullable();
+            $table->string('billing_postal_code', 32)->nullable();
+            $table->string('billing_country', 2)->nullable();
+            $table->string('invoice_language', 5)->default('en');
+            $table->string('invoice_purchase_order')->nullable();
+            $table->string('tax_id_type')->nullable();
+            $table->string('tax_id_value')->nullable();
+
             $table->string('password');
             $table->rememberToken();
 

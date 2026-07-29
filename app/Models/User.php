@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Billing\TaxIdType;
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Events\UserUpdated;
@@ -58,6 +59,18 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         'default_organization_id',
         'date_of_birth',
         'locale',
+        'invoice_email',
+        'billing_company',
+        'billing_line1',
+        'billing_line2',
+        'billing_city',
+        'billing_state',
+        'billing_postal_code',
+        'billing_country',
+        'invoice_language',
+        'invoice_purchase_order',
+        'tax_id_type',
+        'tax_id_value',
     ];
 
     /**
@@ -88,6 +101,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
             'date_of_birth' => 'date',
             'password' => 'hashed',
             'phone' => RawPhoneNumberCast::class.':ES',
+            'tax_id_type' => TaxIdType::class,
         ];
     }
 

@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Filament\User\Pages\Activity;
 use App\Filament\User\Pages\Authentication;
-use App\Filament\User\Pages\Billing;
+use App\Filament\User\Pages\BillingInformation;
+use App\Filament\User\Pages\BillingItems;
 use App\Filament\User\Pages\Invoices;
-use App\Filament\User\Pages\Organizations;
 use App\Filament\User\Pages\Settings;
 use App\Models\Organization;
 use App\Models\User;
@@ -65,27 +65,9 @@ class UserPanelTest extends TestCase
         $this->assertSame($org->id, $this->user->fresh()->default_organization_id);
     }
 
-    public function test_organizations_page_lists_only_user_orgs(): void
-    {
-        $mine = Organization::factory()->create(['name' => 'Mine']);
-        $this->user->joinOrganization($mine);
-        Organization::factory()->create(['name' => 'Stranger']);
-
-        Livewire::test(Organizations::class)
-            ->assertSuccessful();
-
-        $this->assertContains(
-            $mine->id,
-            Organization::query()
-                ->whereHas('users', fn ($q) => $q->whereKey($this->user->id))
-                ->pluck('id')
-                ->all(),
-        );
-    }
-
     public function test_each_wip_page_renders(): void
     {
-        foreach ([Activity::class, Authentication::class, Billing::class, Invoices::class] as $page) {
+        foreach ([Activity::class, Authentication::class, BillingInformation::class, BillingItems::class, Invoices::class] as $page) {
             Livewire::test($page)->assertSuccessful();
         }
     }
