@@ -7,3 +7,6 @@
 - [Icons](feedback_icons.md) — Lucide not Heroicons; settings sub-pages declare no nav icon
 - [Class components](feedback_class_components.md) — build UI from component classes/schemas, not hand-written Blade markup
 - [No short variable names](feedback_no_short_variable_names.md) — never `$r`/`$q`/`$e`/`$org`; full descriptive names everywhere, including closure params
+- [Filament modal defaults](feedback_filament_modal_defaults.md) — every modal: `Width::Large`, `closeButton(false)`, footer actions `End`; create/edit also `cancelAction(false)`
+- [Inline closures](feedback_inline_closures.md) — non-trivial closure bodies stay inline as `function(){}`; don't extract to a helper, don't cram into `fn () =>`
+- [Tailwind utilities inline](feedback_tailwind_utilities_inline.md) — single-use styling goes as Tailwind classes on the blade element, not as named classes in `theme.css` (nuance to [[feedback_css_in_theme_not_blade]])
