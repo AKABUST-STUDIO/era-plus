@@ -39,7 +39,7 @@ class OrganizationService
 
     public function urlFor(Organization $organization): string
     {
-        return Overview::getUrl(['organization' => $organization->slug]);
+        return Overview::getUrl(panel: 'organization', tenant: $organization);
     }
 
     public function remember(Organization $organization): void

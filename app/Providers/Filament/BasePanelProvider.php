@@ -80,7 +80,7 @@ abstract class BasePanelProvider extends PanelProvider
                 fn (): View => view('livewire.organization-menu-wrapper'),
             )
             ->renderHook(
-                PanelsRenderHook::SIDEBAR_NAV_START,
+                PanelsRenderHook::CONTENT_BEFORE,
                 fn (): View => view('livewire.project-menu-wrapper'),
             );
     }

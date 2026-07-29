@@ -52,7 +52,6 @@ class OrganizationPanelProvider extends BasePanelProvider
             ->pages([
                 Overview::class,
             ])
-            ->tenantMenu()
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
                 fn (): View => view('filament.auth.login-container-footer'),

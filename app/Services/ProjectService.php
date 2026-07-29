@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
-use App\Filament\Organization\Pages\Overview;
+use App\Filament\Project\Pages\Overview;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
 use App\Providers\Filament\OrganizationPanelProvider;
+use App\Providers\Filament\ProjectPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Support\Collection;
 
@@ -37,7 +38,11 @@ class ProjectService
 
     public function urlFor(Project $project): string
     {
-        return Overview::getUrl(['organization' => $project->slug]);
+        return Overview::getUrl(
+            ['organization' => $project->organization->slug],
+            panel: ProjectPanelProvider::PANEL_ID,
+            tenant: $project,
+        );
     }
 
     public function createUrlFor(Organization $organization): string

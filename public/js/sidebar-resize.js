@@ -35,14 +35,14 @@ document.addEventListener('alpine:init', () => {
             const isRtl = window.getComputedStyle(this.$el).direction === 'rtl'
             const raw = isRtl ? rect.right - event.clientX : event.clientX - rect.left
 
-            if (raw < 120) {
+            if (raw < 180) {
                 this.stopResize()
                 this.$store.sidebar.close()
 
                 return
             }
 
-            this.width = Math.min(480, Math.max(180, Math.round(raw)))
+            this.width = Math.min(480, Math.max(250, Math.round(raw)))
             this.applyWidth()
         },
 

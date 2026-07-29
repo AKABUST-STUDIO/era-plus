@@ -37,7 +37,7 @@
             x-on:dblclick="resetWidth()"
             x-bind:class="{ 'fi-active': isResizing }"
             class="fi-sidebar-resize-handle"
-            style="position: absolute; inset-block: 0; inset-inline-end: 0; width: 6px; cursor: col-resize; z-index: 40; touch-action: none;"
+            style="position: absolute; inset-block: 0; inset-inline-end: 0; width: 6px; cursor: col-resize; z-index: 10; touch-action: none;"
             aria-hidden="true"
         ></div>
         {{-- CUSTOM END --}}

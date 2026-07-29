@@ -2,10 +2,8 @@
     $isSidebarCollapsibleOnDesktop = filament()->isSidebarCollapsibleOnDesktop();
 @endphp
 
-<button class="fi-sidebar-database-notifications-btn">
+<button class="fi-sidebar-database-notifications-btn relative">
     {{ \Filament\Support\generate_icon_html('lucide-bell', alias: \Filament\View\PanelsIconAlias::SIDEBAR_OPEN_DATABASE_NOTIFICATIONS_BUTTON, size: \Filament\Support\Enums\IconSize::Medium) }}
-
-    <!-- Overwrite: removed label -->
 
     @if ($unreadNotificationsCount)
         <span
@@ -15,9 +13,9 @@
                 x-transition:enter-start="fi-transition-enter-start"
                 x-transition:enter-end="fi-transition-enter-end"
             @endif
-            class="fi-sidebar-database-notifications-btn-badge-ctn"
+            class="fi-sidebar-database-notifications-btn-badge-ctn absolute -top-2 -right-1"
         >
-            <x-filament::badge>
+            <x-filament::badge size="xs" color="danger">
                 {{ $unreadNotificationsCount }}
             </x-filament::badge>
         </span>
