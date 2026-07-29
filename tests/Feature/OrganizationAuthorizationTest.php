@@ -13,8 +13,6 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Role;
 use App\Models\User;
-use App\Providers\Filament\Organization\SettingsPanelProvider;
-use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -40,14 +38,14 @@ class OrganizationAuthorizationTest extends TestCase
     private function actOnSettingsPanel(User $user, Organization $organization): void
     {
         $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
         OrganizationService::remember($organization);
     }
 
     private function actOnOrganizationPanel(User $user, Organization $organization): void
     {
         $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel(OrganizationPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization'));
         Filament::setTenant($organization);
     }
 
@@ -172,7 +170,7 @@ class OrganizationAuthorizationTest extends TestCase
         $project = Project::factory()->create(['organization_id' => $organization->id]);
 
         $this->actingAs($outsider);
-        Filament::setCurrentPanel(Filament::getPanel(OrganizationPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization'));
         Filament::setTenant($organization);
 
         $this->assertFalse(Gate::forUser($outsider)->allows('viewAny', Project::class));
@@ -184,11 +182,11 @@ class OrganizationAuthorizationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->assertFalse($user->canAccessPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID)));
+        $this->assertFalse($user->canAccessPanel(Filament::getPanel('organization.settings')));
 
         $user->joinOrganization(Organization::factory()->create(), OrganizationRole::Member);
 
-        $this->assertTrue($user->fresh()->canAccessPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID)));
+        $this->assertTrue($user->fresh()->canAccessPanel(Filament::getPanel('organization.settings')));
     }
 
     public function test_custom_role_permissions_are_honoured(): void

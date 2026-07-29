@@ -18,6 +18,8 @@ class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     public static function canCreate(): bool
     {
         $organization = Filament::getTenant();

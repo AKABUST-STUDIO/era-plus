@@ -58,18 +58,18 @@
             <x-filament-panels::tenant-menu />
         @endif
 
-        @if (filament()->isGlobalSearchEnabled() && filament()->getGlobalSearchPosition() === \Filament\Enums\GlobalSearchPosition::Sidebar)
-            <div
-                @if ($isSidebarCollapsibleOnDesktop || $isSidebarFullyCollapsibleOnDesktop)
-                    x-show="$store.sidebar.isOpen"
-                @endif
-            >
-                @livewire(Filament\Livewire\GlobalSearch::class)
-            </div>
-        @endif
-
         <nav class="fi-sidebar-nav">
             {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_NAV_START) }}
+
+            @if (filament()->isGlobalSearchEnabled() && filament()->getGlobalSearchPosition() === \Filament\Enums\GlobalSearchPosition::Sidebar)
+                <div
+                    @if ($isSidebarCollapsibleOnDesktop || $isSidebarFullyCollapsibleOnDesktop)
+                        x-show="$store.sidebar.isOpen"
+                    @endif
+                >
+                    @livewire(Filament\Livewire\GlobalSearch::class)
+                </div>
+            @endif
 
             <ul class="fi-sidebar-nav-groups">
                 @foreach ($navigation as $group)

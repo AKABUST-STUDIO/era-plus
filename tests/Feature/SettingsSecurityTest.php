@@ -7,7 +7,6 @@ use App\Facades\OrganizationService;
 use App\Filament\Organization\Settings\Pages\Security;
 use App\Models\Organization;
 use App\Models\User;
-use App\Providers\Filament\Organization\SettingsPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -24,7 +23,7 @@ class SettingsSecurityTest extends TestCase
         $user->joinOrganization($organization, OrganizationRole::Admin);
 
         $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
         OrganizationService::remember($organization);
 
         Livewire::test(Security::class)

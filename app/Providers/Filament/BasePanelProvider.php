@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Panels\SpotlightPlugin;
 use App\Filament\Panels\UserMenu;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
+use Filament\Contracts\Plugin;
 use Filament\Enums\DatabaseNotificationsPosition;
 use Filament\Enums\GlobalSearchPosition;
 use Filament\Enums\UserMenuPosition;
@@ -14,8 +15,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\View\PanelsRenderHook;
-use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -25,10 +24,15 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 abstract class BasePanelProvider extends PanelProvider
 {
-    /**
-     * @var array<int, class-string>
-     */
-    protected const SHARED_MIDDLEWARE = [
+    protected const colors = [
+        'primary' => Color::Zinc,
+    ];
+
+    protected const plugins = [
+        SpotlightPlugin::class,
+    ];
+
+    protected const middleware = [
         EncryptCookies::class,
         AddQueuedCookiesToResponse::class,
         StartSession::class,
@@ -44,44 +48,25 @@ abstract class BasePanelProvider extends PanelProvider
     {
         return $panel
             ->spa(hasPrefetching: true)
-
             ->domain('app.'.parse_url(config('app.url'), PHP_URL_HOST))
 
             ->revealablePasswords()
             ->passwordReset(RequestPasswordReset::class)
+
+            ->userMenu(false)
+            ->userMenu(position: UserMenuPosition::Sidebar)
+            ->userMenuItems(UserMenu::items())
+            ->topbar(false)
+            ->sidebarFullyCollapsibleOnDesktop(true)
             ->globalSearch(provider: true, position: GlobalSearchPosition::Sidebar)
+            ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
+            ->databaseNotificationsPolling('5s')
 
             ->brandName(config('app.name'))
             ->viteTheme('resources/css/filament/app/theme.css')
 
-            ->colors([
-                'primary' => Color::Zinc,
-            ])
-            ->topbar(false)
-            ->sidebarFullyCollapsibleOnDesktop(true)
-
-            ->userMenu(false)
-            ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
-            ->databaseNotificationsPolling('5s')
-            ->userMenu(position: UserMenuPosition::Sidebar)
-            ->userMenuItems(UserMenu::items())
-            ->plugins([
-                SpotlightPlugin::make(),
-            ])
-            ->middleware(static::SHARED_MIDDLEWARE);
-    }
-
-    protected function withTenantMenus(Panel $panel): Panel
-    {
-        return $panel
-            ->tenantMenu(false)
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_NAV_START,
-                fn (): View => view('livewire.organization-menu-wrapper'),
-            )
-            ->renderHook(
-                PanelsRenderHook::CONTENT_BEFORE,
-                fn (): View => view('livewire.project-menu-wrapper'),
-            );
+            ->colors(static::colors)
+            ->plugins(array_map(fn (string $plugin): Plugin => $plugin::make(), static::plugins))
+            ->middleware(static::middleware);
     }
 }

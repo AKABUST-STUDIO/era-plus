@@ -9,7 +9,6 @@ use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
-use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
@@ -62,7 +61,7 @@ class ActivityLogTest extends TestCase
         $otherOrg = Organization::factory()->create();
         ActivityLog::record($otherOrg, 'Stranger event');
 
-        Filament::setCurrentPanel(Filament::getPanel(OrganizationPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization'));
         Filament::setTenant($this->organization);
         URL::defaults(['organization' => $this->organization->slug]);
 

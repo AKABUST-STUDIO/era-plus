@@ -12,7 +12,6 @@ use App\Http\Middleware\EnforceOrganizationEmailVerification;
 use App\Http\Middleware\EnforceOrganizationTwoFactor;
 use App\Http\Middleware\RegisterSpotlightCommands;
 use App\Models\Organization;
-use App\Providers\Filament\Organization\SettingsPanelProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
@@ -23,35 +22,31 @@ class OrganizationPanelProvider extends BasePanelProvider
 {
     public const PANEL_ID = 'organization';
 
+    protected const pages = [
+        Overview::class,
+    ];
+
+    protected const authMiddleware = [
+        Authenticate::class,
+    ];
+
+    protected const tenantMiddleware = [
+        ApplyTenantContext::class,
+        EnforceOrganizationEmailVerification::class,
+        EnforceOrganizationTwoFactor::class,
+        RegisterSpotlightCommands::class,
+    ];
+
     public function panel(Panel $panel): Panel
     {
-        return $this->withTenantMenus(parent::panel($panel))
+        return parent::panel($panel)
+
             ->default()
             ->id(self::PANEL_ID)
             ->path('')
+
             ->login(Login::class)
             ->registration(Register::class)
-            ->tenant(Organization::class, slugAttribute: 'slug')
-            ->tenantRegistration(CreateOrganization::class)
-            ->discoverResources(
-                in: app_path('Filament/Organization/Resources'),
-                for: 'App\\Filament\\Organization\\Resources',
-            )
-            ->discoverResources(
-                in: app_path('Filament/Resources'),
-                for: 'App\\Filament\\Resources',
-            )
-            ->discoverPages(
-                in: app_path('Filament/Organization/Pages'),
-                for: 'App\\Filament\\Organization\\Pages',
-            )
-            ->discoverWidgets(
-                in: app_path('Filament/Organization/Widgets'),
-                for: 'App\\Filament\\Organization\\Widgets',
-            )
-            ->pages([
-                Overview::class,
-            ])
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
                 fn (): View => view('filament.auth.login-container-footer'),
@@ -72,31 +67,48 @@ class OrganizationPanelProvider extends BasePanelProvider
                 PanelsRenderHook::SIMPLE_LAYOUT_END,
                 fn (): View => view('filament.auth.login-layout-footer'),
             )
-            ->navigationItems($this->getNavigationItems())
-            ->authMiddleware([
-                Authenticate::class,
-            ])
-            ->tenantMiddleware([
-                ApplyTenantContext::class,
-                EnforceOrganizationEmailVerification::class,
-                EnforceOrganizationTwoFactor::class,
-                RegisterSpotlightCommands::class,
-            ], isPersistent: true);
-    }
 
-    /**
-     * @return array<int, NavigationItem>
-     */
-    protected function getNavigationItems(): array
-    {
-        return [
-            NavigationItem::make('Settings')
-                ->icon('lucide-settings')
-                ->sort(99)
-                ->visible(fn (): bool => GeneralSettings::canAccess())
-                ->url(fn (): string => GeneralSettings::getUrl(
-                    panel: SettingsPanelProvider::PANEL_ID,
-                )),
-        ];
+            ->pages(self::pages)
+            ->discoverResources(
+                in: app_path('Filament/Organization/Resources'),
+                for: 'App\\Filament\\Organization\\Resources',
+            )
+            ->discoverResources(
+                in: app_path('Filament/Resources'),
+                for: 'App\\Filament\\Resources',
+            )
+            ->discoverPages(
+                in: app_path('Filament/Organization/Pages'),
+                for: 'App\\Filament\\Organization\\Pages',
+            )
+            ->discoverWidgets(
+                in: app_path('Filament/Organization/Widgets'),
+                for: 'App\\Filament\\Organization\\Widgets',
+            )
+
+            ->tenantMenu(false)
+            ->tenant(Organization::class, slugAttribute: 'slug')
+            ->tenantRegistration(CreateOrganization::class)
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_START,
+                fn (): View => view('livewire.organization-menu-wrapper'),
+            )
+            ->renderHook(
+                PanelsRenderHook::CONTENT_BEFORE,
+                fn (): View => view('livewire.project-menu-wrapper'),
+            )
+
+            ->navigationItems([
+                NavigationItem::make('Settings')
+                    ->icon('lucide-settings')
+                    ->sort(99)
+                    ->visible(fn (): bool => GeneralSettings::canAccess())
+                    ->url(fn (): string => GeneralSettings::getUrl(
+                        panel: 'organization.settings',
+                    )),
+            ])
+            
+            ->authMiddleware(self::authMiddleware)
+            ->tenantMiddleware(self::tenantMiddleware, isPersistent: true);
     }
 }

@@ -7,7 +7,6 @@ use App\Facades\OrganizationService;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Models\Organization;
 use App\Models\User;
-use App\Providers\Filament\Organization\SettingsPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -22,7 +21,7 @@ class GeneralSettingsTest extends TestCase
     private function actingOnSettingsPanel(User $user, Organization $organization): void
     {
         $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
         OrganizationService::remember($organization);
     }
 

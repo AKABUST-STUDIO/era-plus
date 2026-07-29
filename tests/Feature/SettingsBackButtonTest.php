@@ -6,8 +6,6 @@ use App\Facades\OrganizationService;
 use App\Filament\Organization\Pages\Overview;
 use App\Models\Organization;
 use App\Models\User;
-use App\Providers\Filament\Organization\SettingsPanelProvider;
-use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -28,14 +26,14 @@ class SettingsBackButtonTest extends TestCase
         $user->joinOrganization($organization);
 
         $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
         OrganizationService::remember($organization);
 
         $html = $this->render();
 
         $this->assertStringContainsString(__('navigation.back'), $html);
         $this->assertStringContainsString(
-            Overview::getUrl(panel: OrganizationPanelProvider::PANEL_ID, tenant: $organization),
+            Overview::getUrl(panel: 'organization', tenant: $organization),
             $html,
         );
     }
@@ -43,7 +41,7 @@ class SettingsBackButtonTest extends TestCase
     public function test_it_renders_nothing_without_a_current_organization(): void
     {
         $this->actingAs(User::factory()->create());
-        Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
         OrganizationService::forget();
 
         $this->assertSame('', trim($this->render()));

@@ -6,10 +6,6 @@ use App\Enums\Organization\OrganizationRole;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
-use App\Providers\Filament\Organization\SettingsPanelProvider;
-use App\Providers\Filament\OrganizationPanelProvider;
-use App\Providers\Filament\ProjectPanelProvider;
-use App\Providers\Filament\UserPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use LivewireUI\Spotlight\Spotlight;
@@ -58,10 +54,10 @@ class SpotlightTest extends TestCase
     public function test_spotlight_plugin_is_registered_on_every_panel(): void
     {
         $panels = [
-            OrganizationPanelProvider::PANEL_ID,
-            ProjectPanelProvider::PANEL_ID,
-            SettingsPanelProvider::PANEL_ID,
-            UserPanelProvider::PANEL_ID,
+            'organization',
+            'project',
+            'organization.settings',
+            'user',
         ];
 
         foreach ($panels as $panel) {

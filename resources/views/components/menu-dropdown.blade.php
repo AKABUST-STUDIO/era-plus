@@ -163,7 +163,7 @@
                     @endif
 
                     <div class="flex min-w-0 flex-1 items-center gap-2">
-                        <span class="fi-tenant-menu-item-name min-w-0 flex-1 truncate font-medium">{{ $item['name'] }}</span>
+                        <span class="fi-tenant-menu-item-name min-w-0 truncate font-medium">{{ $item['name'] }}</span>
                         @if (! empty($item['badge']))
                             <span class="fi-tenant-menu-item-badge inline-flex shrink-0 items-center rounded-full bg-gray-950/5 px-1.5 py-px text-xs font-medium text-gray-600 dark:bg-white/10 dark:text-gray-300">
                                 {{ $item['badge'] }}

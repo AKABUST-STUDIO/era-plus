@@ -20,5 +20,6 @@ return [
         'create' => 'Create project',
         'create_subtitle' => 'Kick off a new project in this organization.',
         'empty' => 'No projects yet',
+        'clear' => 'Clear project selection',
     ],
 ];

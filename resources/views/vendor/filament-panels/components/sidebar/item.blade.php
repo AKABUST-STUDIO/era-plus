@@ -19,7 +19,6 @@
 
 @php
     $sidebarCollapsible = $sidebarCollapsible && filament()->isSidebarCollapsibleOnDesktop();
-    info(json_encode($subNavigation));
 @endphp
 
 <li
@@ -94,7 +93,7 @@
         </span>
 
         <!-- OVERWRITE if icon exists then its panel redirect -->
-        @if (filled($icon) && ((! $subGrouped) || ($sidebarCollapsible && (! $subNavigation))))
+        @if (filled($icon) && !$first && ((! $subGrouped) || ($sidebarCollapsible && (! $subNavigation))))
             {{
                 \Filament\Support\generate_icon_html('lucide-chevron-right', attributes: (new \Illuminate\View\ComponentAttributeBag([
                     'x-show' => ($subGrouped && $sidebarCollapsible) ? '! $store.sidebar.isOpen' : false,

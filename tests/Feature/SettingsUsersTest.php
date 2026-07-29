@@ -7,7 +7,6 @@ use App\Facades\OrganizationService;
 use App\Filament\Organization\Pages\OrganizationUsers as UsersPage;
 use App\Models\Organization;
 use App\Models\User;
-use App\Providers\Filament\Organization\SettingsPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
@@ -21,7 +20,7 @@ class SettingsUsersTest extends TestCase
     private function actingOnSettingsPanel(User $user, Organization $organization): void
     {
         $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel(SettingsPanelProvider::PANEL_ID));
+        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
         Filament::setTenant($organization);
         URL::defaults(['organization' => $organization->slug]);
         OrganizationService::remember($organization);

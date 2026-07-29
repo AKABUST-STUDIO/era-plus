@@ -2,6 +2,8 @@
 
 namespace App\Filament\Panels;
 
+use App\Filament\User\Pages\Settings;
+use App\Providers\Filament\UserPanelProvider;
 use Closure;
 use Filament\Actions\Action;
 use Illuminate\Support\HtmlString;
@@ -24,7 +26,7 @@ class UserMenu
                         .'<span class="fi-user-menu-profile-email">'.e($user->email).'</span>'
                     );
                 })
-                ->url('/profile'),
+                ->url(fn (): string => Settings::getUrl(panel: UserPanelProvider::PANEL_ID)),
             // Action::make('feedback')
             //     ->label('Feedback')
             //     ->icon('lucide-smile')
