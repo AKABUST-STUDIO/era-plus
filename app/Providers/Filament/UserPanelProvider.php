@@ -49,7 +49,10 @@ class UserPanelProvider extends BasePanelProvider
                     ->sort(-1)
                     ->url(fn (): ?string => Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getUrl()),
             ])
-            
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_START,
+                fn (): View => view('livewire.spotlight-search'),
+            )
             ->renderHook(
                 PanelsRenderHook::CONTENT_BEFORE,
                 fn (): View => view('livewire.sidebar-toggle-wrapper'),

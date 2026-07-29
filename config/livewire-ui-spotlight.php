@@ -1,5 +1,7 @@
 <?php
 
+use LivewireUI\Spotlight\Commands\Logout;
+
 return [
 
     /*
@@ -28,7 +30,7 @@ return [
     */
 
     'commands' => [
-        \LivewireUI\Spotlight\Commands\Logout::class
+        Logout::class,
     ],
 
     /*
@@ -41,7 +43,6 @@ return [
     |
     */
     'include_css' => false,
-
 
     /*
     |--------------------------------------------------------------------------

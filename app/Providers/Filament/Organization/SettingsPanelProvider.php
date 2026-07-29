@@ -33,10 +33,10 @@ class SettingsPanelProvider extends BasePanelProvider
     public function panel(Panel $panel): Panel
     {
         return parent::panel($panel)
-            
+
             ->id(self::PANEL_ID)
             ->path('{organization}/settings')
-            
+
             ->discoverResources(
                 in: app_path('Filament/Organization/Settings/Resources'),
                 for: 'App\\Filament\\Organization\\Settings\\Resources',
@@ -49,7 +49,7 @@ class SettingsPanelProvider extends BasePanelProvider
                 in: app_path('Filament/Organization/Settings/Widgets'),
                 for: 'App\\Filament\\Organization\\Settings\\Widgets',
             )
-            
+
             ->navigationItems([
                 NavigationItem::make('back')
                     ->label(__('navigation.back'))
@@ -57,16 +57,20 @@ class SettingsPanelProvider extends BasePanelProvider
                     ->sort(-1)
                     ->url(filament()->getHomeUrl()),
             ])
-            
+
             ->renderHook(
                 PanelsRenderHook::SIDEBAR_NAV_START,
                 fn (): View => view('livewire.organization-menu-wrapper'),
             )
             ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_START,
+                fn (): View => view('livewire.spotlight-search'),
+            )
+            ->renderHook(
                 PanelsRenderHook::CONTENT_BEFORE,
                 fn (): View => view('livewire.sidebar-toggle-wrapper'),
             )
-            
+
             ->middleware(self::persistentMiddleware, isPersistent: true)
             ->authMiddleware(self::authMiddleware);
     }

@@ -3,6 +3,9 @@
 return [
     'search' => 'Find…',
     'no_matches' => 'No matches',
+    'spotlight' => [
+        'placeholder' => 'Search',
+    ],
     'organization' => [
         'label' => 'Organization',
         'open' => 'Open organization',

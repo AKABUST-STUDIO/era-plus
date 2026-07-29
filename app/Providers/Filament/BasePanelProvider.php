@@ -7,7 +7,6 @@ use App\Filament\Panels\UserMenu;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Contracts\Plugin;
 use Filament\Enums\DatabaseNotificationsPosition;
-use Filament\Enums\GlobalSearchPosition;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -15,12 +14,14 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\View\View;
 
 abstract class BasePanelProvider extends PanelProvider
 {
@@ -58,7 +59,7 @@ abstract class BasePanelProvider extends PanelProvider
             ->userMenuItems(UserMenu::items())
             ->topbar(false)
             ->sidebarFullyCollapsibleOnDesktop(true)
-            ->globalSearch(provider: true, position: GlobalSearchPosition::Sidebar)
+            ->globalSearch(false)
             ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
             ->databaseNotificationsPolling('5s')
 

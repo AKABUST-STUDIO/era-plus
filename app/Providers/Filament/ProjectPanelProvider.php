@@ -63,6 +63,10 @@ class ProjectPanelProvider extends BasePanelProvider
                 fn (): View => view('livewire.organization-menu-wrapper'),
             )
             ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_START,
+                fn (): View => view('livewire.spotlight-search'),
+            )
+            ->renderHook(
                 PanelsRenderHook::CONTENT_BEFORE,
                 fn (): View => view('livewire.project-menu-wrapper'),
             )
