@@ -9,12 +9,33 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 #[ObservedBy(SupportRequestObserver::class)]
 class SupportRequest extends Model
 {
     /** @use HasFactory<SupportRequestFactory> */
     use HasFactory;
+
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['subject', 'body', 'status', 'resolution', 'priority', 'resolved_at'])
+            ->logOnlyDirty()
+            ->useLogName('support_request')
+            ->dontLogEmptyChanges();
+    }
+
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        if (! blank($this->organization_id)) {
+            $activity->organization_id = $this->organization_id;
+        }
+    }
 
     protected $fillable = [
         'user_id',

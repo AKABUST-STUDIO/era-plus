@@ -28,6 +28,9 @@ use Laravel\Cashier\Billable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
 use Propaganistas\LaravelPhone\Casts\RawPhoneNumberCast;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -45,8 +48,37 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
 
     use HasOneTimePasswords;
     use InteractsWithMedia;
+    use LogsActivity;
     use Notifiable;
     use PasskeyAuthenticatable;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'name',
+                'username',
+                'email',
+                'phone',
+                'locale',
+                'default_organization_id',
+                'invoice_email',
+                'billing_company',
+                'billing_country',
+                'tax_id_type',
+                'tax_id_value',
+                'two_factor_confirmed_at',
+            ])
+            ->logOnlyDirty()
+            ->useLogName('user')
+            ->dontLogEmptyChanges();
+    }
+
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        $activity->causer_type ??= self::class;
+        $activity->causer_id ??= $this->getKey();
+    }
 
     /**
      * @var list<string>

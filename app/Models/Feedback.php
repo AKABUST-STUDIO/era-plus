@@ -8,12 +8,25 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 #[ObservedBy(FeedbackObserver::class)]
 class Feedback extends Model
 {
     /** @use HasFactory<FeedbackFactory> */
     use HasFactory;
+
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['user_id', 'subject', 'rating', 'description'])
+            ->logOnlyDirty()
+            ->useLogName('feedback')
+            ->dontLogEmptyChanges();
+    }
 
     protected $table = 'feedback';
 

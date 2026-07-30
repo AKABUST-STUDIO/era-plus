@@ -7,6 +7,7 @@ use App\Filament\User\Pages\BillingInformation;
 use App\Filament\User\Pages\BillingItems;
 use App\Filament\User\Pages\Invoices;
 use App\Filament\User\Pages\Settings;
+use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -69,5 +70,27 @@ class UserPanelTest extends TestCase
         foreach ([Activity::class, BillingInformation::class, BillingItems::class, Invoices::class] as $page) {
             Livewire::test($page)->assertSuccessful();
         }
+    }
+
+    public function test_activity_page_scopes_to_current_user_as_causer(): void
+    {
+        $stranger = User::factory()->create();
+        $org = Organization::factory()->create();
+
+        $this->actingAs($this->user);
+        ActivityLog::record($org, 'Mine');
+
+        $this->actingAs($stranger);
+        ActivityLog::record($org, 'Not mine');
+
+        $this->actingAs($this->user);
+
+        Livewire::test(Activity::class)
+            ->assertCanSeeTableRecords(
+                ActivityLog::query()->where('causer_id', $this->user->id)->get(),
+            )
+            ->assertCanNotSeeTableRecords(
+                ActivityLog::query()->where('causer_id', $stranger->id)->get(),
+            );
     }
 }

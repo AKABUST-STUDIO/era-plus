@@ -12,10 +12,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Nnjeim\World\Models\Country;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 #[UsePolicy(ProjectParticipantPolicy::class)]
 class ProjectParticipant extends Model
 {
+    use LogsActivity;
+
     protected $table = 'project_participant';
 
     protected $fillable = [
@@ -26,6 +31,31 @@ class ProjectParticipant extends Model
         'sending_organization_type',
         'sending_organization_id',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'project_id',
+                'participable_type',
+                'participable_id',
+                'country_id',
+                'sending_organization_type',
+                'sending_organization_id',
+            ])
+            ->logOnlyDirty()
+            ->useLogName('project_participant')
+            ->dontLogEmptyChanges();
+    }
+
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        $activity->project_id = $this->project_id;
+
+        if ($project = $this->project) {
+            $activity->organization_id = $project->organization_id;
+        }
+    }
 
     protected static function booted(): void
     {
