@@ -4,6 +4,9 @@ namespace App\Filament\Panels;
 
 use App\Filament\User\Pages\Settings;
 use App\Providers\Filament\UserPanelProvider;
+use App\Filament\Panels\Actions\FeedbackAction;
+use App\Filament\User\Resources\SupportRequests\Actions\CreateSupportRequestAction;
+use App\Filament\User\Resources\SupportRequests\SupportRequestResource;
 use Closure;
 use Filament\Actions\Action;
 use Illuminate\Support\HtmlString;
@@ -27,28 +30,11 @@ class UserMenu
                     );
                 })
                 ->url(fn (): string => Settings::getUrl(panel: UserPanelProvider::PANEL_ID)),
-            // Action::make('feedback')
-            //     ->label('Feedback')
-            //     ->icon('lucide-smile')
-            //     ->url('#')
-            //     ->sort(-1),
             'theme' => fn (Action $action): Action => $action->name('theme'),
-            // Action::make('home')
-            //     ->label('Home Page')
-            //     ->icon('lucide-house')
-            //     ->url('#'),
-            // Action::make('changelog')
-            //     ->label('Changelog')
-            //     ->icon('lucide-pencil')
-            //     ->url('#'),
-            // Action::make('help')
-            //     ->label('Help')
-            //     ->icon('lucide-globe')
-            //     ->url('#'),
-            // Action::make('docs')
-            //     ->label('Docs')
-            //     ->icon('lucide-book-open')
-            //     ->url('#'),
+            FeedbackAction::make(),
+            CreateSupportRequestAction::make('support')
+                ->label(__('user.support.action'))
+                ->successRedirectUrl(fn (): string => SupportRequestResource::getUrl(name: 'index', panel: 'user')),
             'logout' => fn (Action $action): Action => $action->icon('lucide-log-out')
                 ->color('danger'),
         ];

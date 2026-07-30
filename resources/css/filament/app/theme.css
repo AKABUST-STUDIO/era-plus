@@ -181,6 +181,13 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/* Support requests list — hide column header row                             */
+/* -------------------------------------------------------------------------- */
+.fi-resource-support-requests .fi-ta-table > thead {
+    display: none;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Participant import — widen modal on Review step                            */
 /* -------------------------------------------------------------------------- */
 .fi-modal-window:has(.participant-import-review-step.fi-active) {

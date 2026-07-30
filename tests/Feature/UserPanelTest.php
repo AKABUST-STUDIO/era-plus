@@ -8,7 +8,6 @@ use App\Filament\User\Pages\Billing;
 use App\Filament\User\Pages\Invoices;
 use App\Filament\User\Pages\Organizations;
 use App\Filament\User\Pages\Settings;
-use App\Filament\User\Pages\Support;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -86,7 +85,7 @@ class UserPanelTest extends TestCase
 
     public function test_each_wip_page_renders(): void
     {
-        foreach ([Activity::class, Support::class, Authentication::class, Billing::class, Invoices::class] as $page) {
+        foreach ([Activity::class, Authentication::class, Billing::class, Invoices::class] as $page) {
             Livewire::test($page)->assertSuccessful();
         }
     }

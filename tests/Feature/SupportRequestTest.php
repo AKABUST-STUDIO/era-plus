@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Enums\SupportRequest\SupportRequestStatus;
-use App\Filament\User\Pages\Support;
+use App\Filament\User\Resources\SupportRequests\Actions\CreateSupportRequestAction;
+use App\Filament\User\Resources\SupportRequests\Pages\ListSupportRequests;
+use App\Mail\SupportRequestReceived;
 use App\Models\SupportRequest;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -27,58 +30,51 @@ class SupportRequestTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('user'));
     }
 
-    public function test_support_page_renders(): void
+    public function test_list_page_renders(): void
     {
-        Livewire::test(Support::class)->assertSuccessful();
+        Livewire::test(ListSupportRequests::class)->assertSuccessful();
     }
 
-    public function test_user_can_submit_support_request(): void
+    public function test_user_can_create_ticket_from_list_header_action(): void
     {
-        Livewire::test(Support::class)
-            ->fillForm([
+        Mail::fake();
+        config()->set('app.support.recipient', 'support@rasmo.eu');
+
+        Livewire::test(ListSupportRequests::class)
+            ->callAction(CreateSupportRequestAction::make()->getName(), data: [
                 'subject' => 'Cannot upload PDF',
-                'priority' => 'high',
                 'body' => 'I get a 500 when uploading.',
-            ], 'createForm')
-            ->call('submit');
+            ]);
 
         $this->assertDatabaseHas('support_requests', [
             'user_id' => $this->user->id,
             'subject' => 'Cannot upload PDF',
-            'priority' => 'high',
             'status' => SupportRequestStatus::Open->value,
         ]);
+
+        Mail::assertQueued(SupportRequestReceived::class, function (SupportRequestReceived $mail): bool {
+            return $mail->hasTo('support@rasmo.eu');
+        });
     }
 
     public function test_subject_and_body_are_required(): void
     {
-        Livewire::test(Support::class)
-            ->fillForm(['subject' => null, 'body' => null], 'createForm')
-            ->call('submit')
-            ->assertHasFormErrors(['subject', 'body'], 'createForm');
+        Livewire::test(ListSupportRequests::class)
+            ->callAction(CreateSupportRequestAction::make()->getName(), data: [
+                'subject' => null,
+                'body' => null,
+            ])
+            ->assertHasActionErrors(['subject', 'body']);
     }
 
     public function test_list_only_shows_current_user_requests(): void
     {
-        SupportRequest::create([
-            'user_id' => $this->user->id,
-            'subject' => 'Mine',
-            'body' => 'x',
-        ]);
+        $mine = SupportRequest::factory()->create(['user_id' => $this->user->id]);
 
-        $stranger = User::factory()->create();
-        SupportRequest::create([
-            'user_id' => $stranger->id,
-            'subject' => 'Stranger',
-            'body' => 'y',
-        ]);
+        $stranger = SupportRequest::factory()->create();
 
-        Livewire::test(Support::class)
-            ->assertCanSeeTableRecords(
-                SupportRequest::query()->where('user_id', $this->user->id)->get()
-            )
-            ->assertCanNotSeeTableRecords(
-                SupportRequest::query()->where('user_id', $stranger->id)->get()
-            );
+        Livewire::test(ListSupportRequests::class)
+            ->assertCanSeeTableRecords([$mine])
+            ->assertCanNotSeeTableRecords([$stranger]);
     }
 }

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('subject');
             $table->text('body');
             $table->string('status', 32)->default('open');
+            $table->text('resolution')->nullable();
             $table->string('priority', 16)->default('normal');
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();

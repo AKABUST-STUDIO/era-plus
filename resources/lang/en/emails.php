@@ -98,6 +98,38 @@ return [
 
     ],
 
+    'feedback_received' => [
+
+        'subject' => 'New feedback: :subject',
+
+        'heading' => 'New feedback received',
+
+        'from' => 'From',
+
+        'subject_label' => 'Subject',
+
+        'rating' => 'Rating',
+
+        'outro' => 'Thanks,',
+
+    ],
+
+    'support_request_received' => [
+
+        'subject' => 'New support request: :subject',
+
+        'heading' => 'New support request',
+
+        'from' => 'From',
+
+        'subject_label' => 'Subject',
+
+        'body_label' => 'Message',
+
+        'outro' => 'Thanks,',
+
+    ],
+
     'welcome' => [
 
         'subject' => 'Welcome to :app',

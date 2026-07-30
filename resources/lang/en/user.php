@@ -49,31 +49,41 @@ return [
 
     'support' => [
         'title' => 'Support',
+        'model' => 'Support ticket',
+        'action' => 'Support',
         'subject' => 'Subject',
-        'priority' => 'Priority',
-        'body' => 'Message',
+        'body' => 'Description',
         'status' => 'Status',
+        'resolution' => 'Resolution',
+        'resolution_pending' => 'Pending',
         'opened' => 'Opened',
+        'resolved_at' => 'Resolved',
         'submit' => 'Submit',
-        'unread' => 'Unread',
         'new' => [
-            'heading' => 'New support request',
+            'heading' => 'New support ticket',
+            'description' => 'Tell us what happened. We\'ll get back to you as soon as we can.',
+            'email_note' => 'You can also send us an email at <strong>support@rasmo.eu</strong>.',
         ],
-        'priorities' => [
-            'low' => 'Low',
-            'normal' => 'Normal',
-            'high' => 'High',
-            'urgent' => 'Urgent',
+        'empty' => [
+            'heading' => 'No support tickets yet',
+            'description' => 'When you open a support ticket, it will appear here.',
         ],
         'actions' => [
-            'reply' => 'Reply',
-            'reply_to' => 'Reply to: :subject',
-            'reply_sent' => 'Reply sent',
-            'resolve' => 'Mark resolved',
-            'resolved_sent' => 'Marked as resolved',
-            'reopen' => 'Reopen',
-            'reopened_sent' => 'Reopened',
+            'new' => 'New ticket',
         ],
+    ],
+
+    'feedback' => [
+        'action' => 'Feedback',
+        'heading' => 'Send us feedback',
+        'description' => 'Tell us what\'s working, what isn\'t, and what you\'d like to see next.',
+        'subject' => 'Subject',
+        'description_field' => 'Tell us more…',
+        'terms' => 'Sending feedback means you agree with the :terms and :policy.',
+        'terms_link' => 'Terms of Service',
+        'policy_link' => 'Privacy Policy',
+        'submit' => 'Send feedback',
+        'submitted' => 'Thanks — your feedback has been sent.',
     ],
 
     'authentication' => [

@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Enums\SupportRequest\SupportRequestStatus;
+use App\Observers\SupportRequestObserver;
 use Database\Factories\SupportRequestFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ObservedBy(SupportRequestObserver::class)]
 class SupportRequest extends Model
 {
     /** @use HasFactory<SupportRequestFactory> */
@@ -20,6 +22,7 @@ class SupportRequest extends Model
         'subject',
         'body',
         'status',
+        'resolution',
         'priority',
         'resolved_at',
     ];
@@ -51,18 +54,11 @@ class SupportRequest extends Model
         return $this->belongsTo(Organization::class);
     }
 
-    /**
-     * @return HasMany<SupportRequestMessage, $this>
-     */
-    public function messages(): HasMany
-    {
-        return $this->hasMany(SupportRequestMessage::class)->latest('created_at');
-    }
-
-    public function markResolved(): void
+    public function markResolved(?string $resolution = null): void
     {
         $this->update([
             'status' => SupportRequestStatus::Resolved,
+            'resolution' => $resolution,
             'resolved_at' => now(),
         ]);
     }
@@ -73,13 +69,5 @@ class SupportRequest extends Model
             'status' => SupportRequestStatus::Open,
             'resolved_at' => null,
         ]);
-    }
-
-    public function hasUnreadStaffReply(): bool
-    {
-        return $this->messages()
-            ->where('is_staff_reply', true)
-            ->whereNull('read_at')
-            ->exists();
     }
 }

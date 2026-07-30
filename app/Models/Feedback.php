@@ -2,17 +2,26 @@
 
 namespace App\Models;
 
+use App\Observers\FeedbackObserver;
+use Database\Factories\FeedbackFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SupportRequestMessage extends Model
+#[ObservedBy(FeedbackObserver::class)]
+class Feedback extends Model
 {
+    /** @use HasFactory<FeedbackFactory> */
+    use HasFactory;
+
+    protected $table = 'feedback';
+
     protected $fillable = [
-        'support_request_id',
         'user_id',
-        'body',
-        'is_staff_reply',
-        'read_at',
+        'subject',
+        'rating',
+        'description',
     ];
 
     /**
@@ -21,17 +30,8 @@ class SupportRequestMessage extends Model
     protected function casts(): array
     {
         return [
-            'is_staff_reply' => 'boolean',
-            'read_at' => 'datetime',
+            'rating' => 'integer',
         ];
-    }
-
-    /**
-     * @return BelongsTo<SupportRequest, $this>
-     */
-    public function supportRequest(): BelongsTo
-    {
-        return $this->belongsTo(SupportRequest::class);
     }
 
     /**

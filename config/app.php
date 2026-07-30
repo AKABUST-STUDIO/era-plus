@@ -123,4 +123,12 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'feedback' => [
+        'recipient' => env('FEEDBACK_RECIPIENT', 'feedback@rasmo.eu'),
+    ],
+
+    'support' => [
+        'recipient' => env('SUPPORT_RECIPIENT', 'support@rasmo.eu'),
+    ],
+
 ];

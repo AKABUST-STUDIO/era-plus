@@ -1,13 +1,11 @@
 <x-mail::message>
-# We received your support request
+# {{ __('emails.support_request_received.heading') }}
 
-**Subject:** {{ $subject }}
-**Priority:** {{ $priority }}
+**{{ __('emails.support_request_received.from') }}:** {{ $request->user->name }} ({{ $request->user->email }})
+**{{ __('emails.support_request_received.subject_label') }}:** {{ $request->subject }}
 
-> {{ $body }}
+> {!! nl2br(e($request->body)) !!}
 
-We'll get back to you as soon as we can.
-
-Thanks,<br>
+{{ __('emails.support_request_received.outro') }}<br>
 {{ config('app.name') }}
 </x-mail::message>
