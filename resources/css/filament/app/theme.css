@@ -202,3 +202,15 @@
 .participant-export-modal .fi-fo-field-wrp-label {
     display: none;
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Section component                                                          */
+/* -------------------------------------------------------------------------- */
+.fi-section-footer .fi-sc.fi-inline {
+    @apply flex-none;
+}
+
+.fi-section-content-ctn > .fi-section-content {
+    @apply pt-3;
+}
