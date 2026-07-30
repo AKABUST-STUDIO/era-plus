@@ -12,6 +12,20 @@ return [
         'title' => 'Organizations',
         'model' => 'Organization',
         'name' => 'Name',
+        'search_placeholder' => 'Search organizations…',
+        'sort' => [
+            'placeholder' => 'Sort by…',
+            'name_asc' => 'Name (A → Z)',
+            'name_desc' => 'Name (Z → A)',
+            'newest' => 'Newest first',
+            'oldest' => 'Oldest first',
+        ],
+        'filters' => [
+            'advanced' => 'Advanced filters',
+            'tier' => 'Subscription tier',
+            'role' => 'Role',
+            'any' => 'Any',
+        ],
         'role' => [
             'owner' => 'Owner',
             'member' => 'Member',
