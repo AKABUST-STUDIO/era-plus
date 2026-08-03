@@ -6,7 +6,8 @@
 
 <x-filament::dropdown
     placement="bottom-start"
-    width="xs"
+    :width="$schemaComponent->getWidth()"
+    wire:key="{{ $schemaComponent->getKey() }}.filter-group"
     class="fi-filter-group-dropdown"
 >
     <x-slot name="trigger">

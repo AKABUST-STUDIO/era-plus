@@ -19,7 +19,7 @@ class ExportParticipantsAction
             ->modalCancelAction(false)
             ->modalCloseButton(false)
             ->modalSubmitAction(fn (Action $action) => $action->icon('lucide-download'))
-            ->extraModalWindowAttributes(['class' => 'participant-export-modal'])
+            ->extraModalWindowAttributes(['class' => 'export-modal'])
             ->fileName(fn (): string => 'participants-'.now()->format('Y-m-d'));
     }
 }

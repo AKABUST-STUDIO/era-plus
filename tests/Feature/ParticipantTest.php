@@ -2,16 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
+use App\Filament\Project\Resources\ProjectParticipants\ProjectParticipantResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Project\Participant;
 use App\Models\Project\ParticipantOrganization;
 use App\Models\Project\ProjectParticipant;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class ParticipantTest extends TestCase
@@ -179,5 +183,25 @@ class ParticipantTest extends TestCase
 
         $this->assertCount(1, $project->fresh()->participants);
         $this->assertTrue($project->fresh()->participants->contains($participant));
+    }
+
+    public function test_participants_list_page_is_served_from_the_participants_url(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $user->joinOrganization($organization, OrganizationRole::Admin);
+        $project = Project::factory()->for($organization)->create();
+        $user->joinProject($project, ProjectRole::Admin);
+
+        $this->actingAs($user);
+        Filament::setCurrentPanel(Filament::getPanel('project'));
+        Filament::setTenant($project);
+        URL::defaults(['organization' => $organization->slug]);
+
+        $url = ProjectParticipantResource::getUrl(tenant: $project);
+
+        $this->assertStringEndsWith('/'.$project->slug.'/participants', $url);
+
+        $this->get($url)->assertSuccessful();
     }
 }

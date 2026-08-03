@@ -87,20 +87,6 @@
 @endphp
 
 <div {!! $outerAttributes->toHtml() !!}>
-    @if (filled($label))
-        <div class="fi-sc-section-label-ctn">
-            {!! $beforeLabelSchema?->toHtml() !!}
-
-            <div
-                @if (filled($labelId)) id="{{ $labelId }}" @endif
-                class="fi-sc-section-label"
-            >
-                {{ $label }}
-            </div>
-
-            {!! $afterLabelSchema?->toHtml() !!}
-        </div>
-    @endif
 
     {!! $aboveContentSchema?->toHtml() !!}
 
@@ -136,7 +122,7 @@
                     )?->toHtml()
                 !!}
 
-                @if ($hasHeading || $hasDescription)
+                @if ($hasHeading || filled($label))
                     <div class="fi-section-header-text-ctn">
                         @if ($hasHeading)
                             <{{ $headingTag }}
@@ -145,6 +131,15 @@
                             >
                                 {{ $heading }}
                             </{{ $headingTag }}>
+                        @endif
+
+                        @if (filled($label))
+                            <p
+                                @if (filled($labelId)) id="{{ $labelId }}" @endif
+                                class="fi-section-header-description text-base"
+                            >
+                                {{ $label }}
+                            </p>
                         @endif
 
                     </div>

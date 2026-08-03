@@ -6,6 +6,7 @@ return [
     'member' => 'member',
     'participants' => 'Participants',
     'participant' => 'participant',
+    'finance' => 'Travel expenses',
     'activity_log' => 'Activity log',
     'settings' => 'Settings',
     'organizations' => 'Organizations',

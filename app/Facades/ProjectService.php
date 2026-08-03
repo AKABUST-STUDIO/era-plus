@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static Collection<int, Project> projectsFor(User $user, Organization $organization)
+ * @method static int|null participationIdFor(User|null $user = null, Project|null $project = null)
  * @method static string urlFor(Project $project)
  * @method static string createUrlFor(Organization $organization)
  * @method static void remember(Project $project)

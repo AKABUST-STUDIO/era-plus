@@ -3,6 +3,7 @@
 return [
     'common' => [
         'save' => 'Save',
+        'clear' => 'Clear',
         'name' => 'Name',
         'email' => 'Email',
         'description' => 'Description',

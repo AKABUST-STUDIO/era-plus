@@ -14,6 +14,12 @@ class ProjectAccess
 
     public const ABILITY_MANAGE_PARTICIPANTS = 'project.manage_participants';
 
+    public const ABILITY_MANAGE_FINANCE = 'project.manage_finance';
+
+    public const ABILITY_VIEW_ALL_TRAVEL_EXPENSES = 'project.view_all_travel_expenses';
+
+    public const ABILITY_MANAGE_COUNTRY_LIMITS = 'project.manage_country_limits';
+
     public const ABILITY_MANAGE_SETTINGS = 'project.manage_settings';
 
     public const ABILITY_ADMINISTER_ORGANIZATION = 'organization.administer';

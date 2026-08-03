@@ -12,7 +12,7 @@ class SortFilter
     /**
      * @param  array<string, string>  $options
      */
-    public static function make(array $options, ?string $placeholder = null): Filter
+    public static function make(array $options, ?string $placeholder = null, ?string $default = null): Filter
     {
         return Filter::make('sort')
             ->form([
@@ -21,9 +21,10 @@ class SortFilter
                     ->placeholder($placeholder ?? 'Sort by…')
                     ->prefixIcon('lucide-arrow-up-down')
                     ->options($options)
+                    ->selectablePlaceholder($default === null)
                     ->native(false)
                     ->live()
-                    ->default(fn (Component $livewire): ?string => $livewire->tableSort)
+                    ->default(fn (Component $livewire): ?string => $livewire->tableSort ?? $default)
                     ->afterStateUpdated(fn (?string $state, Component $livewire) => $livewire->tableSort = $state),
             ])
             ->query(fn (Builder $query): Builder => $query)

@@ -8,10 +8,12 @@ use App\Enums\Project\ErasmusKeyAction;
 use App\Enums\Project\ErasmusManagingBody;
 use App\Enums\Project\ProjectRole;
 use App\Enums\Project\ProjectStatus;
+use App\Models\Project\CountryLimit;
 use App\Models\Project\ErasmusField as ErasmusFieldModel;
 use App\Models\Project\ErasmusPriority;
 use App\Models\Project\Participant;
 use App\Models\Project\ProjectParticipant;
+use App\Models\Project\TravelExpense;
 use App\Observers\ProjectObserver;
 use App\Policies\ProjectPolicy;
 use Database\Factories\ProjectFactory;
@@ -23,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Spatie\Activitylog\Contracts\Activity;
@@ -247,6 +250,22 @@ class Project extends Model
                 'sending_organization_id',
             ])
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<CountryLimit, $this>
+     */
+    public function countryLimits(): HasMany
+    {
+        return $this->hasMany(CountryLimit::class);
+    }
+
+    /**
+     * @return HasManyThrough<TravelExpense, ProjectParticipant, $this>
+     */
+    public function travelExpenses(): HasManyThrough
+    {
+        return $this->hasManyThrough(TravelExpense::class, ProjectParticipant::class);
     }
 
     public function addParticipant(Participant|User $participable, int $countryId, Model $sendingOrganization): ProjectParticipant

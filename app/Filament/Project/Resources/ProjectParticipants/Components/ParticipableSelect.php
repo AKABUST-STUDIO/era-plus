@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ParticipableSelect
 {
-    public static function make(string $name = 'participable_id'): Select
+    public static function make(string $name = 'participable_id', bool $excludeAttached = true): Select
     {
-        $load = function (?string $search): array {
+        $load = function (?string $search) use ($excludeAttached): array {
             $project = Filament::getTenant();
 
             if (! $project instanceof Project) {
@@ -46,7 +46,7 @@ class ParticipableSelect
                         ->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%"))
                 )
-                ->whereNotIn('id', $attachedParticipantIds)
+                ->when($excludeAttached, fn (Builder $query) => $query->whereNotIn('id', $attachedParticipantIds))
                 ->orderBy('name')
                 ->limit(10)
                 ->get()
@@ -61,7 +61,7 @@ class ParticipableSelect
                         ->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%"))
                 )
-                ->whereNotIn('id', $attachedUserIds)
+                ->when($excludeAttached, fn (Builder $query) => $query->whereNotIn('id', $attachedUserIds))
                 ->orderBy('name')
                 ->limit(10)
                 ->get()

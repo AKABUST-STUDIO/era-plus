@@ -45,6 +45,9 @@ class PermissionRegistry
             ProjectAccess::ABILITY_ADMINISTER_PROJECT,
             ProjectAccess::ABILITY_MANAGE_MEMBERS,
             ProjectAccess::ABILITY_MANAGE_PARTICIPANTS,
+            ProjectAccess::ABILITY_MANAGE_FINANCE,
+            ProjectAccess::ABILITY_VIEW_ALL_TRAVEL_EXPENSES,
+            ProjectAccess::ABILITY_MANAGE_COUNTRY_LIMITS,
             ProjectAccess::ABILITY_MANAGE_SETTINGS,
         ];
     }

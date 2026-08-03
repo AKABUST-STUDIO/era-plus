@@ -58,7 +58,7 @@ class ImportParticipantsAction
                     Step::make(__('participant.import.step_download'))
                         ->schema([
                             Section::make(__('participant.import.step_download'))
-                                ->description(__('participant.import.step_download_body'))
+                                ->label(__('participant.import.step_download_body'))
                                 ->icon('lucide-file-down')
                                 ->contained(false)
                                 ->components([
@@ -79,7 +79,7 @@ class ImportParticipantsAction
                     Step::make(__('participant.import.step_fill'))
                         ->schema([
                             Section::make(__('participant.import.step_fill'))
-                                ->description(__('participant.import.step_fill_body'))
+                                ->label(__('participant.import.step_fill_body'))
                                 ->icon('lucide-file-pen-line')
                                 ->contained(false)
                                 ->components([
@@ -89,7 +89,7 @@ class ImportParticipantsAction
                     Step::make(__('participant.import.step_upload'))
                         ->schema([
                             Section::make(__('participant.import.step_upload'))
-                                ->description(__('participant.import.step_upload_description'))
+                                ->label(__('participant.import.step_upload_description'))
                                 ->icon('lucide-upload')
                                 ->contained(false)
                                 ->components([
@@ -149,7 +149,7 @@ class ImportParticipantsAction
                         ->extraAttributes(['class' => 'participant-import-review-step'])
                         ->schema([
                             Section::make(__('participant.import.step_review'))
-                                ->description(__('participant.import.step_review_description'))
+                                ->label(__('participant.import.step_review_description'))
                                 ->icon('lucide-check-check')
                                 ->contained(false)
                                 ->components([
@@ -395,7 +395,11 @@ class ImportParticipantsAction
         ];
 
         foreach ($formats as $format) {
-            $parsed = CarbonImmutable::createFromFormat($format, $raw);
+            try {
+                $parsed = CarbonImmutable::createFromFormat($format, $raw);
+            } catch (\Throwable) {
+                continue;
+            }
 
             if ($parsed !== false && $parsed->format($format) === $raw) {
                 return $parsed->toDateString();

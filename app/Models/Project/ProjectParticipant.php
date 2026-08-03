@@ -10,6 +10,7 @@ use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Nnjeim\World\Models\Country;
 use Spatie\Activitylog\Contracts\Activity;
@@ -105,5 +106,13 @@ class ProjectParticipant extends Model
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
+    }
+
+    /**
+     * @return HasMany<TravelExpense, $this>
+     */
+    public function travelExpenses(): HasMany
+    {
+        return $this->hasMany(TravelExpense::class);
     }
 }

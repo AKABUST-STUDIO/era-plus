@@ -195,18 +195,18 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Participant export modal — uncontained sections, hidden field labels       */
+/* Export modal — uncontained sections, hidden field labels                   */
 /* -------------------------------------------------------------------------- */
-.participant-export-modal .fi-section,
-.participant-export-modal .fi-fieldset {
+.export-modal .fi-section,
+.export-modal .fi-fieldset {
     border: 0;
     box-shadow: none;
     background: transparent;
     padding: 0;
 }
 
-.participant-export-modal .fi-fieldset > legend,
-.participant-export-modal .fi-fo-field-wrp-label {
+.export-modal .fi-fieldset > legend,
+.export-modal .fi-fo-field-wrp-label {
     display: none;
 }
 
@@ -220,4 +220,11 @@
 
 .fi-section-content-ctn > .fi-section-content {
     @apply pt-3;
+}
+/* -------------------------------------------------------------------------- */
+/* Finance filters — icon triggers size to content, not a full grid track     */
+/* -------------------------------------------------------------------------- */
+.fi-resource-finance .fi-ta-filters > .fi-grid {
+    --cols-lg: minmax(0, 18rem) minmax(0, 10rem) 1fr auto auto !important;
+    @apply items-center;
 }

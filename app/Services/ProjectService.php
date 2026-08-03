@@ -6,6 +6,7 @@ use App\Filament\Project\Pages\Overview;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Project\ProjectParticipant;
 use App\Models\User;
 use App\Providers\Filament\OrganizationPanelProvider;
 use App\Providers\Filament\ProjectPanelProvider;
@@ -34,6 +35,22 @@ class ProjectService
             ->orderBy('name')
             ->get()
             ->each(fn (Project $project) => $project->setRelation('organization', $organization));
+    }
+
+    public function participationIdFor(?User $user = null, ?Project $project = null): ?int
+    {
+        $user ??= auth()->user();
+        $project ??= $this->current();
+
+        if ($user === null || ! $project instanceof Project) {
+            return null;
+        }
+
+        return ProjectParticipant::query()
+            ->where('project_id', $project->id)
+            ->where('participable_type', $user->getMorphClass())
+            ->where('participable_id', $user->getKey())
+            ->value('id');
     }
 
     public function urlFor(Project $project): string

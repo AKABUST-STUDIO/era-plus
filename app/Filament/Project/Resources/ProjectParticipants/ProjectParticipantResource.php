@@ -21,6 +21,8 @@ class ProjectParticipantResource extends Resource
 {
     protected static ?string $model = ProjectParticipant::class;
 
+    protected static ?string $slug = 'participants';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     #[Override]
