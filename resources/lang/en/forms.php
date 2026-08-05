@@ -213,6 +213,8 @@ return [
             'email_heading' => 'Email',
             'email_description' => 'Primary contact and sign-in address.',
             'email_placeholder' => 'you@example.com',
+            'email_confirmation_sent' => 'Confirmation link sent to :email — your email only changes once you click it.',
+            'email_send_confirmation' => 'Send confirmation',
             'phone_heading' => 'Your Phone Number',
             'phone_description' => 'Enter a phone number to receive important service updates by SMS.',
             'phone_placeholder' => '(201) 555-0123',

@@ -2,6 +2,8 @@
 
 namespace App\Filament\User\Pages;
 
+use App\Mail\EmailChangeConfirmation;
+use App\Mail\EmailChangeRequestedNotice;
 use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -12,6 +14,8 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 class Settings extends Page
 {
@@ -25,6 +29,8 @@ class Settings extends Page
      * @var array<string, mixed>
      */
     public ?array $data = [];
+
+    public ?string $emailConfirmationSentTo = null;
 
     public function mount(): void
     {
@@ -168,13 +174,18 @@ class Settings extends Page
                     ->hiddenLabel()
                     ->columnSpan(2)
                     ->placeholder(__('forms.user.settings.email_placeholder'))
+                    ->helperText(fn (): ?string => $this->emailConfirmationSentTo === null
+                        ? null
+                        : __('forms.user.settings.email_confirmation_sent', ['email' => $this->emailConfirmationSentTo]))
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn () => $this->emailConfirmationSentTo = null)
                     ->email()
                     ->required()
                     ->maxLength(255)
                     ->unique(User::class, 'email', ignorable: fn (): User => $this->user),
             ])
             ->footerActions([
-                Action::make('saveEmail')->label(__('forms.common.save'))->action(fn () => $this->saveEmail()),
+                Action::make('saveEmail')->label(__('forms.user.settings.email_send_confirmation'))->action(fn () => $this->saveEmail()),
             ]);
     }
 
@@ -279,9 +290,38 @@ class Settings extends Page
 
     public function saveEmail(): void
     {
-        $this->user->update(['email' => $this->form->getState()['email']]);
+        $newEmail = mb_strtolower(trim((string) $this->form->getState()['email']));
 
-        Notification::make()->title(__('notifications.email_saved'))->success()->send();
+        if ($newEmail === $this->user->email) {
+            Notification::make()->title(__('notifications.email_saved'))->success()->send();
+
+            return;
+        }
+
+        $expiresAt = now()->addMinutes(10);
+
+        $confirmUrl = URL::temporarySignedRoute(
+            'settings.email.confirm',
+            $expiresAt,
+            ['user' => $this->user->getKey(), 'email' => $newEmail],
+        );
+
+        Mail::to($newEmail)->send(new EmailChangeConfirmation(
+            user: $this->user,
+            newEmail: $newEmail,
+            confirmUrl: $confirmUrl,
+            expiresInMinutes: 10,
+        ));
+
+        Mail::to($this->user->email)->send(new EmailChangeRequestedNotice(
+            user: $this->user,
+            newEmail: $newEmail,
+        ));
+
+        $this->data['email'] = $this->user->email;
+        $this->emailConfirmationSentTo = $newEmail;
+
+        Notification::make()->title(__('notifications.email_change_sent'))->success()->send();
     }
 
     public function savePhone(): void

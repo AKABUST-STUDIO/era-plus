@@ -7,12 +7,16 @@ use App\Filament\User\Pages\BillingInformation;
 use App\Filament\User\Pages\BillingItems;
 use App\Filament\User\Pages\Invoices;
 use App\Filament\User\Pages\Settings;
+use App\Mail\EmailChangeConfirmation;
+use App\Mail\EmailChangeRequestedNotice;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Pages\Dashboard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -51,6 +55,169 @@ class UserPanelTest extends TestCase
             ->call('saveProfile');
 
         $this->assertSame('Anne', $this->user->fresh()->name);
+    }
+
+    public function test_email_change_sends_confirmation_and_leaves_email_unchanged(): void
+    {
+        Mail::fake();
+
+        Livewire::test(Settings::class)
+            ->fillForm(['email' => 'new@example.test'])
+            ->call('saveEmail')
+            ->assertHasNoFormErrors()
+            ->assertFormSet(['email' => 'maria@example.test']);
+
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+
+        Mail::assertQueued(EmailChangeConfirmation::class, fn (EmailChangeConfirmation $mail): bool => $mail->hasTo('new@example.test')
+            && $mail->newEmail === 'new@example.test'
+            && $mail->user->is($this->user));
+
+        Mail::assertQueued(EmailChangeRequestedNotice::class, fn (EmailChangeRequestedNotice $mail): bool => $mail->hasTo('maria@example.test')
+            && $mail->newEmail === 'new@example.test');
+    }
+
+    public function test_email_change_normalizes_case(): void
+    {
+        Mail::fake();
+
+        Livewire::test(Settings::class)
+            ->fillForm(['email' => 'NEW@Example.Test'])
+            ->call('saveEmail')
+            ->assertHasNoFormErrors();
+
+        Mail::assertQueued(EmailChangeConfirmation::class, fn (EmailChangeConfirmation $mail): bool => $mail->newEmail === 'new@example.test');
+    }
+
+    public function test_email_change_is_a_noop_when_email_is_unchanged(): void
+    {
+        Mail::fake();
+
+        Livewire::test(Settings::class)
+            ->fillForm(['email' => 'maria@example.test'])
+            ->call('saveEmail')
+            ->assertHasNoFormErrors();
+
+        Mail::assertNothingQueued();
+    }
+
+    public function test_email_change_requires_a_value(): void
+    {
+        Mail::fake();
+
+        Livewire::test(Settings::class)
+            ->fillForm(['email' => ''])
+            ->call('saveEmail')
+            ->assertHasFormErrors(['email' => 'required']);
+
+        Mail::assertNothingQueued();
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+    }
+
+    public function test_email_change_rejects_invalid_format(): void
+    {
+        Mail::fake();
+
+        Livewire::test(Settings::class)
+            ->fillForm(['email' => 'not-an-email'])
+            ->call('saveEmail')
+            ->assertHasFormErrors(['email' => 'email']);
+
+        Mail::assertNothingQueued();
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+    }
+
+    public function test_email_change_rejects_address_already_in_use(): void
+    {
+        User::factory()->create(['email' => 'taken@example.test']);
+        Mail::fake();
+
+        Livewire::test(Settings::class)
+            ->fillForm(['email' => 'taken@example.test'])
+            ->call('saveEmail')
+            ->assertHasFormErrors(['email' => 'unique']);
+
+        Mail::assertNothingQueued();
+    }
+
+    public function test_signed_confirmation_link_updates_the_email(): void
+    {
+        $url = $this->buildConfirmationUrl($this->user, 'new@example.test');
+
+        $this->get($url)->assertRedirect(Settings::getUrl(panel: 'user'));
+
+        $this->assertSame('new@example.test', $this->user->fresh()->email);
+    }
+
+    public function test_confirmation_link_without_valid_signature_is_rejected(): void
+    {
+        $url = route('settings.email.confirm', [
+            'user' => $this->user->id,
+            'email' => 'new@example.test',
+        ]);
+
+        $this->get($url)->assertForbidden();
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+    }
+
+    public function test_expired_confirmation_link_is_rejected(): void
+    {
+        $url = URL::temporarySignedRoute(
+            'settings.email.confirm',
+            now()->subMinute(),
+            ['user' => $this->user->id, 'email' => 'new@example.test'],
+        );
+
+        $this->get($url)->assertForbidden();
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+    }
+
+    public function test_tampered_email_parameter_is_rejected(): void
+    {
+        $url = $this->buildConfirmationUrl($this->user, 'new@example.test');
+        $tampered = str_replace('new%40example.test', 'attacker%40example.test', $url);
+
+        $this->get($tampered)->assertForbidden();
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+    }
+
+    public function test_confirmation_link_requires_login_as_the_requesting_user(): void
+    {
+        $intruder = User::factory()->create();
+        $url = $this->buildConfirmationUrl($this->user, 'new@example.test');
+
+        $this->actingAs($intruder);
+        $this->get($url)->assertForbidden();
+
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+    }
+
+    public function test_confirmation_link_redirects_to_login_when_unauthenticated(): void
+    {
+        auth()->logout();
+        $url = $this->buildConfirmationUrl($this->user, 'new@example.test');
+
+        $this->get($url)->assertRedirect();
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+    }
+
+    public function test_confirmation_link_fails_if_new_email_was_taken_meanwhile(): void
+    {
+        $url = $this->buildConfirmationUrl($this->user, 'new@example.test');
+        User::factory()->create(['email' => 'new@example.test']);
+
+        $this->get($url)->assertRedirect(Settings::getUrl(panel: 'user'));
+
+        $this->assertSame('maria@example.test', $this->user->fresh()->email);
+    }
+
+    private function buildConfirmationUrl(User $user, string $newEmail): string
+    {
+        return URL::temporarySignedRoute(
+            'settings.email.confirm',
+            now()->addMinutes(10),
+            ['user' => $user->id, 'email' => $newEmail],
+        );
     }
 
     public function test_settings_can_set_default_organization(): void

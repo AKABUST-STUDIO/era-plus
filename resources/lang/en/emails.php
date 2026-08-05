@@ -130,6 +130,40 @@ return [
 
     ],
 
+    'email_change_confirm' => [
+
+        'subject' => 'Confirm your new :app email address',
+
+        'heading' => 'Confirm your new email',
+
+        'intro' => 'Someone (hopefully you) asked to change the email address on their :app account from :old to :new.',
+
+        'action' => 'Confirm new email',
+
+        'expiry' => 'This link expires in :minutes minutes. If you didn\'t request this change, you can safely ignore this email.',
+
+        'outro' => 'Thanks,',
+
+    ],
+
+    'email_change_notice' => [
+
+        'subject' => 'Your :app email address is being changed',
+
+        'heading' => 'Email change requested',
+
+        'intro' => 'Someone requested to change the email address on your :app account to :new.',
+
+        'body' => 'This change will only take effect once the request is confirmed from the new address. If that was you, no action is needed here.',
+
+        'action_intro' => 'If it wasn\'t you, sign in and reset your account security right away:',
+
+        'action' => 'Open account security',
+
+        'outro' => 'Thanks,',
+
+    ],
+
     'welcome' => [
 
         'subject' => 'Welcome to :app',
