@@ -2,14 +2,18 @@
 
 namespace App\Filament\Tables;
 
+use App\Filament\Tables\Filters\DateFilter;
+use App\Filament\Tables\Filters\FilterGroup;
+use App\Filament\Tables\Filters\SearchFilter;
 use App\Models\ActivityLog;
 use App\Models\User;
-use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Components\Grid;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,7 +25,9 @@ class ActivityLogTable
     public static function configure(Table $table, Builder $query): Table
     {
         return $table
+            ->extraAttributes(['class' => 'fi-ta-activity'])
             ->query(fn (): Builder => $query->with(['causer', 'subject']))
+            ->paginated(fn (HasTable $livewire): bool => ($livewire->getFilteredTableQuery()?->count() ?? 0) > 10)
             ->defaultSort('created_at', 'desc')
             ->defaultGroup(
                 Group::make('month')
@@ -51,106 +57,68 @@ class ActivityLogTable
                 ]),
             ])
             ->filtersLayout(FiltersLayout::AboveContent)
+            ->searchable(false)
+            ->hiddenFilterIndicators(true)
             ->deferFilters(false)
+            ->deferColumnManager(false)
+            ->columnManager(false)
+            ->groupingSettingsHidden()
+            ->filtersFormColumns(3)
             ->filters([
-                Filter::make('created_between')
-                    ->form([
-                        DatePicker::make('from')->label(__('activity.filters.from')),
-                        DatePicker::make('until')->label(__('activity.filters.until')),
-                    ])
-                    ->query(fn (Builder $q, array $data): Builder => $q
-                        ->when($data['from'] ?? null, fn (Builder $q, $date): Builder => $q->whereDate('created_at', '>=', $date))
-                        ->when($data['until'] ?? null, fn (Builder $q, $date): Builder => $q->whereDate('created_at', '<=', $date)))
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-
-                        if ($from = $data['from'] ?? null) {
-                            $indicators[] = __('activity.filters.from').': '.$from;
-                        }
-
-                        if ($until = $data['until'] ?? null) {
-                            $indicators[] = __('activity.filters.until').': '.$until;
-                        }
-
-                        return $indicators;
-                    }),
-            ])
-            ->paginated([25, 50, 100])
-            ->defaultPaginationPageOption(25);
+                SearchFilter::make()
+                    ->columnStart(2),
+                FilterGroup::make(
+                    schema: [
+                        Grid::make(2)->schema([
+                            DateFilter::make('from', __('activity.filters.from'), 'lucide-calendar-arrow-up'),
+                            DateFilter::make('until', __('activity.filters.until'), 'lucide-calendar-arrow-down'),
+                        ]),
+                    ],
+                    query: fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('created_at', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('created_at', '<=', $date)),
+                    width: Width::Medium)
+                    ->columnStart(3),
+            ]);
     }
 
     private static function fluent(ActivityLog $record): HtmlString
     {
         $causer = $record->causer;
-        $isSelf = $causer !== null
-            && $causer::class === User::class
-            && auth()->check()
-            && $causer->getKey() === auth()->id();
-
-        $subject = $isSelf
+        $actor = $causer instanceof User && $causer->getKey() === auth()->id()
             ? __('activity.you')
-            : ($causer->name ?? __('activity.system'));
+            : ($causer?->name ?? __('activity.system'));
 
-        $description = self::interpolate($record);
-
-        return new HtmlString(
-            '<span class="fi-activity-subject">'.e($subject).'</span> '.$description,
-        );
-    }
-
-    private static function interpolate(ActivityLog $record): string
-    {
-        $rawDescription = (string) $record->description;
-        $description = $rawDescription;
+        $raw = (string) $record->description;
+        $description = $raw;
         $properties = $record->properties instanceof Collection
             ? $record->properties->all()
             : (array) $record->properties;
 
-        $hasPlaceholder = false;
-
         foreach ($properties as $key => $value) {
-            if (! is_scalar($value)) {
-                continue;
-            }
-
-            if (str_contains($description, ':'.$key)) {
-                $hasPlaceholder = true;
+            if (is_scalar($value) && str_contains($description, ':'.$key)) {
                 $description = str_replace(':'.$key, '<strong>'.e((string) $value).'</strong>', $description);
             }
         }
 
-        if ($hasPlaceholder) {
-            return $description;
+        if ($description === $raw) {
+            $description = e($raw);
+            $subject = $record->subject;
+
+            if (filled($record->subject_type)) {
+                $type = class_basename((string) $record->subject_type);
+                $name = $subject?->name
+                    ?? $subject?->title
+                    ?? $subject?->slug
+                    ?? ($record->subject_id !== null ? '#'.$record->subject_id : null);
+
+                $description .= $name === null
+                    ? ' <strong>'.e($type).'</strong>'
+                    : ' '.e($type).' <strong>'.e((string) $name).'</strong>';
+            }
         }
 
-        $subject = self::subjectLabel($record);
-
-        if ($subject !== null) {
-            return e($rawDescription).' '.$subject;
-        }
-
-        return e($rawDescription);
-    }
-
-    private static function subjectLabel(ActivityLog $record): ?string
-    {
-        if (blank($record->subject_type)) {
-            return null;
-        }
-
-        $type = class_basename((string) $record->subject_type);
-        $model = $record->subject;
-
-        $name = $model?->name
-            ?? $model?->title
-            ?? $model?->slug
-            ?? ($record->subject_id !== null ? '#'.$record->subject_id : null);
-
-        if ($name === null) {
-            return '<strong>'.e($type).'</strong>';
-        }
-
-        return e($type).' <strong>'.e((string) $name).'</strong>';
+        return new HtmlString('<span class="fi-activity-subject">'.e($actor).'</span> '.$description);
     }
 
     private static function avatarFor(ActivityLog $record): string

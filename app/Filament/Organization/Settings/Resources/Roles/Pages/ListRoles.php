@@ -2,6 +2,7 @@
 
 namespace App\Filament\Organization\Settings\Resources\Roles\Pages;
 
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Filament\Organization\Settings\Resources\Roles\RoleResource;
 use App\Models\Role;
 use App\Services\TenantRoleProvisioner;
@@ -17,6 +18,8 @@ use Spatie\Permission\PermissionRegistrar;
 
 class ListRoles extends ListRecords
 {
+    use HasOrgSettingsBreadcrumbs;
+
     protected static string $resource = RoleResource::class;
 
     protected function getHeaderActions(): array

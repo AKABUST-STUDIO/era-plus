@@ -45,6 +45,11 @@ class Settings extends Page
         return __('user.settings.title');
     }
 
+    public static function getNavigationLabel(): string
+    {
+        return __('user.settings.title');
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema

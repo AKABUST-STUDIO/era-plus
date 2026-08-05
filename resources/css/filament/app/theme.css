@@ -228,6 +228,10 @@
     --cols-lg: minmax(0, 18rem) minmax(0, 10rem) 1fr auto auto !important;
     @apply items-center;
 }
+.fi-ta-activity .fi-ta-filters > .fi-grid {
+    --cols-lg: 1fr auto auto !important;
+    @apply items-center;
+}
 .fi-resource-support-tickets .fi-ta-filters > .fi-grid {
     --cols-lg: 1fr auto !important;
     @apply items-center;
