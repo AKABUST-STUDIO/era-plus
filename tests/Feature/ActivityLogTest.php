@@ -92,4 +92,25 @@ class ActivityLogTest extends TestCase
                 ActivityLog::query()->whereNull('project_id')->get()
             );
     }
+
+    public function test_date_filter_narrows_activity_to_the_range(): void
+    {
+        $early = ActivityLog::record($this->organization, 'Early event');
+        $early->forceFill(['created_at' => '2026-01-10 09:00:00'])->save();
+
+        $late = ActivityLog::record($this->organization, 'Late event');
+        $late->forceFill(['created_at' => '2026-06-20 09:00:00'])->save();
+
+        Filament::setCurrentPanel(Filament::getPanel('organization'));
+        Filament::setTenant($this->organization);
+        URL::defaults(['organization' => $this->organization->slug]);
+
+        Livewire::test(Activity::class)
+            ->filterTable('group', ['from' => '2026-05-01'])
+            ->assertCanSeeTableRecords([$late])
+            ->assertCanNotSeeTableRecords([$early])
+            ->filterTable('group', ['from' => null, 'until' => '2026-02-01'])
+            ->assertCanSeeTableRecords([$early])
+            ->assertCanNotSeeTableRecords([$late]);
+    }
 }

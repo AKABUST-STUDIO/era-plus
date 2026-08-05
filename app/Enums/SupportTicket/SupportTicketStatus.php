@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Enums\SupportRequest;
+namespace App\Enums\SupportTicket;
 
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum SupportRequestStatus: string implements HasColor, HasLabel
+enum SupportTicketStatus: string implements HasColor, HasLabel
 {
     case Open = 'open';
     case InProgress = 'in_progress';

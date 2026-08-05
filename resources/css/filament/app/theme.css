@@ -181,9 +181,9 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Support requests list — hide column header row                             */
+/* Support tickets list — hide column header row                             */
 /* -------------------------------------------------------------------------- */
-.fi-resource-support-requests .fi-ta-table > thead {
+.fi-resource-support-tickets .fi-ta-table > thead {
     display: none;
 }
 
@@ -226,5 +226,9 @@
 /* -------------------------------------------------------------------------- */
 .fi-resource-finance .fi-ta-filters > .fi-grid {
     --cols-lg: minmax(0, 18rem) minmax(0, 10rem) 1fr auto auto !important;
+    @apply items-center;
+}
+.fi-resource-support-tickets .fi-ta-filters > .fi-grid {
+    --cols-lg: 1fr auto !important;
     @apply items-center;
 }

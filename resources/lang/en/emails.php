@@ -114,11 +114,11 @@ return [
 
     ],
 
-    'support_request_received' => [
+    'support_ticket_received' => [
 
-        'subject' => 'New support request: :subject',
+        'subject' => 'New support ticket: :subject',
 
-        'heading' => 'New support request',
+        'heading' => 'New support ticket',
 
         'from' => 'From',
 

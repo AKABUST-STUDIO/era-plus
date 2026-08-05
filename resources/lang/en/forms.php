@@ -199,7 +199,7 @@ return [
         ],
     ],
     'support' => [
-        'new_request' => 'New support request',
+        'new_ticket' => 'New support ticket',
         'submit' => 'Submit',
     ],
     'user' => [

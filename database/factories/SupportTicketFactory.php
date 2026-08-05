@@ -2,15 +2,15 @@
 
 namespace Database\Factories;
 
-use App\Enums\SupportRequest\SupportRequestStatus;
-use App\Models\SupportRequest;
+use App\Enums\SupportTicket\SupportTicketStatus;
+use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<SupportRequest>
+ * @extends Factory<SupportTicket>
  */
-class SupportRequestFactory extends Factory
+class SupportTicketFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -23,7 +23,7 @@ class SupportRequestFactory extends Factory
             'user_id' => User::factory(),
             'subject' => $this->faker->sentence(4),
             'body' => $this->faker->paragraph(),
-            'status' => SupportRequestStatus::Open->value,
+            'status' => SupportTicketStatus::Open->value,
             'priority' => 'normal',
         ];
     }

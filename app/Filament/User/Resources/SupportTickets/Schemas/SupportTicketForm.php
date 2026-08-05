@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\User\Resources\SupportRequests\Schemas;
+namespace App\Filament\User\Resources\SupportTickets\Schemas;
 
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
@@ -9,7 +9,7 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
 
-class SupportRequestForm
+class SupportTicketForm
 {
     public static function configure(Schema $schema): Schema
     {

@@ -2,11 +2,11 @@
 
 namespace App\Filament\Panels;
 
-use App\Filament\User\Pages\Settings;
-use App\Providers\Filament\UserPanelProvider;
 use App\Filament\Panels\Actions\FeedbackAction;
-use App\Filament\User\Resources\SupportRequests\Actions\CreateSupportRequestAction;
-use App\Filament\User\Resources\SupportRequests\SupportRequestResource;
+use App\Filament\User\Pages\Settings;
+use App\Filament\User\Resources\SupportTickets\Actions\CreateSupportTicketAction;
+use App\Filament\User\Resources\SupportTickets\SupportTicketResource;
+use App\Providers\Filament\UserPanelProvider;
 use Closure;
 use Filament\Actions\Action;
 use Illuminate\Support\HtmlString;
@@ -33,9 +33,9 @@ class UserMenu
             'theme' => fn (Action $action): Action => $action->name('theme'),
             'language' => fn (Action $action): Action => $action->name('language'),
             FeedbackAction::make(),
-            CreateSupportRequestAction::make('support')
+            CreateSupportTicketAction::make('support')
                 ->label(__('user.support.action'))
-                ->successRedirectUrl(fn (): string => SupportRequestResource::getUrl(name: 'index', panel: 'user')),
+                ->successRedirectUrl(fn (): string => SupportTicketResource::getUrl(name: 'index', panel: 'user')),
             'logout' => fn (Action $action): Action => $action->icon('lucide-log-out')
                 ->color('danger'),
         ];

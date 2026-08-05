@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\SupportRequest\SupportRequestStatus;
-use App\Observers\SupportRequestObserver;
-use Database\Factories\SupportRequestFactory;
+use App\Enums\SupportTicket\SupportTicketStatus;
+use App\Observers\SupportTicketObserver;
+use Database\Factories\SupportTicketFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,10 +13,10 @@ use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[ObservedBy(SupportRequestObserver::class)]
-class SupportRequest extends Model
+#[ObservedBy(SupportTicketObserver::class)]
+class SupportTicket extends Model
 {
-    /** @use HasFactory<SupportRequestFactory> */
+    /** @use HasFactory<SupportTicketFactory> */
     use HasFactory;
 
     use LogsActivity;
@@ -26,7 +26,7 @@ class SupportRequest extends Model
         return LogOptions::defaults()
             ->logOnly(['subject', 'body', 'status', 'resolution', 'priority', 'resolved_at'])
             ->logOnlyDirty()
-            ->useLogName('support_request')
+            ->useLogName('support_ticket')
             ->dontLogEmptyChanges();
     }
 
@@ -54,7 +54,7 @@ class SupportRequest extends Model
     protected function casts(): array
     {
         return [
-            'status' => SupportRequestStatus::class,
+            'status' => SupportTicketStatus::class,
             'resolved_at' => 'datetime',
         ];
     }
@@ -78,7 +78,7 @@ class SupportRequest extends Model
     public function markResolved(?string $resolution = null): void
     {
         $this->update([
-            'status' => SupportRequestStatus::Resolved,
+            'status' => SupportTicketStatus::Resolved,
             'resolution' => $resolution,
             'resolved_at' => now(),
         ]);
@@ -87,7 +87,7 @@ class SupportRequest extends Model
     public function reopen(): void
     {
         $this->update([
-            'status' => SupportRequestStatus::Open,
+            'status' => SupportTicketStatus::Open,
             'resolved_at' => null,
         ]);
     }

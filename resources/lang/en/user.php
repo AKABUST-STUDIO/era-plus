@@ -43,7 +43,7 @@ return [
     ],
 
     'settings' => [
-        'title' => 'Settings',
+        'title' => 'User',
     ],
 
     'activity' => [
@@ -84,6 +84,9 @@ return [
         'empty' => [
             'heading' => 'No support tickets yet',
             'description' => 'When you open a support ticket, it will appear here.',
+        ],
+        'filters' => [
+            'sort' => 'Sort by…',
         ],
         'actions' => [
             'new' => 'New ticket',

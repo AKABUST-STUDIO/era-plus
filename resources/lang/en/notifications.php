@@ -18,7 +18,7 @@ return [
     'invalid_role' => 'That role does not belong to this organization.',
     'two_factor_saved' => '2FA setting saved',
     'email_verification_saved' => 'Email verification setting saved',
-    'support_submitted' => 'Support request submitted',
+    'support_submitted' => 'Support ticket submitted',
     'member_added' => 'Member added',
     'organization_created' => 'Organization created',
     'passkey_removed' => 'Passkey removed.',

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\User\Resources\SupportRequests\Tables;
+namespace App\Filament\User\Resources\SupportTickets\Tables;
 
-use App\Enums\SupportRequest\SupportRequestStatus;
-use App\Models\SupportRequest;
+use App\Filament\Tables\Filters\SortFilter;
+use App\Models\SupportTicket;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Component;
@@ -11,13 +11,12 @@ use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 
-class SupportRequestsTable
+class SupportTicketsTable
 {
     public static function configure(Table $table): Table
     {
@@ -28,7 +27,7 @@ class SupportRequestsTable
             ->columns([
                 TextColumn::make('subject')
                     ->label(__('user.support.subject'))
-                    ->description(fn (SupportRequest $record): string => (string) str($record->body)->limit(150))
+                    ->description(fn (SupportTicket $record): string => (string) str($record->body)->limit(150))
                     ->wrap()
                     ->searchable()
                     ->sortable()
@@ -45,14 +44,29 @@ class SupportRequestsTable
                     ->alignEnd(),
             ])
             ->filtersLayout(FiltersLayout::AboveContent)
+            ->searchable(false)
+            ->hiddenFilterIndicators(true)
             ->deferFilters(false)
+            ->deferColumnManager(false)
+            ->columnManager(false)
+            ->groupingSettingsHidden()
+            ->filtersFormColumns(2)
             ->filters([
-                SelectFilter::make('status')->options(SupportRequestStatus::class),
+                SortFilter::make(
+                    [
+                        'created_at' => __('user.support.opened'),
+                        'status' => __('user.support.status'),
+                        'subject' => __('user.support.subject'),
+                    ],
+                    __('user.support.filters.sort'),
+                    default: 'created_at',
+                )
+                    ->columnStart(2),
             ])
             ->recordActions([
                 ViewAction::make()
                     ->hidden()
-                    ->modalHeading(function (SupportRequest $record): Htmlable {
+                    ->modalHeading(function (SupportTicket $record): Htmlable {
                         $badge = Blade::render(
                             '<x-filament::badge :color="$color">{{ $label }}</x-filament::badge>',
                             [
@@ -85,7 +99,7 @@ class SupportRequestsTable
             TextEntry::make('resolution')
                 ->label(__('user.support.resolution'))
                 ->placeholder(__('user.support.resolution_pending'))
-                ->visible(fn (SupportRequest $record): bool => filled($record->resolution)),
+                ->visible(fn (SupportTicket $record): bool => filled($record->resolution)),
         ];
     }
 }

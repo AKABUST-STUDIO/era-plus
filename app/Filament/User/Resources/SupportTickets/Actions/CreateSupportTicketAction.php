@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Filament\User\Resources\SupportRequests\Actions;
+namespace App\Filament\User\Resources\SupportTickets\Actions;
 
-use App\Enums\SupportRequest\SupportRequestStatus;
-use App\Filament\User\Resources\SupportRequests\Schemas\SupportRequestForm;
-use App\Filament\User\Resources\SupportRequests\SupportRequestResource;
-use App\Models\SupportRequest;
+use App\Enums\SupportTicket\SupportTicketStatus;
+use App\Filament\User\Resources\SupportTickets\Schemas\SupportTicketForm;
+use App\Models\SupportTicket;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\Width;
 
-class CreateSupportRequestAction
+class CreateSupportTicketAction
 {
     public static function make(string $name = 'create'): Action
     {
@@ -26,13 +25,13 @@ class CreateSupportRequestAction
             ->modalCancelAction(false)
             ->modalFooterActionsAlignment(Alignment::End)
             ->modalSubmitActionLabel(__('user.support.submit'))
-            ->schema(SupportRequestForm::fields())
+            ->schema(SupportTicketForm::fields())
             ->action(function (array $data): void {
-                SupportRequest::create([
+                SupportTicket::create([
                     'user_id' => auth()->id(),
                     'subject' => $data['subject'],
                     'body' => $data['body'],
-                    'status' => SupportRequestStatus::Open,
+                    'status' => SupportTicketStatus::Open,
                     'priority' => 'normal',
                 ]);
 
