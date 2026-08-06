@@ -12,6 +12,7 @@ use App\Mail\EmailChangeRequestedNotice;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Pages\Dashboard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,7 +53,7 @@ class UserPanelTest extends TestCase
     {
         Livewire::test(Settings::class)
             ->fillForm(['name' => 'Anne'])
-            ->call('saveProfile');
+            ->callAction(TestAction::make('saveProfile')->schemaComponent('profile-section', 'form'));
 
         $this->assertSame('Anne', $this->user->fresh()->name);
     }
@@ -63,7 +64,7 @@ class UserPanelTest extends TestCase
 
         Livewire::test(Settings::class)
             ->fillForm(['email' => 'new@example.test'])
-            ->call('saveEmail')
+            ->callAction(TestAction::make('saveEmail')->schemaComponent('email-section', 'form'))
             ->assertHasNoFormErrors()
             ->assertFormSet(['email' => 'maria@example.test']);
 
@@ -83,7 +84,7 @@ class UserPanelTest extends TestCase
 
         Livewire::test(Settings::class)
             ->fillForm(['email' => 'NEW@Example.Test'])
-            ->call('saveEmail')
+            ->callAction(TestAction::make('saveEmail')->schemaComponent('email-section', 'form'))
             ->assertHasNoFormErrors();
 
         Mail::assertQueued(EmailChangeConfirmation::class, fn (EmailChangeConfirmation $mail): bool => $mail->newEmail === 'new@example.test');
@@ -95,7 +96,7 @@ class UserPanelTest extends TestCase
 
         Livewire::test(Settings::class)
             ->fillForm(['email' => 'maria@example.test'])
-            ->call('saveEmail')
+            ->callAction(TestAction::make('saveEmail')->schemaComponent('email-section', 'form'))
             ->assertHasNoFormErrors();
 
         Mail::assertNothingQueued();
@@ -107,7 +108,7 @@ class UserPanelTest extends TestCase
 
         Livewire::test(Settings::class)
             ->fillForm(['email' => ''])
-            ->call('saveEmail')
+            ->callAction(TestAction::make('saveEmail')->schemaComponent('email-section', 'form'))
             ->assertHasFormErrors(['email' => 'required']);
 
         Mail::assertNothingQueued();
@@ -120,7 +121,7 @@ class UserPanelTest extends TestCase
 
         Livewire::test(Settings::class)
             ->fillForm(['email' => 'not-an-email'])
-            ->call('saveEmail')
+            ->callAction(TestAction::make('saveEmail')->schemaComponent('email-section', 'form'))
             ->assertHasFormErrors(['email' => 'email']);
 
         Mail::assertNothingQueued();
@@ -134,7 +135,7 @@ class UserPanelTest extends TestCase
 
         Livewire::test(Settings::class)
             ->fillForm(['email' => 'taken@example.test'])
-            ->call('saveEmail')
+            ->callAction(TestAction::make('saveEmail')->schemaComponent('email-section', 'form'))
             ->assertHasFormErrors(['email' => 'unique']);
 
         Mail::assertNothingQueued();
@@ -227,7 +228,7 @@ class UserPanelTest extends TestCase
 
         Livewire::test(Settings::class)
             ->fillForm(['default_organization_id' => $org->id])
-            ->call('saveDefaultOrganization');
+            ->callAction(TestAction::make('saveDefaultOrganization')->schemaComponent('default-org-section', 'form'));
 
         $this->assertSame($org->id, $this->user->fresh()->default_organization_id);
     }

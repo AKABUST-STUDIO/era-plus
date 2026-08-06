@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Policies\ActivityLogPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Models\Activity;
 
+#[UsePolicy(ActivityLogPolicy::class)]
 class ActivityLog extends Activity
 {
     public $guarded = ['id'];
@@ -32,8 +35,6 @@ class ActivityLog extends Activity
     }
 
     /**
-     * Convenience accessor for the causer cast to User.
-     *
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo

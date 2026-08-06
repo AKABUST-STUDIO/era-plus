@@ -6,6 +6,7 @@ use App\Mail\EmailChangeConfirmation;
 use App\Mail\EmailChangeRequestedNotice;
 use App\Models\User;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
@@ -76,6 +77,7 @@ class Settings extends Page
     protected function avatarSection(): Section
     {
         return Section::make(__('forms.user.settings.avatar_heading'))
+            ->key('avatar-section')
             ->columns(4)
             ->description(__('forms.user.settings.avatar_description'))
             ->footerActionsAlignment(Alignment::End)
@@ -118,13 +120,21 @@ class Settings extends Page
                     }),
             ])
             ->footerActions([
-                Action::make('saveAvatar')->label(__('forms.common.save'))->action(fn () => $this->saveAvatar()),
+                Action::make('saveAvatar')
+                    ->label(__('forms.common.save'))
+                    ->action(function (): void {
+                        $this->form->getState();
+                        $this->form->saveRelationships();
+
+                        Notification::make()->title(__('notifications.avatar_saved'))->success()->send();
+                    }),
             ]);
     }
 
     protected function profileSection(): Section
     {
         return Section::make(__('forms.user.settings.profile_heading'))
+            ->key('profile-section')
             ->columns(4)
             ->description(__('forms.user.settings.profile_description'))
             ->footerActionsAlignment(Alignment::End)
@@ -137,13 +147,20 @@ class Settings extends Page
                     ->maxLength(255),
             ])
             ->footerActions([
-                Action::make('saveProfile')->label(__('forms.common.save'))->action(fn () => $this->saveProfile()),
+                Action::make('saveProfile')
+                    ->label(__('forms.common.save'))
+                    ->action(function (): void {
+                        $this->user->update(['name' => $this->form->getState()['name']]);
+
+                        Notification::make()->title(__('notifications.profile_saved'))->success()->send();
+                    }),
             ]);
     }
 
     protected function usernameSection(): Section
     {
         return Section::make(__('forms.user.settings.username_heading'))
+            ->key('username-section')
             ->columns(4)
             ->description(__('forms.user.settings.username_description'))
             ->footerActionsAlignment(Alignment::End)
@@ -159,13 +176,20 @@ class Settings extends Page
                     ->unique(User::class, 'username', ignorable: fn (): User => $this->user),
             ])
             ->footerActions([
-                Action::make('saveUsername')->label(__('forms.common.save'))->action(fn () => $this->saveUsername()),
+                Action::make('saveUsername')
+                    ->label(__('forms.common.save'))
+                    ->action(function (): void {
+                        $this->user->update(['username' => $this->form->getState()['username']]);
+
+                        Notification::make()->title(__('notifications.saved'))->success()->send();
+                    }),
             ]);
     }
 
     protected function emailSection(): Section
     {
         return Section::make(__('forms.user.settings.email_heading'))
+            ->key('email-section')
             ->columns(4)
             ->description(__('forms.user.settings.email_description'))
             ->footerActionsAlignment(Alignment::End)
@@ -185,13 +209,47 @@ class Settings extends Page
                     ->unique(User::class, 'email', ignorable: fn (): User => $this->user),
             ])
             ->footerActions([
-                Action::make('saveEmail')->label(__('forms.user.settings.email_send_confirmation'))->action(fn () => $this->saveEmail()),
+                Action::make('saveEmail')
+                    ->label(__('forms.user.settings.email_send_confirmation'))
+                    ->action(function (): void {
+                        $newEmail = mb_strtolower(trim((string) $this->form->getState()['email']));
+
+                        if ($newEmail === $this->user->email) {
+                            Notification::make()->title(__('notifications.email_saved'))->success()->send();
+
+                            return;
+                        }
+
+                        $confirmUrl = URL::temporarySignedRoute(
+                            'settings.email.confirm',
+                            now()->addMinutes(10),
+                            ['user' => $this->user->getKey(), 'email' => $newEmail],
+                        );
+
+                        Mail::to($newEmail)->send(new EmailChangeConfirmation(
+                            user: $this->user,
+                            newEmail: $newEmail,
+                            confirmUrl: $confirmUrl,
+                            expiresInMinutes: 10,
+                        ));
+
+                        Mail::to($this->user->email)->send(new EmailChangeRequestedNotice(
+                            user: $this->user,
+                            newEmail: $newEmail,
+                        ));
+
+                        $this->data['email'] = $this->user->email;
+                        $this->emailConfirmationSentTo = $newEmail;
+
+                        Notification::make()->title(__('notifications.email_change_sent'))->success()->send();
+                    }),
             ]);
     }
 
     protected function phoneSection(): Section
     {
         return Section::make(__('forms.user.settings.phone_heading'))
+            ->key('phone-section')
             ->columns(4)
             ->description(__('forms.user.settings.phone_description'))
             ->footerActionsAlignment(Alignment::End)
@@ -207,13 +265,18 @@ class Settings extends Page
             ->footerActions([
                 Action::make('savePhone')
                     ->label(__('forms.common.save'))
-                    ->action(fn () => $this->savePhone()),
+                    ->action(function (): void {
+                        $this->user->update(['phone' => $this->form->getState()['phone']]);
+
+                        Notification::make()->title(__('notifications.saved'))->success()->send();
+                    }),
             ]);
     }
 
     protected function defaultOrganizationSection(): Section
     {
         return Section::make(__('forms.user.settings.default_org_heading'))
+            ->key('default-org-section')
             ->columns(4)
             ->description(__('forms.user.settings.default_org_description'))
             ->footerActionsAlignment(Alignment::End)
@@ -231,7 +294,13 @@ class Settings extends Page
             ->footerActions([
                 Action::make('saveDefaultOrganization')
                     ->label(__('forms.common.save'))
-                    ->action(fn () => $this->saveDefaultOrganization()),
+                    ->action(function (): void {
+                        $this->user->update([
+                            'default_organization_id' => $this->form->getState()['default_organization_id'] ?? null,
+                        ]);
+
+                        Notification::make()->title(__('notifications.default_org_saved'))->success()->send();
+                    }),
             ]);
     }
 
@@ -255,98 +324,18 @@ class Settings extends Page
     protected function deleteSection(): Section
     {
         return Section::make(__('forms.user.settings.delete_heading'))
+            ->key('delete-section')
             ->description(__('forms.user.settings.delete_description'))
             ->footerActionsAlignment(Alignment::End)
             ->footerActions([
-                Action::make('deleteAccount')
+                DeleteAction::make('deleteAccount')
+                    ->record(fn (): ?User => $this->user)
                     ->label(__('forms.user.settings.delete_account'))
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->action(fn () => $this->deleteAccount()),
+                    ->before(fn () => auth()->logout())
+                    ->successNotification(null)
+                    ->successRedirectUrl('/'),
             ]);
-    }
-
-    public function saveAvatar(): void
-    {
-        $this->form->getState();
-        $this->form->saveRelationships();
-
-        Notification::make()->title(__('notifications.avatar_saved'))->success()->send();
-    }
-
-    public function saveProfile(): void
-    {
-        $this->user->update(['name' => $this->form->getState()['name']]);
-
-        Notification::make()->title(__('notifications.profile_saved'))->success()->send();
-    }
-
-    public function saveUsername(): void
-    {
-        $this->user->update(['username' => $this->form->getState()['username']]);
-
-        Notification::make()->title(__('notifications.saved'))->success()->send();
-    }
-
-    public function saveEmail(): void
-    {
-        $newEmail = mb_strtolower(trim((string) $this->form->getState()['email']));
-
-        if ($newEmail === $this->user->email) {
-            Notification::make()->title(__('notifications.email_saved'))->success()->send();
-
-            return;
-        }
-
-        $expiresAt = now()->addMinutes(10);
-
-        $confirmUrl = URL::temporarySignedRoute(
-            'settings.email.confirm',
-            $expiresAt,
-            ['user' => $this->user->getKey(), 'email' => $newEmail],
-        );
-
-        Mail::to($newEmail)->send(new EmailChangeConfirmation(
-            user: $this->user,
-            newEmail: $newEmail,
-            confirmUrl: $confirmUrl,
-            expiresInMinutes: 10,
-        ));
-
-        Mail::to($this->user->email)->send(new EmailChangeRequestedNotice(
-            user: $this->user,
-            newEmail: $newEmail,
-        ));
-
-        $this->data['email'] = $this->user->email;
-        $this->emailConfirmationSentTo = $newEmail;
-
-        Notification::make()->title(__('notifications.email_change_sent'))->success()->send();
-    }
-
-    public function savePhone(): void
-    {
-        $this->user->update(['phone' => $this->form->getState()['phone']]);
-
-        Notification::make()->title(__('notifications.saved'))->success()->send();
-    }
-
-    public function saveDefaultOrganization(): void
-    {
-        $orgId = $this->form->getState()['default_organization_id'] ?? null;
-
-        $this->user->update(['default_organization_id' => $orgId]);
-
-        Notification::make()->title(__('notifications.default_org_saved'))->success()->send();
-    }
-
-    public function deleteAccount(): void
-    {
-        $user = $this->user;
-
-        auth()->logout();
-        $user->delete();
-
-        $this->redirect('/');
     }
 }

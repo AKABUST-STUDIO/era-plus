@@ -7,10 +7,11 @@ use App\Filament\Project\Resources\ProjectParticipants\Components\SendingOrganiz
 use App\Filament\Project\Resources\ProjectParticipants\Schemas\ProjectParticipantForm;
 use App\Models\Project;
 use App\Models\Project\Participant;
+use App\Models\Project\ProjectParticipant;
 use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\IconPosition;
 use Filament\Support\Enums\Width;
@@ -18,9 +19,10 @@ use Illuminate\Support\Facades\DB;
 
 class AddParticipantAction
 {
-    public static function make(string $name = 'add'): Action
+    public static function make(string $name = 'add'): CreateAction
     {
-        return Action::make($name)
+        return CreateAction::make($name)
+            ->model(ProjectParticipant::class)
             ->label(__('participant.actions.add'))
             ->icon('lucide-user-plus')
             ->iconPosition(IconPosition::After)
@@ -31,12 +33,10 @@ class AddParticipantAction
             ->modalCancelAction(false)
             ->modalFooterActionsAlignment(Alignment::End)
             ->schema(ProjectParticipantForm::sections())
-            ->extraModalFooterActions(fn (Action $action): array => [
-                $action->makeModalSubmitAction('createAnother', ['another' => true])
-                    ->label(__('participant.actions.add_another'))
-                    ->color('gray'),
-            ])
-            ->action(function (array $data, array $arguments, Action $action, Schema $schema): void {
+            ->createAnotherAction(fn (Action $action): Action => $action
+                ->label(__('participant.actions.add_another'))
+                ->color('gray'))
+            ->using(function (array $data, CreateAction $action): ProjectParticipant {
                 $project = Filament::getTenant();
 
                 if (! $project instanceof Project) {
@@ -46,10 +46,10 @@ class AddParticipantAction
                         ->danger()
                         ->send();
 
-                    return;
+                    $action->cancel();
                 }
 
-                $created = DB::transaction(function () use ($data, $project): bool {
+                $participation = DB::transaction(function () use ($data, $project): ?ProjectParticipant {
                     $participableRef = $data['participable_id'] ?? null;
 
                     if (is_string($participableRef) && str_starts_with($participableRef, 'pending:')) {
@@ -64,38 +64,28 @@ class AddParticipantAction
                     $sendingOrganization = SendingOrganizationSelect::resolve($data['sending_organization_id'] ?? null);
 
                     if ($participable === null || $sendingOrganization === null) {
-                        return false;
+                        return null;
                     }
 
-                    $project->addParticipant(
+                    return $project->addParticipant(
                         $participable,
                         (int) $data['country_id'],
                         $sendingOrganization,
                     );
-
-                    return true;
                 });
 
-                if (! $created) {
+                if ($participation === null) {
                     Notification::make()
                         ->title(__('participant.add.failed_title'))
                         ->body(__('participant.add.failed_body'))
                         ->danger()
                         ->send();
 
-                    return;
+                    $action->cancel();
                 }
 
-                Notification::make()
-                    ->title(__('participant.add.added_title'))
-                    ->success()
-                    ->send();
-
-                if ($arguments['another'] ?? false) {
-                    $schema->fill();
-                    $schema->dispatchClientSideStateReset();
-                    $action->halt();
-                }
-            });
+                return $participation;
+            })
+            ->successNotificationTitle(__('participant.add.added_title'));
     }
 }

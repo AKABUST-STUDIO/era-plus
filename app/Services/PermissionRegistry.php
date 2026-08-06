@@ -15,24 +15,32 @@ class PermissionRegistry
             'project',
             'member',
             'role',
-            'setting',
+            'organization',
+            'billing',
+            'invoice',
+            'activity',
         ];
     }
 
     /**
      * @return list<string>
      */
-    public static function actions(): array
+    public static function actions(?string $resource = null): array
     {
-        return [
-            'view_any',
-            'view',
-            'create',
-            'update',
-            'update_any',
-            'delete',
-            'delete_any',
-        ];
+        return match ($resource) {
+            'organization' => ['view', 'update', 'delete'],
+            'billing' => ['view', 'update'],
+            'invoice', 'activity' => ['view'],
+            default => [
+                'view_any',
+                'view',
+                'create',
+                'update',
+                'update_any',
+                'delete',
+                'delete_any',
+            ],
+        };
     }
 
     /**
@@ -60,7 +68,7 @@ class PermissionRegistry
         $names = [];
 
         foreach (self::resources() as $resource) {
-            foreach (self::actions() as $action) {
+            foreach (self::actions($resource) as $action) {
                 $names[] = "{$action}_{$resource}";
             }
         }
@@ -86,7 +94,7 @@ class PermissionRegistry
         foreach (self::resources() as $resource) {
             $groups[$resource] = array_map(
                 static fn (string $action): string => "{$action}_{$resource}",
-                self::actions(),
+                self::actions($resource),
             );
         }
 

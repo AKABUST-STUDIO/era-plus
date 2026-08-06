@@ -3,10 +3,10 @@
 namespace App\Filament\Organization\Pages;
 
 use App\Facades\OrganizationService;
-use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Filament\Tables\ActivityLogTable;
 use App\Models\ActivityLog;
 use App\Models\Organization;
+use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -14,7 +14,6 @@ use Filament\Tables\Table;
 
 class Activity extends Page implements HasTable
 {
-    use GatedByOrganizationPermission;
     use InteractsWithTable;
 
     protected static ?string $slug = 'activity';
@@ -25,9 +24,9 @@ class Activity extends Page implements HasTable
 
     public ?Organization $organization = null;
 
-    protected static function organizationPermission(): string
+    public static function canAccess(): bool
     {
-        return 'view_any_setting';
+        return Filament::auth()->user()?->can('view', ActivityLog::class) ?? false;
     }
 
     public function mount(): void

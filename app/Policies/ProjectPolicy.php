@@ -46,16 +46,6 @@ class ProjectPolicy
         return $this->allowsInCurrentOrganization($user, 'delete_any_project');
     }
 
-    public function restore(User $user, Project $project): bool
-    {
-        return $this->allows($user, 'update_project', $project->organization);
-    }
-
-    public function forceDelete(User $user, Project $project): bool
-    {
-        return $this->allows($user, 'delete_project', $project->organization);
-    }
-
     private function allows(User $user, string $permission, ?Organization $organization): bool
     {
         return $organization instanceof Organization

@@ -7,15 +7,16 @@ use App\Facades\OrganizationService;
 use App\Filament\Organization\Pages\OrganizationUsers as UsersPage;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
-use App\Filament\Organization\Settings\Pages\Security;
 use App\Filament\Organization\Settings\Resources\Roles\RoleResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Role;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -39,7 +40,9 @@ class OrganizationAuthorizationTest extends TestCase
     {
         $this->actingAs($user);
         Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
+        Filament::setTenant($organization);
         OrganizationService::remember($organization);
+        URL::defaults(['organization' => $organization->slug]);
     }
 
     private function actOnOrganizationPanel(User $user, Organization $organization): void
@@ -55,7 +58,6 @@ class OrganizationAuthorizationTest extends TestCase
         $this->actOnSettingsPanel($user, $organization);
 
         $this->assertTrue(GeneralSettings::canAccess());
-        $this->assertTrue(Security::canAccess());
         $this->assertTrue(Billing::canAccess());
     }
 
@@ -65,7 +67,6 @@ class OrganizationAuthorizationTest extends TestCase
         $this->actOnSettingsPanel($user, $organization);
 
         $this->assertFalse(GeneralSettings::canAccess());
-        $this->assertFalse(Security::canAccess());
         $this->assertFalse(Billing::canAccess());
     }
 
@@ -199,7 +200,7 @@ class OrganizationAuthorizationTest extends TestCase
             'label' => 'Settings Viewer',
             'locked' => false,
         ]);
-        $viewer->syncPermissions(['view_any_setting']);
+        $viewer->syncPermissions(['view_organization']);
 
         $user->joinOrganization($organization, $viewer);
         $this->actOnSettingsPanel($user->fresh(), $organization);
@@ -208,7 +209,8 @@ class OrganizationAuthorizationTest extends TestCase
 
         Livewire::test(GeneralSettings::class)
             ->fillForm(['name' => 'Nope'])
-            ->call('saveName')
-            ->assertForbidden();
+            ->assertActionDoesNotExist(TestAction::make('saveName')->schemaComponent('name-section', 'form'));
+
+        $this->assertNotSame('Nope', $organization->fresh()->name);
     }
 }

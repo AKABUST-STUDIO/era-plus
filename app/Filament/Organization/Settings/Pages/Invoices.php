@@ -3,14 +3,13 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
-use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
+use Filament\Facades\Filament;
 use Filament\Pages\Page;
 
 class Invoices extends Page
 {
-    use GatedByOrganizationPermission;
     use HasOrgSettingsBreadcrumbs;
 
     protected static ?string $slug = 'invoices';
@@ -21,9 +20,9 @@ class Invoices extends Page
 
     public ?Organization $organization = null;
 
-    protected static function organizationPermission(): string
+    public static function canAccess(): bool
     {
-        return 'view_any_setting';
+        return Filament::auth()->user()?->can('view', self::class) ?? false;
     }
 
     public function mount(): void

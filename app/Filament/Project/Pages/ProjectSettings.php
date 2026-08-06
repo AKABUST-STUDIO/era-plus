@@ -6,6 +6,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Filament\Resources\Projects\Schemas\ProjectForm;
 use App\Models\Project;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -65,6 +66,7 @@ class ProjectSettings extends Page
     protected function detailsSection(): Section
     {
         return Section::make(__('forms.project.settings.details_heading'))
+            ->key('details-section')
             ->description(__('forms.project.settings.details_description'))
             ->schema([
                 TextInput::make('name')->required()->maxLength(255),
@@ -85,26 +87,52 @@ class ProjectSettings extends Page
             ->footerActions([
                 Action::make('saveDetails')
                     ->label(__('forms.project.settings.save_details'))
-                    ->action(fn () => $this->saveDetails()),
+                    ->action(function (): void {
+                        $data = $this->form->getState();
+
+                        $this->project->update([
+                            'name' => $data['name'],
+                            'slug' => $data['slug'],
+                            'project_reference' => $data['project_reference'] ?? null,
+                            'status' => $data['status'] ?? null,
+                        ]);
+
+                        Notification::make()->title(__('notifications.project_details_saved'))->success()->send();
+                    }),
             ]);
     }
 
     protected function programmeSection(): Section
     {
         return Section::make(__('forms.project.sections.programme'))
+            ->key('programme-section')
             ->description(__('forms.project.sections.programme_description'))
             ->schema(ProjectForm::programmeComponents())
             ->columns(2)
             ->footerActions([
                 Action::make('saveProgramme')
                     ->label(__('forms.project.settings.save_programme'))
-                    ->action(fn () => $this->saveProgramme()),
+                    ->action(function (): void {
+                        $data = $this->form->getState();
+
+                        $this->project->update(array_intersect_key($data, array_flip([
+                            'erasmus_field',
+                            'erasmus_key_action',
+                            'erasmus_action',
+                            'erasmus_managing_body',
+                        ])));
+
+                        $this->project->priorities()->sync($this->data['priorities'] ?? []);
+
+                        Notification::make()->title(__('notifications.project_programme_saved'))->success()->send();
+                    }),
             ]);
     }
 
     protected function datesSection(): Section
     {
         return Section::make(__('forms.project.settings.dates_heading'))
+            ->key('dates-section')
             ->description(__('forms.project.settings.dates_description'))
             ->schema([
                 DatePicker::make('beginning_date'),
@@ -113,76 +141,33 @@ class ProjectSettings extends Page
             ->footerActions([
                 Action::make('saveDates')
                     ->label(__('forms.project.settings.save_dates'))
-                    ->action(fn () => $this->saveDates()),
+                    ->action(function (): void {
+                        $data = $this->form->getState();
+
+                        $this->project->update([
+                            'beginning_date' => $data['beginning_date'] ?? null,
+                            'end_date' => $data['end_date'] ?? null,
+                        ]);
+
+                        Notification::make()->title(__('notifications.project_dates_saved'))->success()->send();
+                    }),
             ]);
     }
 
     protected function dangerSection(): Section
     {
         return Section::make(__('forms.project.settings.danger_zone'))
+            ->key('danger-section')
             ->description(__('forms.project.settings.danger_zone_description'))
             ->footerActions([
-                Action::make('delete')
+                DeleteAction::make('delete')
+                    ->record(fn (): ?Project => $this->project)
                     ->label(__('forms.project.settings.delete'))
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->action(fn () => $this->deleteProject()),
+                    ->successNotificationTitle(__('notifications.project_deleted'))
+                    ->successRedirectUrl(fn (Project $record): string => Filament::getPanel('organization')
+                        ->getUrl(tenant: $record->organization) ?? '/'),
             ]);
-    }
-
-    public function saveDetails(): void
-    {
-        $data = $this->form->getState();
-
-        $this->project->update([
-            'name' => $data['name'],
-            'slug' => $data['slug'],
-            'project_reference' => $data['project_reference'] ?? null,
-            'status' => $data['status'] ?? null,
-        ]);
-
-        Notification::make()->title(__('notifications.project_details_saved'))->success()->send();
-    }
-
-    public function saveProgramme(): void
-    {
-        $data = $this->form->getState();
-
-        $this->project->update(array_intersect_key($data, array_flip([
-            'erasmus_field',
-            'erasmus_key_action',
-            'erasmus_action',
-            'erasmus_managing_body',
-        ])));
-
-        $this->project->priorities()->sync($this->data['priorities'] ?? []);
-
-        Notification::make()->title(__('notifications.project_programme_saved'))->success()->send();
-    }
-
-    public function saveDates(): void
-    {
-        $data = $this->form->getState();
-
-        $this->project->update([
-            'beginning_date' => $data['beginning_date'] ?? null,
-            'end_date' => $data['end_date'] ?? null,
-        ]);
-
-        Notification::make()->title(__('notifications.project_dates_saved'))->success()->send();
-    }
-
-    public function deleteProject(): void
-    {
-        $project = $this->project;
-        $organization = $project->organization;
-
-        $project->delete();
-
-        Notification::make()->title(__('notifications.project_deleted'))->success()->send();
-
-        $this->redirect(
-            Filament::getPanel('organization')->getUrl(tenant: $organization) ?? '/'
-        );
     }
 }

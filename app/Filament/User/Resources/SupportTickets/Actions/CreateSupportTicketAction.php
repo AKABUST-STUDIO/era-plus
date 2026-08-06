@@ -5,16 +5,16 @@ namespace App\Filament\User\Resources\SupportTickets\Actions;
 use App\Enums\SupportTicket\SupportTicketStatus;
 use App\Filament\User\Resources\SupportTickets\Schemas\SupportTicketForm;
 use App\Models\SupportTicket;
-use Filament\Actions\Action;
-use Filament\Notifications\Notification;
+use Filament\Actions\CreateAction;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\Width;
 
 class CreateSupportTicketAction
 {
-    public static function make(string $name = 'create'): Action
+    public static function make(string $name = 'create'): CreateAction
     {
-        return Action::make($name)
+        return CreateAction::make($name)
+            ->model(SupportTicket::class)
             ->label(__('user.support.actions.new'))
             ->icon('lucide-life-buoy')
             ->modalIcon('lucide-life-buoy')
@@ -25,20 +25,14 @@ class CreateSupportTicketAction
             ->modalCancelAction(false)
             ->modalFooterActionsAlignment(Alignment::End)
             ->modalSubmitActionLabel(__('user.support.submit'))
+            ->createAnother(false)
             ->schema(SupportTicketForm::fields())
-            ->action(function (array $data): void {
-                SupportTicket::create([
-                    'user_id' => auth()->id(),
-                    'subject' => $data['subject'],
-                    'body' => $data['body'],
-                    'status' => SupportTicketStatus::Open,
-                    'priority' => 'normal',
-                ]);
-
-                Notification::make()
-                    ->title(__('notifications.support_submitted'))
-                    ->success()
-                    ->send();
-            });
+            ->mutateDataUsing(fn (array $data): array => [
+                ...$data,
+                'user_id' => auth()->id(),
+                'status' => SupportTicketStatus::Open,
+                'priority' => 'normal',
+            ])
+            ->successNotificationTitle(__('notifications.support_submitted'));
     }
 }

@@ -13,6 +13,7 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Project\ErasmusPriority as ErasmusPriorityModel;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
@@ -62,7 +63,7 @@ class ProjectSettingsTest extends TestCase
                 'project_reference' => '2026-1-EE01-KA122-SCH-000001',
                 'status' => ProjectStatus::Running->value,
             ])
-            ->call('saveDetails');
+            ->callAction(TestAction::make('saveDetails')->schemaComponent('details-section', 'form'));
 
         $this->assertDatabaseHas('projects', [
             'id' => $this->project->id,
@@ -88,7 +89,7 @@ class ProjectSettingsTest extends TestCase
                 'erasmus_managing_body' => ErasmusManagingBody::NationalAgency->value,
                 'priorities' => [$priority->id],
             ])
-            ->call('saveProgramme');
+            ->callAction(TestAction::make('saveProgramme')->schemaComponent('programme-section', 'form'));
 
         $project = $this->project->fresh();
 
@@ -105,7 +106,7 @@ class ProjectSettingsTest extends TestCase
                 'beginning_date' => '2026-10-01',
                 'end_date' => '2027-03-31',
             ])
-            ->call('saveDates');
+            ->callAction(TestAction::make('saveDates')->schemaComponent('dates-section', 'form'));
 
         $project = $this->project->fresh();
 
@@ -120,16 +121,15 @@ class ProjectSettingsTest extends TestCase
                 'beginning_date' => '2026-09-01',
                 'end_date' => '2026-08-01',
             ])
-            ->call('saveDates')
+            ->callAction(TestAction::make('saveDates')->schemaComponent('dates-section', 'form'))
             ->assertHasFormErrors(['end_date']);
     }
 
     public function test_can_delete_project(): void
     {
         Livewire::test(ProjectSettings::class)
-            ->call('deleteProject');
+            ->callAction(TestAction::make('delete')->schemaComponent('danger-section', 'form'));
 
-        $this->assertSoftDeleted ?? null;
         $this->assertDatabaseMissing('projects', ['id' => $this->project->id]);
     }
 }

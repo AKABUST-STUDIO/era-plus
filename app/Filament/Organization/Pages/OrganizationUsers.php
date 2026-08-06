@@ -122,7 +122,7 @@ class OrganizationUsers extends Page implements HasTable
             ->components([
                 Section::make(__('settings.users.invite.heading'))
                     ->description(__('settings.users.invite.description'))
-                    ->visible(fn (): bool => auth()->user()->can('inviteMember', $this->organization))
+                    ->visible(fn (): bool => auth()->user()->can('update', $this->organization))
                     ->columns(4)
                     ->schema([
                         TextInput::make('email')
@@ -150,7 +150,7 @@ class OrganizationUsers extends Page implements HasTable
 
     public function invite(): void
     {
-        if (auth()->user()->cannot('inviteMember', $this->organization)) {
+        if (auth()->user()->cannot('update', $this->organization)) {
             Notification::make()
                 ->title(__('notifications.cannot_invite'))
                 ->danger()
@@ -208,6 +208,21 @@ class OrganizationUsers extends Page implements HasTable
         $this->inviteForm->fill(['role' => $this->defaultRoleId()]);
     }
 
+    private function canChangeRole(User $target): bool
+    {
+        return auth()->user()->can('update', $this->organization)
+            && ! OrganizationService::isSoleAdmin($this->organization, $target);
+    }
+
+    private function canRemove(User $target): bool
+    {
+        if (! auth()->user()->can('update', $this->organization) && ! $target->is(auth()->user())) {
+            return false;
+        }
+
+        return ! OrganizationService::isSoleAdmin($this->organization, $target);
+    }
+
     private function defaultRoleId(): ?int
     {
         $firstCustom = $this->organization->roles()->where('locked', false)->orderBy('id')->value('id');
@@ -244,7 +259,7 @@ class OrganizationUsers extends Page implements HasTable
             ->emptyStateDescription($this->activeTab === self::TAB_INVITATIONS
                 ? __('settings.users.empty.invitations_description')
                 : __('settings.users.empty.members_description'))
-            ->checkIfRecordIsSelectableUsing(fn (User $record): bool => auth()->user()->can('removeMember', [$this->organization, $record]))
+            ->checkIfRecordIsSelectableUsing(fn (User $record): bool => $this->canRemove($record))
             ->columns([
                 Split::make([
                     ImageColumn::make('avatar')
@@ -315,10 +330,10 @@ class OrganizationUsers extends Page implements HasTable
                     Action::make('changeRole')
                         ->label(__('settings.users.actions.change_role'))
                         ->icon('lucide-refresh-cw')
-                        ->disabled(fn (User $user): bool => auth()->user()->cannot('changeMemberRole', [$this->organization, $user]))
-                        ->tooltip(fn (User $user): ?string => auth()->user()->cannot('changeMemberRole', [$this->organization, $user])
-                            ? __('settings.users.actions.sole_admin_locked')
-                            : null)
+                        ->disabled(fn (User $user): bool => ! $this->canChangeRole($user))
+                        ->tooltip(fn (User $user): ?string => $this->canChangeRole($user)
+                            ? null
+                            : __('settings.users.actions.sole_admin_locked'))
                         ->form([
                             Select::make('role')
                                 ->options(fn (): array => $this->organization->roleOptions())
@@ -332,10 +347,10 @@ class OrganizationUsers extends Page implements HasTable
                         ->icon('lucide-trash-2')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->disabled(fn (User $user): bool => auth()->user()->cannot('removeMember', [$this->organization, $user]))
-                        ->tooltip(fn (User $user): ?string => auth()->user()->cannot('removeMember', [$this->organization, $user])
-                            ? __('settings.users.actions.sole_admin_locked')
-                            : null)
+                        ->disabled(fn (User $user): bool => ! $this->canRemove($user))
+                        ->tooltip(fn (User $user): ?string => $this->canRemove($user)
+                            ? null
+                            : __('settings.users.actions.sole_admin_locked'))
                         ->action(fn (User $user) => $this->removeUser($user)),
                 ]),
             ])
@@ -346,7 +361,7 @@ class OrganizationUsers extends Page implements HasTable
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each(
-                            fn (User $user) => auth()->user()->can('removeMember', [$this->organization, $user])
+                            fn (User $user) => $this->canRemove($user)
                                 ? $this->removeUser($user)
                                 : null
                         )),
@@ -356,7 +371,7 @@ class OrganizationUsers extends Page implements HasTable
 
     public function changeRole(User $user, int $roleId): void
     {
-        if (auth()->user()->cannot('changeMemberRole', [$this->organization, $user])) {
+        if (! $this->canChangeRole($user)) {
             Notification::make()
                 ->title(__('notifications.cannot_remove_last_admin'))
                 ->danger()
@@ -390,7 +405,7 @@ class OrganizationUsers extends Page implements HasTable
 
     public function removeUser(User $user): void
     {
-        if (auth()->user()->cannot('removeMember', [$this->organization, $user])) {
+        if (! $this->canRemove($user)) {
             Notification::make()
                 ->title(__('notifications.cannot_remove_last_admin'))
                 ->danger()

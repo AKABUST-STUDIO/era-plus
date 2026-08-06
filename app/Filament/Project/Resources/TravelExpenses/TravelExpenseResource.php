@@ -2,7 +2,6 @@
 
 namespace App\Filament\Project\Resources\TravelExpenses;
 
-use App\Facades\ProjectService;
 use App\Filament\Project\Resources\TravelExpenses\Pages\ListTravelExpenses;
 use App\Filament\Project\Resources\TravelExpenses\Schemas\TravelExpenseForm;
 use App\Filament\Project\Resources\TravelExpenses\Tables\TravelExpensesTable;
@@ -53,30 +52,6 @@ class TravelExpenseResource extends Resource
         return [
             'index' => ListTravelExpenses::route('/'),
         ];
-    }
-
-    public static function canViewAny(): bool
-    {
-        return self::userCan(ProjectAccess::ABILITY_MANAGE_FINANCE);
-    }
-
-    public static function canCreate(): bool
-    {
-        if (! self::userCan(ProjectAccess::ABILITY_MANAGE_FINANCE)) {
-            return false;
-        }
-
-        return self::canViewAllExpenses() || ProjectService::participationIdFor() !== null;
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        return self::userCan(ProjectAccess::ABILITY_MANAGE_FINANCE);
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return self::userCan(ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
     public static function canManageCountryLimits(): bool

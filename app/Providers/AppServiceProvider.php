@@ -2,12 +2,17 @@
 
 namespace App\Providers;
 
+use App\Filament\Organization\Settings\Pages\Billing;
+use App\Filament\Organization\Settings\Pages\Invoices;
 use App\Models\Organization;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Policies\Organization\BillingPolicy;
+use App\Policies\Organization\InvoicePolicy;
 use App\Providers\Filament\ProjectPanelProvider;
 use Illuminate\Routing\Events\Routing;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
@@ -25,9 +30,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerCashier();
+        $this->registerPagePolicies();
         $this->registerRouteBindings();
         $this->deprioritizeProjectTenantRoute();
         $this->registerSocialiteProviders();
+    }
+
+    protected function registerPagePolicies(): void
+    {
+        Gate::policy(Billing::class, BillingPolicy::class);
+        Gate::policy(Invoices::class, InvoicePolicy::class);
     }
 
     protected function registerCashier(): void

@@ -4,10 +4,10 @@ namespace App\Filament\Organization\Settings\Pages;
 
 use App\Enums\Subscription\SubscriptionTier;
 use App\Facades\OrganizationService;
-use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -18,7 +18,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class Billing extends Page
 {
-    use GatedByOrganizationPermission;
     use HasOrgSettingsBreadcrumbs;
 
     protected static ?string $slug = 'billing';
@@ -34,9 +33,9 @@ class Billing extends Page
      */
     public ?array $data = [];
 
-    protected static function organizationPermission(): string
+    public static function canAccess(): bool
     {
-        return 'view_any_setting';
+        return Filament::auth()->user()?->can('view', self::class) ?? false;
     }
 
     public static function getNavigationLabel(): string
@@ -95,14 +94,31 @@ class Billing extends Page
             })
             ->footerActions([
                 Action::make('checkoutPro')
+                    ->authorize('update', self::class)
                     ->label(__('settings.billing.plan.upgrade_pro'))
                     ->color('primary')
                     ->visible(fn (): bool => $isBasic && filled(config('services.stripe.prices.pro')))
-                    ->action(fn () => $this->checkout(config('services.stripe.prices.pro'))),
+                    ->action(function (): RedirectResponse {
+                        $priceId = config('services.stripe.prices.pro');
+
+                        abort_unless($priceId, 400, 'Stripe price ID not configured.');
+
+                        $checkout = $this->organization
+                            ->newSubscription('default', $priceId)
+                            ->checkout([
+                                'success_url' => static::getUrl(['tenant' => $this->organization]),
+                                'cancel_url' => static::getUrl(['tenant' => $this->organization]),
+                            ]);
+
+                        return redirect()->away($checkout->url);
+                    }),
                 Action::make('manage')
+                    ->authorize('update', self::class)
                     ->label(__('settings.billing.plan.manage'))
                     ->visible(! $isBasic)
-                    ->action(fn () => $this->billingPortal()),
+                    ->action(fn (): RedirectResponse => auth()->user()->redirectToBillingPortal(
+                        route('filament.organization.home', ['tenant' => $this->organization])
+                    )),
             ]);
     }
 
@@ -145,8 +161,27 @@ class Billing extends Page
             ])
             ->footerActions([
                 Action::make('saveAddress')
+                    ->authorize('update', self::class)
                     ->label(__('settings.billing.address.action'))
-                    ->action(fn () => $this->saveAddress()),
+                    ->action(function (): void {
+                        $data = $this->form->getState();
+
+                        $this->organization->update([
+                            'billing_address' => [
+                                'line1' => $data['address_line1'] ?? null,
+                                'line2' => $data['address_line2'] ?? null,
+                                'city' => $data['address_city'] ?? null,
+                                'state' => $data['address_state'] ?? null,
+                                'postal_code' => $data['address_postal_code'] ?? null,
+                                'country' => $data['address_country'] ?? null,
+                            ],
+                        ]);
+
+                        Notification::make()
+                            ->title(__('settings.billing.address.saved'))
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
 
@@ -168,8 +203,16 @@ class Billing extends Page
             ])
             ->footerActions([
                 Action::make('saveLanguage')
+                    ->authorize('update', self::class)
                     ->label(__('settings.billing.language.action'))
-                    ->action(fn () => $this->saveLanguage()),
+                    ->action(function (): void {
+                        $this->organization->update(['invoice_language' => $this->form->getState()['invoice_language']]);
+
+                        Notification::make()
+                            ->title(__('settings.billing.language.saved'))
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
 
@@ -184,84 +227,16 @@ class Billing extends Page
             ])
             ->footerActions([
                 Action::make('saveTaxId')
+                    ->authorize('update', self::class)
                     ->label(__('settings.billing.tax.action'))
-                    ->action(fn () => $this->saveTaxId()),
+                    ->action(function (): void {
+                        $this->organization->update(['tax_id' => $this->form->getState()['tax_id']]);
+
+                        Notification::make()
+                            ->title(__('settings.billing.tax.saved'))
+                            ->success()
+                            ->send();
+                    }),
             ]);
-    }
-
-    public function saveAddress(): void
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        $data = $this->form->getState();
-
-        $this->organization->update([
-            'billing_address' => [
-                'line1' => $data['address_line1'] ?? null,
-                'line2' => $data['address_line2'] ?? null,
-                'city' => $data['address_city'] ?? null,
-                'state' => $data['address_state'] ?? null,
-                'postal_code' => $data['address_postal_code'] ?? null,
-                'country' => $data['address_country'] ?? null,
-            ],
-        ]);
-
-        Notification::make()
-            ->title(__('settings.billing.address.saved'))
-            ->success()
-            ->send();
-    }
-
-    public function saveLanguage(): void
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        $data = $this->form->getState();
-
-        $this->organization->update(['invoice_language' => $data['invoice_language']]);
-
-        Notification::make()
-            ->title(__('settings.billing.language.saved'))
-            ->success()
-            ->send();
-    }
-
-    public function saveTaxId(): void
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        $data = $this->form->getState();
-
-        $this->organization->update(['tax_id' => $data['tax_id']]);
-
-        Notification::make()
-            ->title(__('settings.billing.tax.saved'))
-            ->success()
-            ->send();
-    }
-
-    public function checkout(?string $priceId): RedirectResponse
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        abort_unless($priceId, 400, 'Stripe price ID not configured.');
-
-        $checkout = $this->organization
-            ->newSubscription('default', $priceId)
-            ->checkout([
-                'success_url' => static::getUrl(['tenant' => $this->organization]),
-                'cancel_url' => static::getUrl(['tenant' => $this->organization]),
-            ]);
-
-        return redirect()->away($checkout->url);
-    }
-
-    public function billingPortal(): RedirectResponse
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        return auth()->user()->redirectToBillingPortal(
-            route('filament.organization.home', ['tenant' => $this->organization])
-        );
     }
 }

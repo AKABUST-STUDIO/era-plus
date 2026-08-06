@@ -4,34 +4,29 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Facades\OrganizationService;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\ProjectAccess;
 
 class OrganizationPolicy
 {
-    public function inviteMember(User $user, Organization $organization): bool
+    public function view(User $user, Organization $organization): bool
     {
-        return app(ProjectAccess::class)->administersOrganization($user, $organization);
+        return $this->allows($user, 'view_organization', $organization);
     }
 
-    public function changeMemberRole(User $user, Organization $organization, User $target): bool
+    public function update(User $user, Organization $organization): bool
     {
-        if (! app(ProjectAccess::class)->administersOrganization($user, $organization)) {
-            return false;
-        }
-
-        return ! OrganizationService::isSoleAdmin($organization, $target);
+        return $this->allows($user, 'update_organization', $organization);
     }
 
-    public function removeMember(User $user, Organization $organization, User $target): bool
+    public function delete(User $user, Organization $organization): bool
     {
-        if (! app(ProjectAccess::class)->administersOrganization($user, $organization)
-            && ! $user->is($target)) {
-            return false;
-        }
+        return $this->allows($user, 'delete_organization', $organization);
+    }
 
-        return ! OrganizationService::isSoleAdmin($organization, $target);
+    private function allows(User $user, string $permission, Organization $organization): bool
+    {
+        return app(ProjectAccess::class)->organizationAllows($user, $permission, $organization);
     }
 }

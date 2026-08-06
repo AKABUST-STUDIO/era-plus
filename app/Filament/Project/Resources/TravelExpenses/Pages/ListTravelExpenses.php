@@ -10,6 +10,7 @@ use App\Filament\Project\Resources\TravelExpenses\Actions\ImportTravelExpensesAc
 use App\Filament\Project\Resources\TravelExpenses\Schemas\TravelExpenseForm;
 use App\Filament\Project\Resources\TravelExpenses\TravelExpenseResource;
 use App\Models\Project;
+use App\Models\Project\CountryLimit;
 use App\Models\Project\ProjectParticipant;
 use App\Models\Project\TravelExpense;
 use Filament\Actions\ActionGroup;
@@ -57,12 +58,13 @@ class ListTravelExpenses extends ListRecords
                     return TravelExpenseForm::stripParticipableInput($data);
                 }),
             CountryLimitsAction::make()
-                ->visible(fn (): bool => TravelExpenseResource::canManageCountryLimits()),
+                ->authorize(fn (): bool => (bool) Filament::auth()->user()?->can('update', CountryLimit::class)),
             ActionGroup::make([
-                ImportTravelExpensesAction::make(),
-                ExportTravelExpensesAction::make(),
+                ImportTravelExpensesAction::make()
+                    ->authorize(fn (): bool => TravelExpenseResource::canViewAllExpenses()),
+                ExportTravelExpensesAction::make()
+                    ->authorize(fn (): bool => TravelExpenseResource::canViewAllExpenses()),
             ])
-                ->visible(fn (): bool => TravelExpenseResource::canViewAllExpenses())
                 ->label(__('finance.actions.tools'))
                 ->icon('lucide-more-horizontal')
                 ->button()

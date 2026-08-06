@@ -49,16 +49,6 @@ class RolePolicy
         return $this->allows($user, 'delete_any_role', $this->activeTenant());
     }
 
-    public function restore(User $user, Role $role): bool
-    {
-        return $this->allows($user, 'update_role', $role->roleable);
-    }
-
-    public function forceDelete(User $user, Role $role): bool
-    {
-        return ! $role->locked && $this->allows($user, 'delete_role', $role->roleable);
-    }
-
     private function allows(User $user, string $permission, ?object $tenant): bool
     {
         $access = app(ProjectAccess::class);

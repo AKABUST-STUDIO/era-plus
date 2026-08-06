@@ -3,11 +3,11 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Facades\OrganizationService;
-use App\Filament\Concerns\GatedByOrganizationPermission;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
@@ -18,7 +18,6 @@ use Filament\Schemas\Schema;
 
 class GeneralSettings extends Page
 {
-    use GatedByOrganizationPermission;
     use HasOrgSettingsBreadcrumbs;
 
     protected static ?string $slug = 'overview';
@@ -34,9 +33,12 @@ class GeneralSettings extends Page
      */
     public ?array $data = [];
 
-    protected static function organizationPermission(): string
+    public static function canAccess(): bool
     {
-        return 'view_any_setting';
+        $organization = OrganizationService::current();
+
+        return $organization instanceof Organization
+            && (Filament::auth()->user()?->can('view', $organization) ?? false);
     }
 
     public static function getNavigationLabel(): string
@@ -78,6 +80,7 @@ class GeneralSettings extends Page
     protected function nameSection(): Section
     {
         return Section::make(__('settings.general.name.heading'))
+            ->key('name-section')
             ->description(__('settings.general.name.description'))
             ->schema([
                 TextInput::make('name')
@@ -87,14 +90,23 @@ class GeneralSettings extends Page
             ])
             ->footerActions([
                 Action::make('saveName')
+                    ->authorize('update', $this->organization)
                     ->label(__('settings.general.name.action'))
-                    ->action(fn () => $this->saveName()),
+                    ->action(function (): void {
+                        $this->organization->update(['name' => $this->form->getState()['name']]);
+
+                        Notification::make()
+                            ->title(__('settings.general.name.saved'))
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
 
     protected function avatarSection(): Section
     {
         return Section::make(__('settings.general.avatar.heading'))
+            ->key('avatar-section')
             ->description(__('settings.general.avatar.description'))
             ->schema([
                 SpatieMediaLibraryFileUpload::make('avatar')
@@ -108,14 +120,24 @@ class GeneralSettings extends Page
             ])
             ->footerActions([
                 Action::make('saveAvatar')
+                    ->authorize('update', $this->organization)
                     ->label(__('settings.general.avatar.action'))
-                    ->action(fn () => $this->saveAvatar()),
+                    ->action(function (): void {
+                        $this->form->getState();
+                        $this->form->saveRelationships();
+
+                        Notification::make()
+                            ->title(__('settings.general.avatar.saved'))
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
 
     protected function urlSection(): Section
     {
         return Section::make(__('settings.general.url.heading'))
+            ->key('url-section')
             ->description(__('settings.general.url.description'))
             ->schema([
                 TextInput::make('slug')
@@ -128,8 +150,18 @@ class GeneralSettings extends Page
             ])
             ->footerActions([
                 Action::make('saveUrl')
+                    ->authorize('update', $this->organization)
                     ->label(__('settings.general.url.action'))
-                    ->action(fn () => $this->saveUrl()),
+                    ->action(function (): void {
+                        $this->organization->update(['slug' => $this->form->getState()['slug']]);
+
+                        Notification::make()
+                            ->title(__('settings.general.url.saved'))
+                            ->success()
+                            ->send();
+
+                        $this->redirect(static::getUrl(['organization' => $this->organization->slug]));
+                    }),
             ]);
     }
 
@@ -138,6 +170,7 @@ class GeneralSettings extends Page
         $isLastAdmin = $this->currentUserIsLastAdmin();
 
         return Section::make(__('settings.general.leave.heading'))
+            ->key('leave-section')
             ->description($isLastAdmin
                 ? __('settings.general.leave.last_admin_description')
                 : __('settings.general.leave.description'))
@@ -148,7 +181,38 @@ class GeneralSettings extends Page
                     ->disabled($isLastAdmin)
                     ->tooltip($isLastAdmin ? __('settings.general.leave.last_admin_tooltip') : null)
                     ->requiresConfirmation()
-                    ->action(fn () => $this->leave()),
+                    ->action(function (): void {
+                        if ($this->currentUserIsLastAdmin()) {
+                            Notification::make()
+                                ->title(__('settings.general.leave.last_admin_title'))
+                                ->body(__('settings.general.leave.last_admin_body'))
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        if ($this->organization->users()->count() <= 1) {
+                            Notification::make()
+                                ->title(__('settings.general.leave.only_member_title'))
+                                ->body(__('settings.general.leave.only_member_body'))
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        $this->organization->users()->detach(Filament::auth()->id());
+
+                        OrganizationService::forget();
+
+                        Notification::make()
+                            ->title(__('settings.general.leave.saved'))
+                            ->success()
+                            ->send();
+
+                        $this->redirect($this->organizationPanelUrl());
+                    }),
             ]);
     }
 
@@ -158,9 +222,12 @@ class GeneralSettings extends Page
         $confirmPhrase = __('settings.general.delete.confirm_phrase');
 
         return Section::make(__('settings.general.delete.heading'))
+            ->key('delete-section')
             ->description(__('settings.general.delete.description'))
             ->footerActions([
-                Action::make('delete')
+                DeleteAction::make('delete')
+                    ->record(fn (): ?Organization => $this->organization)
+                    ->authorize('delete')
                     ->label(__('settings.general.delete.action'))
                     ->color('danger')
                     ->modalIcon('lucide-triangle-alert')
@@ -189,7 +256,16 @@ class GeneralSettings extends Page
                                 }
                             }),
                     ])
-                    ->action(fn () => $this->delete()),
+                    ->using(function (Organization $record): bool {
+                        $record->users()->detach();
+                        $deleted = (bool) $record->delete();
+
+                        OrganizationService::forget();
+
+                        return $deleted;
+                    })
+                    ->successNotificationTitle(__('settings.general.delete.saved'))
+                    ->successRedirectUrl(fn (): string => $this->organizationPanelUrl()),
             ]);
     }
 
@@ -206,102 +282,6 @@ class GeneralSettings extends Page
         }
 
         return $this->organization->admins()->count() <= 1;
-    }
-
-    public function saveName(): void
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        $data = $this->form->getState();
-
-        $this->organization->update(['name' => $data['name']]);
-
-        Notification::make()
-            ->title(__('settings.general.name.saved'))
-            ->success()
-            ->send();
-    }
-
-    public function saveAvatar(): void
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        $this->form->getState();
-        $this->form->saveRelationships();
-
-        Notification::make()
-            ->title(__('settings.general.avatar.saved'))
-            ->success()
-            ->send();
-    }
-
-    public function saveUrl(): void
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        $data = $this->form->getState();
-
-        $this->organization->update(['slug' => $data['slug']]);
-
-        Notification::make()
-            ->title(__('settings.general.url.saved'))
-            ->success()
-            ->send();
-
-        $this->redirect(static::getUrl(['organization' => $this->organization->slug]));
-    }
-
-    public function leave(): void
-    {
-        if ($this->currentUserIsLastAdmin()) {
-            Notification::make()
-                ->title(__('settings.general.leave.last_admin_title'))
-                ->body(__('settings.general.leave.last_admin_body'))
-                ->danger()
-                ->send();
-
-            return;
-        }
-
-        if ($this->organization->users()->count() <= 1) {
-            Notification::make()
-                ->title(__('settings.general.leave.only_member_title'))
-                ->body(__('settings.general.leave.only_member_body'))
-                ->danger()
-                ->send();
-
-            return;
-        }
-
-        $this->organization->users()->detach(Filament::auth()->id());
-
-        OrganizationService::forget();
-
-        Notification::make()
-            ->title(__('settings.general.leave.saved'))
-            ->success()
-            ->send();
-
-        $this->redirect($this->organizationPanelUrl());
-    }
-
-    public function delete(): void
-    {
-        static::authorizeOrganizationPermission('update_setting');
-
-        $organization = $this->organization;
-
-        $organization->users()->detach();
-        $organization->delete();
-
-        OrganizationService::forget();
-
-        Notification::make()
-            ->title(__('settings.general.delete.saved'))
-            ->success()
-            ->send();
-
-        $this->redirect($this->organizationPanelUrl());
     }
 
     protected function organizationPanelUrl(): string

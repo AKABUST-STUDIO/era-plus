@@ -32,22 +32,17 @@ class TravelExpensePolicy
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
+    public function updateAny(User $user): bool
+    {
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
+    }
+
     public function delete(User $user, TravelExpense $travelExpense): bool
     {
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }
 
     public function deleteAny(User $user): bool
-    {
-        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
-    }
-
-    public function restore(User $user, TravelExpense $travelExpense): bool
-    {
-        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
-    }
-
-    public function forceDelete(User $user, TravelExpense $travelExpense): bool
     {
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_FINANCE);
     }

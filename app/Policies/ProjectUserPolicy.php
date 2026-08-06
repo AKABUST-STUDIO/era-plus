@@ -32,22 +32,17 @@ class ProjectUserPolicy
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_MEMBERS);
     }
 
+    public function updateAny(User $user): bool
+    {
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_MEMBERS);
+    }
+
     public function delete(User $user, ProjectUser $projectUser): bool
     {
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_MEMBERS);
     }
 
     public function deleteAny(User $user): bool
-    {
-        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_MEMBERS);
-    }
-
-    public function restore(User $user, ProjectUser $projectUser): bool
-    {
-        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_MEMBERS);
-    }
-
-    public function forceDelete(User $user, ProjectUser $projectUser): bool
     {
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_MEMBERS);
     }

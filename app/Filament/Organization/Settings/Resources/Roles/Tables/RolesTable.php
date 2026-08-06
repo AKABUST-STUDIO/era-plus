@@ -52,8 +52,7 @@ class RolesTable
                     ->icon('lucide-trash-2')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn (Role $record): bool => RoleResource::canDelete($record))
-                    ->action(function (Role $record): void {
+                    ->before(function (DeleteAction $action, Role $record): void {
                         if (self::memberCount($record) > 0) {
                             Notification::make()
                                 ->title(__('settings.roles.notifications.delete_has_members'))
@@ -61,15 +60,13 @@ class RolesTable
                                 ->danger()
                                 ->send();
 
-                            return;
+                            $action->cancel();
                         }
 
                         $record->syncPermissions([]);
-                        $record->delete();
-                        app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-                        Notification::make()->title(__('settings.roles.notifications.deleted'))->success()->send();
-                    }),
+                    })
+                    ->after(fn () => app(PermissionRegistrar::class)->forgetCachedPermissions())
+                    ->successNotificationTitle(__('settings.roles.notifications.deleted')),
             ]);
     }
 

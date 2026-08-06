@@ -6,8 +6,6 @@ use App\Enums\Organization\OrganizationRole;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Filament\Organization\Settings\Pages\Invoices;
-use App\Filament\Organization\Settings\Pages\Notifications;
-use App\Filament\Organization\Settings\Pages\Security;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -46,8 +44,6 @@ class SettingsBreadcrumbsTest extends TestCase
     {
         return [
             'general' => [GeneralSettings::class, 'General settings'],
-            'notifications' => [Notifications::class, 'Notifications'],
-            'security' => [Security::class, 'Security'],
             'billing' => [Billing::class, 'Billing'],
             'invoices' => [Invoices::class, 'Invoices'],
         ];

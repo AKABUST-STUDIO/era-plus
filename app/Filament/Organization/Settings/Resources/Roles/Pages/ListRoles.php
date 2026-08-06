@@ -6,12 +6,12 @@ use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Filament\Organization\Settings\Resources\Roles\RoleResource;
 use App\Models\Role;
 use App\Services\TenantRoleProvisioner;
-use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\Width;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\PermissionRegistrar;
@@ -25,18 +25,18 @@ class ListRoles extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('create')
+            CreateAction::make()
                 ->label(__('settings.roles.actions.create'))
                 ->icon('lucide-plus')
                 ->modalHeading(__('settings.roles.actions.create_heading'))
                 ->modalDescription(__('settings.roles.form.name_helper'))
                 ->modalWidth(Width::ExtraSmall)
                 ->modalSubmitActionLabel(__('settings.roles.actions.create_submit'))
-                ->visible(fn (): bool => RoleResource::canCreate())
                 ->modalCancelAction(false)
                 ->modalFooterActionsAlignment(Alignment::End)
                 ->modalCloseButton(false)
                 ->modalIcon('lucide-shield-user')
+                ->createAnother(false)
                 ->schema([
                     TextInput::make('name')
                         ->hiddenLabel()
@@ -50,26 +50,23 @@ class ListRoles extends ListRecords
                             'regex' => __('settings.roles.form.name_regex'),
                         ]),
                 ])
-                ->action(function (array $data): void {
-                    app(TenantRoleProvisioner::class)->ensurePermissions();
-
-                    $organization = RoleResource::organization();
+                ->mutateDataUsing(function (array $data): array {
                     $name = Str::lower($data['name']);
 
-                    /** @var Role $role */
-                    $role = $organization->roles()->create([
+                    return [
                         'name' => $name,
                         'label' => Str::of($name)->replace(['_', '-'], ' ')->title()->value(),
                         'guard_name' => 'web',
                         'locked' => false,
-                    ]);
-
-                    app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-                    Notification::make()->title(__('settings.roles.notifications.created'))->success()->send();
-
-                    $this->redirect(RoleResource::getUrl('edit', ['record' => $role->id]));
-                }),
+                    ];
+                })
+                ->relationship(fn (): MorphMany => RoleResource::organization()->roles())
+                ->before(fn () => app(TenantRoleProvisioner::class)->ensurePermissions())
+                ->after(fn () => app(PermissionRegistrar::class)->forgetCachedPermissions())
+                ->successNotificationTitle(__('settings.roles.notifications.created'))
+                ->successRedirectUrl(fn (Role $record): string => RoleResource::getUrl('edit', [
+                    'record' => $record->id,
+                ])),
         ];
     }
 

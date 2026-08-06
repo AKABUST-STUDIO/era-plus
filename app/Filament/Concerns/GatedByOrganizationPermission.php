@@ -22,9 +22,4 @@ trait GatedByOrganizationPermission
         return $user instanceof User
             && app(ProjectAccess::class)->currentOrganizationAllows($user, $permission);
     }
-
-    protected static function authorizeOrganizationPermission(string $permission): void
-    {
-        abort_unless(static::allowsOrganizationPermission($permission), 403);
-    }
 }

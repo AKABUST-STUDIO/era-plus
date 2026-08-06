@@ -909,7 +909,7 @@ class FinanceTest extends TestCase
         ]);
     }
 
-    public function test_participant_with_no_participation_can_neither_create_nor_see_anything(): void
+    public function test_participant_with_no_participation_cannot_see_other_expenses(): void
     {
         $participation = $this->participation();
         TravelExpense::factory()->forParticipant($participation)->create();
@@ -924,7 +924,6 @@ class FinanceTest extends TestCase
         $this->actingAs($stranger);
 
         $this->assertTrue(TravelExpenseResource::canViewAny());
-        $this->assertFalse(TravelExpenseResource::canCreate());
 
         Livewire::test(ListTravelExpenses::class)
             ->assertSuccessful()

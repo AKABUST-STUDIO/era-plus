@@ -6,6 +6,7 @@ use App\Enums\Organization\OrganizationRole;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Models\Organization;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Schemas\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,7 +36,7 @@ class OrganizationLifecycleTest extends TestCase
 
         $this->actOnSettingsPanel($admin, $organization);
 
-        Livewire::test(GeneralSettings::class)->call('leave');
+        Livewire::test(GeneralSettings::class)->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
 
         $this->assertTrue($organization->fresh()->users->contains($admin));
     }
@@ -50,7 +51,7 @@ class OrganizationLifecycleTest extends TestCase
 
         $this->actOnSettingsPanel($admin, $organization);
 
-        Livewire::test(GeneralSettings::class)->call('leave');
+        Livewire::test(GeneralSettings::class)->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
 
         $this->assertFalse($organization->fresh()->users->contains($admin));
     }
@@ -88,7 +89,11 @@ class OrganizationLifecycleTest extends TestCase
 
         $this->actOnSettingsPanel($admin, $organization);
 
-        Livewire::test(GeneralSettings::class)->call('delete');
+        Livewire::test(GeneralSettings::class)
+            ->callAction(TestAction::make('delete')->schemaComponent('delete-section', 'form'), data: [
+                'name_confirm' => 'Acme Corp',
+                'phrase_confirm' => __('settings.general.delete.confirm_phrase'),
+            ]);
 
         $this->assertSoftDeleted('organizations', ['id' => $organization->id]);
     }

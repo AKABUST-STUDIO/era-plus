@@ -174,31 +174,6 @@ return [
         ],
     ],
 
-    'notifications' => [
-        'navigation_label' => 'Notifications',
-        'title' => 'Notifications',
-    ],
-
-    'security' => [
-        'navigation_label' => 'Security',
-        'title' => 'Security',
-
-        'two_factor' => [
-            'heading' => 'Two-factor authentication',
-            'description' => 'Require every member to set up two-factor authentication before accessing this organization.',
-            'label' => 'Enforce two-factor authentication for all members.',
-            'action' => 'Save 2FA setting',
-            'coming_soon' => 'Coming soon',
-        ],
-
-        'email_verification' => [
-            'heading' => 'Email verification',
-            'description' => 'Require members to verify their email before accessing the organization.',
-            'label' => 'Require verified email for all members',
-            'action' => 'Save email verification setting',
-        ],
-    ],
-
     'billing' => [
         'navigation_label' => 'Billing',
         'title' => 'Billing',

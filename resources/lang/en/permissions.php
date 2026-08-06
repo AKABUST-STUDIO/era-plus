@@ -16,7 +16,10 @@ return [
         'project' => 'Projects',
         'member' => 'Organization members',
         'role' => 'Roles',
-        'setting' => 'Settings',
+        'organization' => 'Organization',
+        'billing' => 'Billing',
+        'invoice' => 'Invoices',
+        'activity' => 'Activity log',
     ],
 
 ];

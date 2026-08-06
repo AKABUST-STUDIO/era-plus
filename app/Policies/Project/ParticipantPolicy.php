@@ -32,22 +32,17 @@ class ParticipantPolicy
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
+    public function updateAny(User $user): bool
+    {
+        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
+    }
+
     public function delete(User $user, Participant $participant): bool
     {
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
 
     public function deleteAny(User $user): bool
-    {
-        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
-    }
-
-    public function restore(User $user, Participant $participant): bool
-    {
-        return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
-    }
-
-    public function forceDelete(User $user, Participant $participant): bool
     {
         return $this->allows($user, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
     }
