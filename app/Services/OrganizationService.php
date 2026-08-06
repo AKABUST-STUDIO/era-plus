@@ -79,6 +79,10 @@ class OrganizationService
             return false;
         }
 
-        return $organization->users()->wherePivot('role_id', $adminRoleId)->count() <= 1;
+        return $organization->users()
+            ->wherePivot('role_id', $adminRoleId)
+            ->whereNotNull('users.email_verified_at')
+            ->whereKeyNot($user->id)
+            ->doesntExist();
     }
 }

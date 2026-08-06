@@ -4,8 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Pages\OrganizationUsers as UsersPage;
+use App\Filament\Organization\Resources\OrganizationUsers\Pages\ListOrganizationUsers as UsersPage;
 use App\Models\Organization;
+use App\Models\Organization\OrganizationUser;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,10 +18,10 @@ class SettingsUsersTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function actingOnSettingsPanel(User $user, Organization $organization): void
+    private function actingOnOrganizationPanel(User $user, Organization $organization): void
     {
         $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
+        Filament::setCurrentPanel(Filament::getPanel('organization'));
         Filament::setTenant($organization);
         URL::defaults(['organization' => $organization->slug]);
         OrganizationService::remember($organization);
@@ -38,10 +39,18 @@ class SettingsUsersTest extends TestCase
         return [$user, $organization];
     }
 
+    private function membership(User $user, Organization $organization): OrganizationUser
+    {
+        return OrganizationUser::query()
+            ->where('organization_id', $organization->id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+    }
+
     public function test_page_loads(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
-        $this->actingOnSettingsPanel($user, $organization);
+        $this->actingOnOrganizationPanel($user, $organization);
 
         Livewire::test(UsersPage::class)
             ->assertOk();
@@ -53,13 +62,16 @@ class SettingsUsersTest extends TestCase
         $fellowMember = User::factory()->create();
         $fellowMember->joinOrganization($organization);
 
-        $outsider = User::factory()->create();
+        [$outsider, $otherOrganization] = $this->memberOfOrganization();
 
-        $this->actingOnSettingsPanel($user, $organization);
+        $this->actingOnOrganizationPanel($user, $organization);
 
         Livewire::test(UsersPage::class)
-            ->assertCanSeeTableRecords([$user, $fellowMember])
-            ->assertCanNotSeeTableRecords([$outsider]);
+            ->assertCanSeeTableRecords([
+                $this->membership($user, $organization),
+                $this->membership($fellowMember, $organization),
+            ])
+            ->assertCanNotSeeTableRecords([$this->membership($outsider, $otherOrganization)]);
     }
 
     public function test_invite_requires_an_email(): void
@@ -68,12 +80,11 @@ class SettingsUsersTest extends TestCase
         $organization->users()->updateExistingPivot($user->id, [
             'role_id' => $organization->roleFor(OrganizationRole::Admin)?->id,
         ]);
-        $this->actingOnSettingsPanel($user, $organization);
+        $this->actingOnOrganizationPanel($user, $organization);
 
         Livewire::test(UsersPage::class)
-            ->fillForm(['email' => ''], 'inviteForm')
-            ->call('invite')
-            ->assertHasFormErrors(['email' => 'required'], 'inviteForm');
+            ->callAction('invite', data: ['email' => ''])
+            ->assertHasFormErrors(['email' => 'required']);
     }
 
     public function test_invite_attaches_member(): void
@@ -82,23 +93,22 @@ class SettingsUsersTest extends TestCase
         $organization->users()->updateExistingPivot($user->id, [
             'role_id' => $organization->roleFor(OrganizationRole::Admin)?->id,
         ]);
-        $this->actingOnSettingsPanel($user, $organization);
+        $this->actingOnOrganizationPanel($user, $organization);
 
         Livewire::test(UsersPage::class)
-            ->fillForm(['email' => 'newcomer@example.com'], 'inviteForm')
-            ->call('invite')
+            ->callAction('invite', data: ['email' => 'newcomer@example.com'])
             ->assertHasNoFormErrors()
             ->assertNotified();
 
         $this->assertSame(2, $organization->users()->count());
     }
 
-    public function test_member_cannot_see_invite_section(): void
+    public function test_member_cannot_see_invite_action(): void
     {
         [$user, $organization] = $this->memberOfOrganization();
-        $this->actingOnSettingsPanel($user, $organization);
+        $this->actingOnOrganizationPanel($user, $organization);
 
         Livewire::test(UsersPage::class)
-            ->assertDontSee(__('settings.users.invite.heading'));
+            ->assertActionHidden('invite');
     }
 }

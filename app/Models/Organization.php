@@ -136,7 +136,7 @@ class Organization extends Model implements HasAvatar, HasMedia
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'organization_user')
+        return $this->belongsToMany(User::class, 'organization_users')
             ->using(OrganizationUser::class)
             ->as('member')
             ->withPivot('role_id')
@@ -183,7 +183,7 @@ class Organization extends Model implements HasAvatar, HasMedia
         return $this->users()->whereExists(function (QueryBuilder $query): void {
             $query->from('role_has_permissions')
                 ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-                ->whereColumn('role_has_permissions.role_id', 'organization_user.role_id')
+                ->whereColumn('role_has_permissions.role_id', 'organization_users.role_id')
                 ->where('permissions.name', ProjectAccess::ABILITY_ADMINISTER_ORGANIZATION);
         });
     }

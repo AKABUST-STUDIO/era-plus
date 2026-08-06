@@ -39,8 +39,8 @@ enum OrganizationRole: string implements HasColor, HasLabel
             self::Member => [
                 'view_any_project',
                 'view_project',
-                'view_any_member',
-                'view_member',
+                'view_any_organization_user',
+                'view_organization_user',
             ],
         };
     }

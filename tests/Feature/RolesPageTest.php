@@ -64,8 +64,8 @@ class RolesPageTest extends TestCase
 
         $this->assertTrue($memberRole->hasPermissionTo('view_any_project'));
         $this->assertTrue($memberRole->hasPermissionTo('view_project'));
-        $this->assertTrue($memberRole->hasPermissionTo('view_any_member'));
-        $this->assertTrue($memberRole->hasPermissionTo('view_member'));
+        $this->assertTrue($memberRole->hasPermissionTo('view_any_organization_user'));
+        $this->assertTrue($memberRole->hasPermissionTo('view_organization_user'));
         $this->assertFalse($memberRole->hasPermissionTo('create_project'));
         $this->assertFalse($memberRole->hasPermissionTo('delete_project'));
     }

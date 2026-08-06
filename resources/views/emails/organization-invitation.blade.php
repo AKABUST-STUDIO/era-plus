@@ -5,9 +5,11 @@
 
 {{ __('emails.organization_invitation.sign_in_intro') }}
 
-<x-mail::button :url="$signInUrl">
-{{ __('emails.organization_invitation.sign_in_action') }}
+<x-mail::button :url="$magicLinkUrl">
+{{ __('emails.organization_invitation.sign_in_action', ['organization' => $organizationName]) }}
 </x-mail::button>
+
+{{ __('emails.organization_invitation.expiry', ['minutes' => $expiresInMinutes]) }}
 
 {{ __('emails.organization_invitation.ignore') }}
 

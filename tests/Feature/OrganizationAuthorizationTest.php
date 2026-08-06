@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Pages\OrganizationUsers as UsersPage;
+use App\Filament\Organization\Resources\OrganizationUsers\OrganizationUserResource;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Filament\Organization\Settings\Resources\Roles\RoleResource;
@@ -94,7 +94,7 @@ class OrganizationAuthorizationTest extends TestCase
         $this->actOnSettingsPanel($user, $organization);
 
         $this->assertFalse(GeneralSettings::canAccess());
-        $this->assertFalse(UsersPage::canAccess());
+        $this->assertFalse(OrganizationUserResource::canViewAny());
         $this->assertFalse(RoleResource::canViewAny());
     }
 
@@ -103,7 +103,7 @@ class OrganizationAuthorizationTest extends TestCase
         [$user, $organization] = $this->userWithRole(OrganizationRole::Member);
         $this->actOnOrganizationPanel($user, $organization);
 
-        $this->assertTrue(UsersPage::canAccess());
+        $this->assertTrue(OrganizationUserResource::canViewAny());
     }
 
     public function test_admin_can_view_roles_but_member_cannot(): void

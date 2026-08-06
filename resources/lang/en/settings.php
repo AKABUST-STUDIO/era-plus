@@ -67,10 +67,13 @@ return [
         'navigation_label' => 'Members',
         'title' => 'Members',
 
+        'singular' => 'Member',
+
         'invite' => [
             'heading' => 'Invite people',
             'description' => 'Send an invitation to join this organization.',
             'email' => 'Email address',
+            'role' => 'Role',
             'action' => 'Send invitation',
             'wip' => 'Invitations are not available yet.',
         ],
@@ -80,12 +83,14 @@ return [
             'email' => 'Email',
             'joined' => 'Joined',
             'you' => 'You',
+            'pending' => 'Pending',
             'two_factor' => '2FA',
             'two_factor_on' => '2FA enabled',
             'two_factor_off' => '2FA disabled',
         ],
 
         'filters' => [
+            'role_any' => 'Any',
             'two_factor' => '2FA',
             'two_factor_any' => 'Any',
             'two_factor_on' => 'Enabled',

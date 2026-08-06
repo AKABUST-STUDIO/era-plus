@@ -19,6 +19,14 @@ abstract class AuthenticationCodeNotification extends OneTimePasswordNotificatio
 
     abstract protected function markdownView(): string;
 
+    /**
+     * @return array<string, mixed>
+     */
+    protected function extraViewData(): array
+    {
+        return [];
+    }
+
     public function toMail(object $notifiable): MailMessage
     {
         $expiresAt = $this->oneTimePassword->expires_at;
@@ -36,6 +44,7 @@ abstract class AuthenticationCodeNotification extends OneTimePasswordNotificatio
                     ['email' => $notifiable->email, 'code' => $code],
                 ),
                 'expiresInMinutes' => (int) now()->diffInMinutes($expiresAt),
+                ...$this->extraViewData(),
             ]);
     }
 }

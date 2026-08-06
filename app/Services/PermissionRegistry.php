@@ -13,7 +13,7 @@ class PermissionRegistry
     {
         return [
             'project',
-            'member',
+            'organization_user',
             'role',
             'organization',
             'billing',

@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Facades\AuthenticationService;
 use App\Http\Controllers\Controller;
 use App\Models\OAuthAccount;
 use App\Models\User;
-use App\Support\EmailUsername;
 use Filament\Facades\Filament;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
@@ -64,11 +63,7 @@ class SocialiteController extends Controller
         $user = User::query()->where('email', $email)->first();
 
         if (! $user) {
-            $user = User::query()->create([
-                'email' => $email,
-                'name' => $socialUser->getName() ?: EmailUsername::toDisplayName($email),
-                'password' => Str::random(64),
-            ]);
+            $user = AuthenticationService::createUser($email, $socialUser->getName() ?: null);
         }
 
         OAuthAccount::query()->create([

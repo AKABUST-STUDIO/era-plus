@@ -14,7 +14,7 @@ return [
 
     'resources' => [
         'project' => 'Projects',
-        'member' => 'Organization members',
+        'organization_user' => 'Organization users',
         'role' => 'Roles',
         'organization' => 'Organization',
         'billing' => 'Billing',

@@ -31,7 +31,7 @@ class RolePolicy
 
     public function update(User $user, Role $role): bool
     {
-        return ! $role->locked && $this->allows($user, 'update_role', $role->roleable);
+        return $this->allows($user, 'update_role', $role->roleable);
     }
 
     public function updateAny(User $user): bool

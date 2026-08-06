@@ -86,9 +86,11 @@ return [
 
         'intro' => ':inviter added you to **:organization** as **:role**.',
 
-        'sign_in_intro' => 'Sign in with your email to open the workspace. We\'ll send you a one-time code — no password required.',
+        'sign_in_intro' => 'Use the button below to sign in and open the workspace — no password required.',
 
-        'sign_in_action' => 'Sign in',
+        'sign_in_action' => 'Open :organization',
+
+        'expiry' => 'The link expires in :minutes minutes. If it does, sign in with your email address and we\'ll send you a new one.',
 
         'ignore' => 'If you weren\'t expecting this, you can safely ignore the email.',
 

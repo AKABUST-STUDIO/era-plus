@@ -150,7 +150,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
      */
     public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class, 'organization_user')
+        return $this->belongsToMany(Organization::class, 'organization_users')
             ->using(OrganizationUser::class)
             ->as('member')
             ->withPivot('role_id')

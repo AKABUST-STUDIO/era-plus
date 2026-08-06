@@ -26,21 +26,24 @@ class AuthenticationService
         try {
             User::query()->where('email', $email)->firstOrFail()->sendAccountAlreadyExistsMailable();
         } catch (ModelNotFoundException $_) {
-            $name = EmailUsername::toDisplayName($email);
-            $uuid = (string) Str::uuid();
-            $slug = (Str::slug($name) ?: 'user').'-'.Str::substr($uuid, 0, 8);
-
-            $user = User::query()->create([
-                'uuid' => $uuid,
-                'slug' => $slug,
-                'username' => $slug,
-                'email' => $email,
-                'name' => $name,
-                'password' => Str::random(64),
-            ]);
-
-            $user->sendInitialRegistrationMailable();
+            $this->createUser($email)->sendInitialRegistrationMailable();
         }
+    }
+
+    public function createUser(string $email, ?string $name = null): User
+    {
+        $name ??= EmailUsername::toDisplayName($email);
+        $uuid = (string) Str::uuid();
+        $slug = (Str::slug($name) ?: 'user').'-'.Str::substr($uuid, 0, 8);
+
+        return User::query()->create([
+            'uuid' => $uuid,
+            'slug' => $slug,
+            'username' => $slug,
+            'email' => $email,
+            'name' => $name,
+            'password' => Str::random(64),
+        ]);
     }
 
     public function authenticate(string $email, string $code, bool $shouldSendWelcomeMailable = false): void
