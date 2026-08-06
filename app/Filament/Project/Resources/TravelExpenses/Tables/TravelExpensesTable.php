@@ -161,9 +161,25 @@ class TravelExpensesTable
             ->deferColumnManager(false)
             ->columnManager(false)
             ->groupingSettingsHidden()
-            ->filtersFormColumns(5)
+            ->filtersFormColumns(6)
             ->filters([
+                SortFilter::make(
+                    TravelExpenseResource::canViewAllExpenses()
+                        ? [
+                            self::PARTICIPANT_SORT => __('finance.fields.participant'),
+                            'date' => __('finance.sort.date'),
+                            'cost_eur' => __('finance.sort.cost_eur'),
+                        ]
+                        : [
+                            'date' => __('finance.sort.date'),
+                            'cost_eur' => __('finance.sort.cost_eur'),
+                        ],
+                    __('finance.filters.sort'),
+                    default: TravelExpenseResource::canViewAllExpenses() ? self::PARTICIPANT_SORT : 'date',
+                )
+                    ->columnStart(2),
                 SearchFilter::make(__('finance.filters.search'))
+                    ->columnStart(3)
                     ->columnSpan(2),
                 FilterGroup::make([
                     EnumSelect::make('travel_type', TravelType::class, __('finance.filters.any_travel_type'), 'lucide-plane-takeoff'),
@@ -182,24 +198,9 @@ class TravelExpensesTable
                     ->when($data['proof_of_payment'] ?? false, fn (Builder $query): Builder => AttachmentToggle::apply($query, TravelExpense::COLLECTION_PROOF_OF_PAYMENT))
                     ->when($data['proof_of_journey'] ?? false, fn (Builder $query): Builder => AttachmentToggle::apply($query, TravelExpense::COLLECTION_PROOF_OF_JOURNEY)),
                     width: Width::Medium)
-                    ->columnStart(4),
-                ColumnManagerFilter::make()
                     ->columnStart(5),
-                SortFilter::make(
-                    TravelExpenseResource::canViewAllExpenses()
-                        ? [
-                            self::PARTICIPANT_SORT => __('finance.fields.participant'),
-                            'date' => __('finance.sort.date'),
-                            'cost_eur' => __('finance.sort.cost_eur'),
-                        ]
-                        : [
-                            'date' => __('finance.sort.date'),
-                            'cost_eur' => __('finance.sort.cost_eur'),
-                        ],
-                    __('finance.filters.sort'),
-                    default: TravelExpenseResource::canViewAllExpenses() ? self::PARTICIPANT_SORT : 'date',
-                )
-                    ->columnStart(1),
+                ColumnManagerFilter::make()
+                    ->columnStart(6),
             ])
             ->recordActions([
                 ActionGroup::make([

@@ -222,10 +222,10 @@
     @apply pt-3;
 }
 /* -------------------------------------------------------------------------- */
-/* Finance filters — icon triggers size to content, not a full grid track     */
+/* Filters — icon triggers size to content, not a full grid track             */
 /* -------------------------------------------------------------------------- */
 .fi-resource-finance .fi-ta-filters > .fi-grid {
-    --cols-lg: minmax(0, 18rem) minmax(0, 10rem) 1fr auto auto !important;
+    --cols-lg: 1fr auto auto auto auto auto !important;
     @apply items-center;
 }
 .fi-ta-activity .fi-ta-filters > .fi-grid {
