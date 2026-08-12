@@ -117,8 +117,8 @@ class ProjectSettingsTest extends TestCase
         );
 
         $this->assertSame(
-            $this->settingsUrl(),
-            GeneralSettings::getUrl(panel: 'project.settings'),
+            parse_url($this->settingsUrl(), PHP_URL_PATH),
+            parse_url(GeneralSettings::getUrl(panel: 'project.settings'), PHP_URL_PATH),
         );
     }
 

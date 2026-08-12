@@ -74,7 +74,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
             ->dontLogEmptyChanges();
     }
 
-    public function tapActivity(Activity $activity, string $eventName): void
+    public function beforeActivityLogged(Activity $activity, string $eventName): void
     {
         $activity->causer_type ??= self::class;
         $activity->causer_id ??= $this->getKey();
@@ -237,7 +237,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         return match ($panel->getId()) {
             'organization', 'user' => true,
             'organization.settings' => $this->organizations()->exists(),
-            'project' => $this->projects()->exists(),
+            'project', 'project.settings' => $this->projects()->exists(),
             default => false,
         };
     }

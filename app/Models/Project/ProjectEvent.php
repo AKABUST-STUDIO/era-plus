@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 #[UsePolicy(ProjectEventPolicy::class)]
 class ProjectEvent extends Model
@@ -24,6 +27,7 @@ class ProjectEvent extends Model
     use HasFactory;
 
     use HasUuids;
+    use LogsActivity;
     use SoftDeletes;
 
     protected $table = 'project_events';
@@ -60,6 +64,30 @@ class ProjectEvent extends Model
 
         return $this->starts_at->format('H:i:s') === '00:00:00'
             && in_array($this->ends_at->format('H:i:s'), ['00:00:00', '23:59:59'], true);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'title',
+                'description',
+                'location',
+                'starts_at',
+                'ends_at',
+            ])
+            ->logOnlyDirty()
+            ->useLogName('project_event')
+            ->dontLogEmptyChanges();
+    }
+
+    public function beforeActivityLogged(Activity $activity, string $eventName): void
+    {
+        $activity->project_id = $this->project_id;
+
+        if ($project = $this->project) {
+            $activity->organization_id = $project->organization_id;
+        }
     }
 
     protected static function booted(): void

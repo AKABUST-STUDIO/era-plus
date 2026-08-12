@@ -49,7 +49,7 @@ class ProjectParticipant extends Model
             ->dontLogEmptyChanges();
     }
 
-    public function tapActivity(Activity $activity, string $eventName): void
+    public function beforeActivityLogged(Activity $activity, string $eventName): void
     {
         $activity->project_id = $this->project_id;
 

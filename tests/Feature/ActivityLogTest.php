@@ -8,6 +8,7 @@ use App\Filament\Project\Pages\Activity as ProjectActivity;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Project\ProjectEvent;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -91,6 +92,58 @@ class ActivityLogTest extends TestCase
             ->assertCanNotSeeTableRecords(
                 ActivityLog::query()->whereNull('project_id')->get()
             );
+    }
+
+    public function test_model_events_are_scoped_to_the_organization_and_project(): void
+    {
+        $event = ProjectEvent::factory()->for($this->project)->create();
+
+        $entry = ActivityLog::query()
+            ->where('subject_type', ProjectEvent::class)
+            ->where('subject_id', $event->id)
+            ->sole();
+
+        $this->assertSame('created', $entry->event);
+        $this->assertSame($this->project->id, $entry->project_id);
+        $this->assertSame($this->organization->id, $entry->organization_id);
+    }
+
+    public function test_project_event_changes_are_logged_and_visible_on_the_project_page(): void
+    {
+        $event = ProjectEvent::factory()->for($this->project)->create();
+        $event->update(['title' => 'Kickoff meeting']);
+
+        Filament::setCurrentPanel(Filament::getPanel('project'));
+        Filament::setTenant($this->project);
+        URL::defaults(['organization' => $this->organization->slug]);
+
+        Livewire::test(ProjectActivity::class)
+            ->assertCanSeeTableRecords(
+                ActivityLog::query()->where('subject_type', ProjectEvent::class)->get()
+            );
+
+        $this->assertSame(
+            2,
+            ActivityLog::query()->where('subject_type', ProjectEvent::class)->count(),
+        );
+    }
+
+    public function test_google_sync_columns_alone_do_not_log_an_update(): void
+    {
+        $event = ProjectEvent::factory()->for($this->project)->create();
+
+        $event->forceFill([
+            'google_event_id' => 'abc123',
+            'google_updated_at' => now(),
+        ])->save();
+
+        $this->assertSame(
+            ['created'],
+            ActivityLog::query()
+                ->where('subject_type', ProjectEvent::class)
+                ->pluck('event')
+                ->all(),
+        );
     }
 
     public function test_project_activity_page_is_hidden_without_the_activity_permission(): void

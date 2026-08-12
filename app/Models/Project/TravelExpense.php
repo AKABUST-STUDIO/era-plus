@@ -78,7 +78,7 @@ class TravelExpense extends Model implements HasMedia
             ->dontLogEmptyChanges();
     }
 
-    public function tapActivity(Activity $activity, string $eventName): void
+    public function beforeActivityLogged(Activity $activity, string $eventName): void
     {
         $project = $this->projectParticipant?->project;
 
