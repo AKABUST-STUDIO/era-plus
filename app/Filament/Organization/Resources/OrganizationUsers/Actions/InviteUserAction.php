@@ -7,8 +7,9 @@ use App\Facades\AuthenticationService;
 use App\Facades\OrganizationService;
 use App\Filament\Organization\Resources\OrganizationUsers\Components\RoleSelect;
 use App\Models\ActivityLog;
+use App\Models\Organization\OrganizationUser;
 use App\Models\User;
-use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
@@ -17,9 +18,9 @@ use Filament\Support\Enums\Width;
 
 class InviteUserAction
 {
-    public static function make(): Action
+    public static function make(): CreateAction
     {
-        return Action::make('invite')
+        return CreateAction::make()
             ->label(__('settings.users.invite.action'))
             ->icon('lucide-user-plus')
             ->modalIcon('lucide-user-plus')
@@ -30,7 +31,8 @@ class InviteUserAction
             ->modalCancelAction(false)
             ->modalFooterActionsAlignment(Alignment::End)
             ->modalSubmitActionLabel(__('settings.users.invite.action'))
-            ->authorize(fn (): bool => auth()->user()->can('inviteMember', OrganizationService::current()))
+            ->createAnother(false)
+            ->successNotificationTitle(__('notifications.invitation_sent'))
             ->schema([
                 Grid::make([])
                     ->columns(4)
@@ -48,7 +50,7 @@ class InviteUserAction
                             ->required(),
                     ]),
             ])
-            ->action(function (array $data): void {
+            ->using(function (array $data, CreateAction $action): OrganizationUser {
                 $organization = OrganizationService::current();
 
                 $user = User::query()->where('email', $data['email'])->first()
@@ -57,18 +59,16 @@ class InviteUserAction
                 if ($organization->users()->whereKey($user->getKey())->exists()) {
                     Notification::make()->title(__('notifications.already_member'))->warning()->send();
 
-                    return;
+                    $action->halt();
                 }
 
-                $role = $organization->roles()->find((int) $data['role']);
+                $role = $organization->roles()->findOrFail((int) $data['role']);
 
-                if ($role === null) {
-                    Notification::make()->title(__('notifications.invalid_role'))->danger()->send();
-
-                    return;
-                }
-
-                $organization->users()->attach($user, ['role_id' => $role->id]);
+                $membership = OrganizationUser::create([
+                    'organization_id' => $organization->getKey(),
+                    'user_id' => $user->getKey(),
+                    'role_id' => $role->id,
+                ]);
 
                 $user->sendOrganizationInvitationMailable($organization, $role, auth()->user());
 
@@ -82,7 +82,7 @@ class InviteUserAction
                     data: ['email' => $user->email, 'role' => $role->name],
                 );
 
-                Notification::make()->title(__('notifications.invitation_sent'))->success()->send();
+                return $membership;
             });
     }
 }
