@@ -20,6 +20,7 @@ class OrganizationMenu extends Component
         if (! $user instanceof User || ! $currentOrganization instanceof Organization) {
             return view('livewire.organization-menu', [
                 'currentOrganization' => null,
+                'organizationUrl' => null,
                 'items' => collect(),
                 'createUrl' => null,
             ]);
@@ -36,6 +37,7 @@ class OrganizationMenu extends Component
 
         return view('livewire.organization-menu', [
             'currentOrganization' => $currentOrganization,
+            'organizationUrl' => OrganizationService::urlFor($currentOrganization),
             'items' => $items,
             'createUrl' => Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getTenantRegistrationUrl(),
         ]);

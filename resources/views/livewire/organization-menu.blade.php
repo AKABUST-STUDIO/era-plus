@@ -6,6 +6,7 @@
         :avatar="$currentOrganization"
         :label="__('menu.organization.label')"
         :name="$currentOrganization?->name ?? '—'"
+        :url="$organizationUrl"
         :badge="$currentOrganization?->subscription_tier->getLabel()"
         :items="$items->all()"
         :search-placeholder="__('menu.organization.search')"

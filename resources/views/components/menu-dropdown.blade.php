@@ -12,6 +12,8 @@
     'noMatchesMessage' => null,
     'wide' => true,
     'menuType' => null,
+    'url' => null,
+    'toggleLabel' => null,
 ])
 
 @php
@@ -20,6 +22,24 @@
     use Illuminate\View\ComponentAttributeBag;
 
     $isSidebarCollapsibleOnDesktop = \Filament\Facades\Filament::isSidebarCollapsibleOnDesktop();
+
+    $triggerTag = $url ? 'a' : 'button';
+
+    $triggerAttributes = (new ComponentAttributeBag(
+        $url
+            ? [
+                'href' => $url,
+                'wire:navigate.hover' => '',
+                'x-on:mousedown.stop' => '',
+                'x-on:keyup.enter.stop' => '',
+                'x-on:keyup.space.stop' => '',
+            ]
+            : ['type' => 'button'],
+    ))->class([
+        'fi-tenant-menu-trigger flex items-center gap-2 rounded-lg px-2 py-1.5 text-start no-underline transition hover:bg-gray-950/5 focus-visible:bg-gray-950/5 focus-visible:outline-hidden dark:hover:bg-white/5 dark:focus-visible:bg-white/5',
+        'min-w-0 flex-1' => $url,
+        'w-full' => $wide && ! $url,
+    ]);
 @endphp
 
 <x-filament::dropdown
@@ -28,62 +48,83 @@
     :class="trim('fi-tenant-menu -m-2 '.$extraClass)"
 >
     <x-slot name="trigger">
-        <button
-            @if ($isSidebarCollapsibleOnDesktop)
-                x-data="{ tooltip: false }"
-                x-effect="
-                    tooltip = $store.sidebar.isOpen
-                        ? false
-                        : {
-                              content: @js($tooltip),
-                              placement: document.dir === 'rtl' ? 'left' : 'right',
-                              theme: $store.theme,
-                          }
-                "
-                x-tooltip.html="tooltip"
-            @endif
-            type="button"
-            @class([
-                'fi-tenant-menu-trigger flex items-center gap-2 rounded-lg px-2 py-1.5 text-start transition hover:bg-gray-950/5 focus-visible:bg-gray-950/5 focus-visible:outline-hidden dark:hover:bg-white/5 dark:focus-visible:bg-white/5',
-                'w-full' => $wide,
-            ])
-        >
-            @if ($avatar)
-                <x-filament-panels::avatar.tenant
-                    :tenant="$avatar"
-                    loading="lazy"
-                    class="size-6! shrink-0"
-                />
-            @endif
-
-            <span
+        <div @class(['flex items-center gap-0.5', 'w-full' => $wide])>
+            <{{ $triggerTag }}
                 @if ($isSidebarCollapsibleOnDesktop)
-                    x-show="$store.sidebar.isOpen"
+                    x-data="{ tooltip: false }"
+                    x-effect="
+                        tooltip = $store.sidebar.isOpen
+                            ? false
+                            : {
+                                  content: @js($tooltip),
+                                  placement: document.dir === 'rtl' ? 'left' : 'right',
+                                  theme: $store.theme,
+                              }
+                    "
+                    x-tooltip.html="tooltip"
                 @endif
-                class="fi-tenant-menu-trigger-text inline-flex min-w-0 flex-1 items-center gap-1.5"
+                {{ $triggerAttributes }}
             >
-                <span class="fi-tenant-menu-trigger-tenant-name truncate text-sm font-medium text-gray-950 dark:text-white">
-                    {{ $name }}
+                @if ($avatar)
+                    <x-filament-panels::avatar.tenant
+                        :tenant="$avatar"
+                        loading="lazy"
+                        class="size-6! shrink-0"
+                    />
+                @endif
+
+                <span
+                    @if ($isSidebarCollapsibleOnDesktop)
+                        x-show="$store.sidebar.isOpen"
+                    @endif
+                    class="fi-tenant-menu-trigger-text inline-flex min-w-0 flex-1 items-center gap-1.5"
+                >
+                    <span class="fi-tenant-menu-trigger-tenant-name truncate text-sm font-medium text-gray-950 dark:text-white">
+                        {{ $name }}
+                    </span>
+
+                    @if (! blank($badge))
+                        <span class="fi-tenant-menu-trigger-badge inline-flex shrink-0 items-center rounded-full bg-gray-950/5 px-1.5 py-px text-xs font-medium text-gray-600 dark:bg-white/10 dark:text-gray-300">
+                            {{ $badge }}
+                        </span>
+                    @endif
                 </span>
 
-                @if (! blank($badge))
-                    <span class="fi-tenant-menu-trigger-badge inline-flex shrink-0 items-center rounded-full bg-gray-950/5 px-1.5 py-px text-xs font-medium text-gray-600 dark:bg-white/10 dark:text-gray-300">
-                        {{ $badge }}
-                    </span>
-                @endif
-            </span>
+                @unless ($url)
+                    {{
+                        \Filament\Support\generate_icon_html(
+                            Heroicon::ChevronUpDown,
+                            alias: PanelsIconAlias::TENANT_MENU_TOGGLE_BUTTON,
+                            attributes: new ComponentAttributeBag([
+                                'x-show' => $isSidebarCollapsibleOnDesktop ? '$store.sidebar.isOpen' : null,
+                                'class' => 'size-4 shrink-0 ms-auto text-gray-400 dark:text-gray-500',
+                            ]),
+                        )
+                    }}
+                @endunless
+            </{{ $triggerTag }}>
 
-            {{
-                \Filament\Support\generate_icon_html(
-                    Heroicon::ChevronUpDown,
-                    alias: PanelsIconAlias::TENANT_MENU_TOGGLE_BUTTON,
-                    attributes: new ComponentAttributeBag([
-                        'x-show' => $isSidebarCollapsibleOnDesktop ? '$store.sidebar.isOpen' : null,
-                        'class' => 'size-4 shrink-0 ms-auto text-gray-400 dark:text-gray-500',
-                    ]),
-                )
-            }}
-        </button>
+            @if ($url)
+                <button
+                    @if ($isSidebarCollapsibleOnDesktop)
+                        x-show="$store.sidebar.isOpen"
+                    @endif
+                    type="button"
+                    aria-label="{{ $toggleLabel ?? $label }}"
+                    class="fi-tenant-menu-toggle shrink-0 rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-950/5 focus-visible:bg-gray-950/5 focus-visible:outline-hidden dark:text-gray-500 dark:hover:bg-white/5 dark:focus-visible:bg-white/5"
+                >
+                    {{
+                        \Filament\Support\generate_icon_html(
+                            Heroicon::ChevronUpDown,
+                            alias: PanelsIconAlias::TENANT_MENU_TOGGLE_BUTTON,
+                            attributes: new ComponentAttributeBag([
+                                'class' => 'size-4 shrink-0',
+                            ]),
+                        )
+                    }}
+                </button>
+            @endif
+        </div>
     </x-slot>
 
     <div
