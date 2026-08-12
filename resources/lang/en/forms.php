@@ -160,10 +160,6 @@ return [
         ],
         'activity_log' => [
             'title' => 'Project activity log',
-            'action' => 'Action',
-            'system' => 'System',
-            'last_3_days' => 'Last 3 days',
-            'last_30_days' => 'Last 30 days',
         ],
         'create_wizard' => [
             'programme_step' => 'Programme',

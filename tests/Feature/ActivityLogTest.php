@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
-use App\Filament\Organization\Pages\Activity;
-use App\Filament\Project\Pages\ProjectActivityLog;
+use App\Filament\Organization\Pages\Activity as OrganizationActivity;
+use App\Filament\Project\Pages\Activity as ProjectActivity;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\Project;
@@ -65,7 +65,7 @@ class ActivityLogTest extends TestCase
         Filament::setTenant($this->organization);
         URL::defaults(['organization' => $this->organization->slug]);
 
-        Livewire::test(Activity::class)
+        Livewire::test(OrganizationActivity::class)
             ->assertCanSeeTableRecords(
                 ActivityLog::query()->where('organization_id', $this->organization->id)->get()
             )
@@ -83,7 +83,7 @@ class ActivityLogTest extends TestCase
         Filament::setTenant($this->project);
         URL::defaults(['organization' => $this->organization->slug]);
 
-        Livewire::test(ProjectActivityLog::class)
+        Livewire::test(ProjectActivity::class)
             ->assertSuccessful()
             ->assertCanSeeTableRecords(
                 ActivityLog::query()->where('project_id', $this->project->id)->get()
@@ -91,6 +91,21 @@ class ActivityLogTest extends TestCase
             ->assertCanNotSeeTableRecords(
                 ActivityLog::query()->whereNull('project_id')->get()
             );
+    }
+
+    public function test_project_activity_page_is_hidden_without_the_activity_permission(): void
+    {
+        $member = User::factory()->create();
+        $member->joinOrganization($this->organization, OrganizationRole::Member);
+        $member->joinProject($this->project);
+
+        $this->actingAs($member);
+
+        Filament::setCurrentPanel(Filament::getPanel('project'));
+        Filament::setTenant($this->project);
+        URL::defaults(['organization' => $this->organization->slug]);
+
+        $this->assertFalse(ProjectActivity::canAccess());
     }
 
     public function test_date_filter_narrows_activity_to_the_range(): void
@@ -105,7 +120,7 @@ class ActivityLogTest extends TestCase
         Filament::setTenant($this->organization);
         URL::defaults(['organization' => $this->organization->slug]);
 
-        Livewire::test(Activity::class)
+        Livewire::test(OrganizationActivity::class)
             ->filterTable('group', ['from' => '2026-05-01'])
             ->assertCanSeeTableRecords([$late])
             ->assertCanNotSeeTableRecords([$early])
