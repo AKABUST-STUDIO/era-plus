@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Panels\ProjectPanel;
+use App\Filament\Project\Settings\Pages\GeneralSettings;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Http\Middleware\ApplyTenantContext;
 use App\Http\Middleware\EnforceOrganizationEmailVerification;
@@ -11,7 +12,9 @@ use App\Http\Middleware\EnsureOrganizationAccess;
 use App\Http\Middleware\RedirectToOrganizationLogin;
 use App\Http\Middleware\RegisterSpotlightCommands;
 use App\Models\Project;
+use App\Providers\Filament\Project\SettingsPanelProvider;
 use Filament\Facades\Filament;
+use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\View\PanelsRenderHook;
 use Illuminate\View\View;
@@ -71,6 +74,17 @@ class ProjectPanelProvider extends BasePanelProvider
                 PanelsRenderHook::CONTENT_BEFORE,
                 fn (): View => view('livewire.project-menu-wrapper'),
             )
+
+            ->navigationItems([
+                NavigationItem::make('Settings')
+                    ->label(__('navigation.settings'))
+                    ->icon('lucide-settings')
+                    ->sort(99)
+                    ->visible(fn (): bool => GeneralSettings::canAccess())
+                    ->url(fn (): string => GeneralSettings::getUrl(
+                        panel: SettingsPanelProvider::PANEL_ID,
+                    )),
+            ])
 
             ->plugins([
                 FilamentFullCalendarPlugin::make()

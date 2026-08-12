@@ -19,13 +19,17 @@ class ApplyTenantContext
         $tenant = Filament::getTenant();
 
         if ($tenant instanceof Project) {
-            URL::defaults(['organization' => $tenant->organization->slug]);
+            URL::defaults(['organization' => $tenant->organization->slug, 'project' => $tenant->slug]);
             ProjectService::remember($tenant);
             OrganizationService::remember($tenant->organization);
         } elseif ($tenant instanceof Organization) {
             URL::defaults(['organization' => $tenant->slug]);
             OrganizationService::remember($tenant);
             ProjectService::forget();
+        } elseif (($project = $request->route('project')) instanceof Project) {
+            URL::defaults(['organization' => $project->organization->slug, 'project' => $project->slug]);
+            ProjectService::remember($project);
+            OrganizationService::remember($project->organization);
         } elseif (($organization = $request->route('organization')) instanceof Organization) {
             URL::defaults(['organization' => $organization->slug]);
             OrganizationService::remember($organization);

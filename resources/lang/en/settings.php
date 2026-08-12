@@ -245,6 +245,12 @@ return [
         ],
     ],
 
+    'project' => [
+        'general' => [
+            'navigation_label' => 'General',
+        ],
+    ],
+
     'two_factor_required' => [
         'title' => 'Two-factor authentication required',
         'heading' => ':organization requires two-factor authentication',

@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Filament\Project\Pages;
+namespace App\Filament\Project\Settings\Pages;
 
 use App\Enums\Project\ProjectStatus;
+use App\Facades\ProjectService;
+use App\Filament\Project\Settings\Pages\Concerns\HasProjectSettingsBreadcrumbs;
 use App\Filament\Resources\Projects\Schemas\ProjectForm;
 use App\Models\Project;
+use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
@@ -16,11 +19,15 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class ProjectSettings extends Page
+class GeneralSettings extends Page
 {
-    protected string $view = 'filament.project.pages.project-settings';
+    use HasProjectSettingsBreadcrumbs;
 
-    protected static ?int $navigationSort = 99;
+    protected static ?string $slug = 'overview';
+
+    protected static ?int $navigationSort = 0;
+
+    protected string $view = 'filament.project.settings.pages.general-settings';
 
     public ?Project $project = null;
 
@@ -29,25 +36,33 @@ class ProjectSettings extends Page
      */
     public ?array $data = [];
 
-    public function mount(): void
+    public static function canAccess(): bool
     {
-        $tenant = Filament::getTenant();
+        $project = ProjectService::current();
 
-        abort_unless($tenant instanceof Project, 404);
-
-        $this->project = $tenant;
-
-        $this->form->fill($this->project->attributesToArray());
+        return $project instanceof Project
+            && (Filament::auth()->user()?->can('view', $project) ?? false);
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('navigation.settings');
+        return __('settings.project.general.navigation_label');
     }
 
     public function getTitle(): string
     {
         return __('forms.project.settings.title');
+    }
+
+    public function mount(): void
+    {
+        $project = ProjectService::current();
+
+        abort_unless($project instanceof Project, 404);
+
+        $this->project = $project;
+
+        $this->form->fill($this->project->attributesToArray());
     }
 
     public function form(Schema $schema): Schema
@@ -98,6 +113,8 @@ class ProjectSettings extends Page
                         ]);
 
                         Notification::make()->title(__('notifications.project_details_saved'))->success()->send();
+
+                        $this->redirect(static::getUrl(['project' => $this->project->slug]));
                     }),
             ]);
     }
@@ -165,8 +182,15 @@ class ProjectSettings extends Page
                     ->label(__('forms.project.settings.delete'))
                     ->color('danger')
                     ->requiresConfirmation()
+                    ->using(function (Project $record): bool {
+                        $deleted = (bool) $record->delete();
+
+                        ProjectService::forget();
+
+                        return $deleted;
+                    })
                     ->successNotificationTitle(__('notifications.project_deleted'))
-                    ->successRedirectUrl(fn (Project $record): string => Filament::getPanel('organization')
+                    ->successRedirectUrl(fn (Project $record): string => Filament::getPanel(OrganizationPanelProvider::PANEL_ID)
                         ->getUrl(tenant: $record->organization) ?? '/'),
             ]);
     }

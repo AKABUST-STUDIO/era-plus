@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\Invoices;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Policies\Organization\BillingPolicy;
@@ -66,6 +67,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Route::bind('organization', function (string $value): Organization {
             return Organization::where('slug', $value)->firstOrFail();
+        });
+
+        Route::bind('project', function (string $value): Project {
+            $project = (new Project)->resolveRouteBinding($value);
+
+            abort_unless($project instanceof Project, 404);
+
+            return $project;
         });
     }
 
