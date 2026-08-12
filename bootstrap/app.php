@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getLoginUrl());
+        $middleware->preventRequestForgery(except: [
+            'webhooks/google-calendar',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

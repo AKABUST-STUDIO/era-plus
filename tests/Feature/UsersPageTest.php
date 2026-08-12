@@ -63,7 +63,7 @@ class UsersPageTest extends TestCase
         Livewire::test(UsersPage::class)
             ->assertDontSee('settings.users.')
             ->assertDontSee('forms.common.')
-            ->mountAction('invite')
+            ->mountAction('create')
             ->assertDontSee('settings.users.')
             ->unmountAction()
             ->mountAction(TestAction::make('changeRole')->table($this->membership($member)))
@@ -76,7 +76,7 @@ class UsersPageTest extends TestCase
     public function test_invite_creates_new_user_and_attaches_to_org(): void
     {
         Livewire::test(UsersPage::class)
-            ->callAction('invite', data: [
+            ->callAction('create', data: [
                 'email' => 'newbie@example.com',
                 'role' => (string) $this->organization->roleFor(OrganizationRole::Admin)->id,
             ])
@@ -99,7 +99,7 @@ class UsersPageTest extends TestCase
         $countBefore = User::query()->count();
 
         Livewire::test(UsersPage::class)
-            ->callAction('invite', data: ['email' => 'old@example.com', 'role' => (string) $this->memberRole->id])
+            ->callAction('create', data: ['email' => 'old@example.com', 'role' => (string) $this->memberRole->id])
             ->assertHasNoFormErrors();
 
         $this->assertSame($countBefore, User::query()->count());
@@ -190,7 +190,7 @@ class UsersPageTest extends TestCase
         Notification::fake();
 
         Livewire::test(UsersPage::class)
-            ->callAction('invite', data: ['email' => 'fresh@example.com', 'role' => (string) $this->memberRole->id])
+            ->callAction('create', data: ['email' => 'fresh@example.com', 'role' => (string) $this->memberRole->id])
             ->assertHasNoFormErrors();
 
         Notification::assertSentTo(
@@ -205,7 +205,7 @@ class UsersPageTest extends TestCase
         Notification::fake();
 
         Livewire::test(UsersPage::class)
-            ->callAction('invite', data: ['email' => 'known@example.com', 'role' => (string) $this->memberRole->id])
+            ->callAction('create', data: ['email' => 'known@example.com', 'role' => (string) $this->memberRole->id])
             ->assertHasNoFormErrors();
 
         Notification::assertSentTo($existing, OrganizationInvitationNotification::class);
@@ -216,7 +216,7 @@ class UsersPageTest extends TestCase
         Notification::fake();
 
         Livewire::test(UsersPage::class)
-            ->callAction('invite', data: ['email' => 'invited@example.com', 'role' => (string) $this->memberRole->id])
+            ->callAction('create', data: ['email' => 'invited@example.com', 'role' => (string) $this->memberRole->id])
             ->assertHasNoFormErrors();
 
         $invited = User::query()->where('email', 'invited@example.com')->firstOrFail();

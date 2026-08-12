@@ -15,6 +15,7 @@ use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\View\PanelsRenderHook;
 use Illuminate\View\View;
+use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class ProjectPanelProvider extends BasePanelProvider
 {
@@ -70,6 +71,14 @@ class ProjectPanelProvider extends BasePanelProvider
                 PanelsRenderHook::CONTENT_BEFORE,
                 fn (): View => view('livewire.project-menu-wrapper'),
             )
+
+            ->plugins([
+                FilamentFullCalendarPlugin::make()
+                    ->selectable()
+                    ->editable()
+                    ->timezone('UTC')
+                    ->locale(app()->getLocale()),
+            ])
 
             ->authMiddleware(self::authMiddleware)
             ->tenantMiddleware(self::tenantMiddleware, isPersistent: true);

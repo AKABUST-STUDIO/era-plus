@@ -18,8 +18,12 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/app/google-calendar/
+/service_account.json
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
-/.playwright-mcp
+/.playwright-mcp.tmp/
+.tmp/
+/.playwright-mcp/

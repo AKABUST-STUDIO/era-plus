@@ -1,0 +1,194 @@
+/* -------------------------------------------------------------------------- */
+/* Activities calendar — FullCalendar overrides                               */
+/* -------------------------------------------------------------------------- */
+.filament-fullcalendar {
+    font-family: inherit;
+    font-size: 0.875rem;
+    width: 100%;
+    height: calc(100vh - 12rem) !important;
+    min-height: 32rem;
+
+    --fc-border-color: color-mix(in oklab, var(--gray-950) 3%, transparent);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: transparent;
+    --fc-neutral-text-color: color-mix(in oklab, var(--gray-950) 50%, transparent);
+    --fc-today-bg-color: color-mix(in oklab, var(--primary-500) 4%, transparent);
+    --fc-event-bg-color: var(--primary-500);
+    --fc-event-border-color: var(--primary-500);
+    --fc-event-text-color: white;
+    --fc-now-indicator-color: var(--danger-500);
+    --fc-list-event-hover-bg-color: color-mix(in oklab, var(--primary-500) 8%, transparent);
+}
+
+@media (min-width: 1280px) {
+    .filament-fullcalendar {
+        max-height: 60rem;
+    }
+}
+
+.dark .filament-fullcalendar {
+    --fc-border-color: color-mix(in oklab, var(--color-white) 5%, transparent);
+    --fc-today-bg-color: color-mix(in oklab, var(--primary-400) 8%, transparent);
+    --fc-list-event-hover-bg-color: color-mix(in oklab, var(--primary-400) 12%, transparent);
+    --fc-neutral-text-color: color-mix(in oklab, var(--color-white) 55%, transparent);
+}
+
+/* Rounded outer grid */
+.filament-fullcalendar .fc-scrollgrid {
+    @apply rounded-2xl overflow-hidden;
+    border-color: var(--fc-border-color) !important;
+}
+
+.filament-fullcalendar .fc-scrollgrid-section > * {
+    border-color: var(--fc-border-color) !important;
+}
+
+/* Hide scrollbars */
+.filament-fullcalendar .fc-scroller {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.filament-fullcalendar .fc-scroller::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Column headers */
+.filament-fullcalendar .fc-col-header {
+    background: color-mix(in oklab, var(--gray-950) 2%, transparent);
+}
+
+.dark .filament-fullcalendar .fc-col-header {
+    background: color-mix(in oklab, var(--color-white) 3%, transparent);
+}
+
+.filament-fullcalendar .fc-col-header-cell {
+    border-color: var(--fc-border-color) !important;
+}
+
+.filament-fullcalendar .fc-col-header-cell-cushion {
+    @apply text-xs font-medium text-gray-500 py-3;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.dark .filament-fullcalendar .fc-col-header-cell-cushion {
+    @apply text-gray-400;
+}
+
+/* Day grid */
+.filament-fullcalendar .fc-daygrid-day-frame {
+    @apply p-2;
+}
+
+.filament-fullcalendar .fc-daygrid-day-number {
+    @apply text-xs font-medium text-gray-500;
+}
+
+.dark .filament-fullcalendar .fc-daygrid-day-number {
+    @apply text-gray-400;
+}
+
+.filament-fullcalendar .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    @apply text-white rounded-full w-6 h-6 flex items-center justify-center;
+    background-color: var(--primary-500);
+}
+
+/* Events */
+.filament-fullcalendar .fc-event {
+    @apply cursor-pointer rounded-xl border-0 px-2 py-1 text-xs font-medium;
+    box-shadow: none;
+}
+
+.filament-fullcalendar .fc-event:hover {
+    filter: brightness(1.08);
+}
+
+.filament-fullcalendar .fc-event-title {
+    @apply font-medium;
+}
+
+.filament-fullcalendar .fc-daygrid-event {
+    @apply mx-1 my-0.5;
+}
+
+.filament-fullcalendar .fc-timegrid-event {
+    @apply rounded-xl;
+}
+
+.filament-fullcalendar .fc-timegrid-event-harness {
+    margin-inline: 2px;
+}
+
+/* Time grid */
+.filament-fullcalendar .fc-timegrid-slot {
+    height: 2.5rem;
+    border-color: var(--fc-border-color) !important;
+}
+
+.filament-fullcalendar .fc-timegrid-slot-label {
+    border: none !important;
+}
+
+.filament-fullcalendar .fc-timegrid-axis-cushion,
+.filament-fullcalendar .fc-timegrid-slot-label-cushion {
+    @apply text-xs text-gray-400 font-normal;
+    padding-inline-end: 0.5rem;
+}
+
+.filament-fullcalendar .fc-timegrid-slot-lane {
+    border-color: var(--fc-border-color) !important;
+}
+
+.filament-fullcalendar .fc-scrollgrid td,
+.filament-fullcalendar .fc-scrollgrid th {
+    border-color: var(--fc-border-color) !important;
+}
+
+/* Now indicator refinements */
+.filament-fullcalendar .fc-timegrid-now-indicator-line {
+    border-width: 1.5px;
+}
+
+.filament-fullcalendar .fc-timegrid-now-indicator-arrow {
+    border-width: 5px;
+}
+
+/* Custom event body: time, title, avatar stack */
+.filament-fullcalendar .fc-event-body {
+    @apply flex flex-col gap-1 px-1 py-0.5 overflow-hidden;
+    min-height: 0;
+}
+
+.filament-fullcalendar .fc-event-body .fc-event-time {
+    @apply text-[0.65rem] font-semibold opacity-90 leading-tight;
+}
+
+.filament-fullcalendar .fc-event-body .fc-event-title {
+    @apply text-xs font-semibold leading-tight truncate;
+}
+
+.filament-fullcalendar .fc-avatars {
+    @apply flex items-center mt-auto;
+}
+
+.filament-fullcalendar .fc-avatar {
+    @apply inline-flex items-center justify-center w-5 h-5 rounded-full text-[0.6rem] font-semibold overflow-hidden;
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    border: 1.5px solid currentColor;
+    margin-inline-start: -0.35rem;
+    box-sizing: border-box;
+}
+
+.filament-fullcalendar .fc-avatar > img {
+    @apply w-full h-full object-cover;
+}
+
+.filament-fullcalendar .fc-avatar:first-child {
+    margin-inline-start: 0;
+}
+
+.filament-fullcalendar .fc-avatar-overflow {
+    background: rgba(0, 0, 0, 0.35);
+}

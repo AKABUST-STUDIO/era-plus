@@ -10,6 +10,9 @@ use App\Models\User;
 use App\Policies\Organization\BillingPolicy;
 use App\Policies\Organization\InvoicePolicy;
 use App\Providers\Filament\ProjectPanelProvider;
+use App\Services\GoogleCalendar\Contracts\CalendarClient;
+use App\Services\GoogleCalendar\GoogleCalendarClient;
+use App\Support\GoogleCalendarCredentials;
 use Illuminate\Routing\Events\Routing;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -24,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(CalendarClient::class, fn (): CalendarClient => new GoogleCalendarClient);
     }
 
     public function boot(): void
@@ -34,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
         $this->registerRouteBindings();
         $this->deprioritizeProjectTenantRoute();
         $this->registerSocialiteProviders();
+
+        GoogleCalendarCredentials::materialize();
     }
 
     protected function registerPagePolicies(): void

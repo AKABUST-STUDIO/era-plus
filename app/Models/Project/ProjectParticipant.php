@@ -92,6 +92,19 @@ class ProjectParticipant extends Model
         return $this->participable_type === User::class;
     }
 
+    public function avatarUrl(): string
+    {
+        $participable = $this->participable;
+
+        if ($participable !== null && method_exists($participable, 'avatarUrl')) {
+            return $participable->avatarUrl();
+        }
+
+        $name = (string) ($participable?->name ?? '?');
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($name).'&size=128';
+    }
+
     /**
      * @return MorphTo<Model, $this>
      */

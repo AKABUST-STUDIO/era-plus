@@ -83,7 +83,7 @@ class SettingsUsersTest extends TestCase
         $this->actingOnOrganizationPanel($user, $organization);
 
         Livewire::test(UsersPage::class)
-            ->callAction('invite', data: ['email' => ''])
+            ->callAction('create', data: ['email' => ''])
             ->assertHasFormErrors(['email' => 'required']);
     }
 
@@ -96,7 +96,7 @@ class SettingsUsersTest extends TestCase
         $this->actingOnOrganizationPanel($user, $organization);
 
         Livewire::test(UsersPage::class)
-            ->callAction('invite', data: ['email' => 'newcomer@example.com'])
+            ->callAction('create', data: ['email' => 'newcomer@example.com'])
             ->assertHasNoFormErrors()
             ->assertNotified();
 
@@ -109,6 +109,6 @@ class SettingsUsersTest extends TestCase
         $this->actingOnOrganizationPanel($user, $organization);
 
         Livewire::test(UsersPage::class)
-            ->assertActionHidden('invite');
+            ->assertActionHidden('create');
     }
 }

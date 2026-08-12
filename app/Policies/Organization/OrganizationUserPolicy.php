@@ -22,6 +22,11 @@ class OrganizationUserPolicy
         return $this->allows($user, 'view_organization_user', $organizationUser->organization);
     }
 
+    public function create(User $user): bool
+    {
+        return $this->allows($user, 'create_organization_user', OrganizationService::current());
+    }
+
     public function update(User $user, OrganizationUser $organizationUser): bool
     {
         return $this->allows($user, 'update_organization_user', $organizationUser->organization)

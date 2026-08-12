@@ -8,10 +8,13 @@ use App\Enums\Project\ErasmusKeyAction;
 use App\Enums\Project\ErasmusManagingBody;
 use App\Enums\Project\ProjectRole;
 use App\Enums\Project\ProjectStatus;
+use App\Events\ProjectCreated;
+use App\Events\ProjectDeleting;
 use App\Models\Project\CountryLimit;
 use App\Models\Project\ErasmusField as ErasmusFieldModel;
 use App\Models\Project\ErasmusPriority;
 use App\Models\Project\Participant;
+use App\Models\Project\ProjectEvent;
 use App\Models\Project\ProjectParticipant;
 use App\Models\Project\TravelExpense;
 use App\Observers\ProjectObserver;
@@ -43,6 +46,14 @@ class Project extends Model
 
     use HasSlug;
     use LogsActivity;
+
+    /**
+     * @var array<string, class-string>
+     */
+    protected $dispatchesEvents = [
+        'created' => ProjectCreated::class,
+        'deleting' => ProjectDeleting::class,
+    ];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -90,6 +101,12 @@ class Project extends Model
         'duration_months',
         'requested_grant',
         'awarded_grant',
+        'google_calendar_id',
+        'google_calendar_channel_id',
+        'google_calendar_channel_resource_id',
+        'google_calendar_channel_expires_at',
+        'location',
+        'timezone',
     ];
 
     protected $attributes = [
@@ -114,6 +131,7 @@ class Project extends Model
             'beginning_date' => 'date',
             'end_date' => 'date',
             'duration_months' => 'integer',
+            'google_calendar_channel_expires_at' => 'datetime',
             'requested_grant' => 'decimal:2',
             'awarded_grant' => 'decimal:2',
         ];
@@ -266,6 +284,14 @@ class Project extends Model
     public function travelExpenses(): HasManyThrough
     {
         return $this->hasManyThrough(TravelExpense::class, ProjectParticipant::class);
+    }
+
+    /**
+     * @return HasMany<ProjectEvent, $this>
+     */
+    public function events(): HasMany
+    {
+        return $this->hasMany(ProjectEvent::class);
     }
 
     public function addParticipant(Participant|User $participable, int $countryId, Model $sendingOrganization): ProjectParticipant

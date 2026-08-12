@@ -25,6 +25,12 @@ return new class extends Migration
             $table->unsignedSmallInteger('duration_months')->nullable();
             $table->decimal('requested_grant', 12, 2)->nullable();
             $table->decimal('awarded_grant', 12, 2)->nullable();
+            $table->string('google_calendar_id')->nullable()->index();
+            $table->string('google_calendar_channel_id')->nullable()->unique();
+            $table->string('google_calendar_channel_resource_id')->nullable();
+            $table->dateTime('google_calendar_channel_expires_at')->nullable();
+            $table->string('location')->nullable();
+            $table->string('timezone', 64)->default('UTC');
             $table->timestamps();
 
             $table->unique(['organization_id', 'slug']);
