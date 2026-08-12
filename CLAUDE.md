@@ -324,3 +324,4 @@ protected function isAccessible(User $user, ?string $path = null): bool
 | decoration-slice | box-decoration-slice |
 | decoration-clone | box-decoration-clone |
 </laravel-boost-guidelines>
+

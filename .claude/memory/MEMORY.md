@@ -13,3 +13,13 @@
 - [No model booted hooks](feedback_no_model_booted_hooks.md) — never generate `uuid`/`slug`/`username` in `booted()`/`creating()`; set them in the method that creates the record
 - [Filament action authorize](feedback_filament_action_authorize.md) — gate actions with `->authorize()` (+ `authorizationMessage`/`authorizationTooltip`), never `visible()`/`disabled()` closures or manual `can()` checks inside `action()`
 - [Filament built-in actions](feedback_filament_builtin_actions.md) — `DeleteAction`/`DeleteBulkAction`/`EditAction`/`CreateAction` + a model policy; never hand-roll `Action::make('remove')` with its own handler
+- [Flag architecture limits upfront](feedback_flag_architecture_limits_upfront.md) — when enumerating options, surface known vendor limits (DWD, quotas, admin setup) at decision time, not on later error
+- [No unrequested features](feedback_no_unrequested_features.md) — don't add adjacent toggles, badges, colors, columns; do exactly what was asked and stop
+- [Computed accessors over DB columns](feedback_computed_over_db_columns.md) — if a value derives from existing columns, use `getFooAttribute()`, not a new migration + column
+- [Prefer framework built-ins](feedback_prefer_framework_builtins.md) — grep vendor source before hand-rolling; Filament/Livewire/Saade almost always ship the primitive
+- [Delegate via morph helper](feedback_delegate_via_morph_helper.md) — put a helper on the pivot/parent that resolves through the morph, don't `method_exists` on the participable at every call site
+- [Route over env for URLs](feedback_route_over_env_url.md) — internal URLs (webhooks, callbacks) from `route()`; env vars are for external services only
+- [Full rename sweep](feedback_rename_variables_on_model_rename.md) — on model rename, sweep variable names too; watch for scope collisions
+- [Tinker for one-off DB ops](feedback_use_tinker_not_manual_sql.md) — run local schema fixes via `artisan tinker --execute`, don't dump SQL for the user to paste
+- [Saade FullCalendar quirks](feedback_saade_fullcalendar_quirks.md) — ViewAction footer preset by `setUp()`; `eventContent` JS can't use Blade so render server-side
+- [Google Calendar integration](project_google_calendar.md) — DWD service account impersonates workspace user; `all_day` computed; staff auto-invited; colors from crc32
