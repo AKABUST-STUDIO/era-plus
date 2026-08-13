@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Enums\Permissions\ActivityPermission;
 use App\Facades\OrganizationService;
 use App\Models\Organization;
 use App\Models\User;
@@ -16,6 +17,6 @@ class ActivityLogPolicy
         $organization = OrganizationService::current();
 
         return $organization instanceof Organization
-            && app(ProjectAccess::class)->organizationAllows($user, 'view_activity', $organization);
+            && app(ProjectAccess::class)->organizationAllows($user, ActivityPermission::View->value, $organization);
     }
 }

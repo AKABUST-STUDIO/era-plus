@@ -2,7 +2,9 @@
 
 namespace App\Enums\Project;
 
-use App\Services\ProjectAccess;
+use App\Enums\Permissions\ProjectEventPermission;
+use App\Enums\Permissions\ProjectUserPermission;
+use App\Services\PermissionRegistry;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
@@ -38,8 +40,11 @@ enum ProjectRole: string implements HasColor, HasLabel
     public function defaultPermissions(): array
     {
         return match ($this) {
-            self::Admin => [ProjectAccess::ABILITY_ADMINISTER_PROJECT],
-            self::Participant => [],
+            self::Admin => PermissionRegistry::granular(PermissionRegistry::SCOPE_PROJECT),
+            self::Participant => [
+                ProjectUserPermission::ViewAny->value,
+                ProjectEventPermission::ViewAny->value,
+            ],
         };
     }
 }

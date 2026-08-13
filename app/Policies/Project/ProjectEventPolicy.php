@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies\Project;
 
+use App\Enums\Permissions\ProjectEventPermission;
 use App\Models\Project;
 use App\Models\Project\ProjectEvent;
 use App\Models\User;
@@ -14,59 +15,44 @@ class ProjectEventPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $this->isProjectMember($user);
+        return $this->allows($user, ProjectEventPermission::ViewAny->value);
     }
 
     public function view(User $user, ProjectEvent $activity): bool
     {
-        return $this->isProjectMember($user);
+        return $this->allows($user, ProjectEventPermission::ViewAny->value);
     }
 
     public function create(User $user): bool
     {
-        return $this->allowsManage($user);
+        return $this->allows($user, ProjectEventPermission::Create->value);
     }
 
     public function update(User $user, ProjectEvent $activity): bool
     {
-        return $this->allowsManage($user);
+        return $this->allows($user, ProjectEventPermission::Update->value);
     }
 
     public function updateAny(User $user): bool
     {
-        return $this->allowsManage($user);
+        return $this->allows($user, ProjectEventPermission::UpdateAny->value);
     }
 
     public function delete(User $user, ProjectEvent $activity): bool
     {
-        return $this->allowsManage($user);
+        return $this->allows($user, ProjectEventPermission::Delete->value);
     }
 
     public function deleteAny(User $user): bool
     {
-        return $this->allowsManage($user);
+        return $this->allows($user, ProjectEventPermission::DeleteAny->value);
     }
 
-    private function allowsManage(User $user): bool
+    private function allows(User $user, string $permission): bool
     {
         $project = Filament::getTenant();
 
         return $project instanceof Project
-            && app(ProjectAccess::class)->can($user, ProjectAccess::ABILITY_MANAGE_SETTINGS, $project);
-    }
-
-    private function isProjectMember(User $user): bool
-    {
-        $project = Filament::getTenant();
-
-        if (! $project instanceof Project) {
-            return false;
-        }
-
-        if (app(ProjectAccess::class)->can($user, ProjectAccess::ABILITY_MANAGE_SETTINGS, $project)) {
-            return true;
-        }
-
-        return $user->roleFor($project) !== null;
+            && app(ProjectAccess::class)->can($user, $permission, $project);
     }
 }

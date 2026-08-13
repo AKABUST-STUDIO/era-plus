@@ -2,6 +2,8 @@
 
 namespace App\Filament\Project\Resources\TravelExpenses;
 
+use App\Enums\Permissions\TravelExpensePermission;
+use App\Filament\Contracts\HasProjectPermissions;
 use App\Filament\Project\Resources\TravelExpenses\Pages\ListTravelExpenses;
 use App\Filament\Project\Resources\TravelExpenses\Schemas\TravelExpenseForm;
 use App\Filament\Project\Resources\TravelExpenses\Tables\TravelExpensesTable;
@@ -14,7 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class TravelExpenseResource extends Resource
+class TravelExpenseResource extends Resource implements HasProjectPermissions
 {
     protected static ?string $model = TravelExpense::class;
 
@@ -56,15 +58,25 @@ class TravelExpenseResource extends Resource
 
     public static function canManageCountryLimits(): bool
     {
-        return self::userCan(ProjectAccess::ABILITY_MANAGE_COUNTRY_LIMITS);
+        return self::userCan(TravelExpensePermission::CountryLimits);
     }
 
     public static function canViewAllExpenses(): bool
     {
-        return self::userCan(ProjectAccess::ABILITY_VIEW_ALL_TRAVEL_EXPENSES);
+        return self::userCan(TravelExpensePermission::ViewAny);
     }
 
-    private static function userCan(string $ability): bool
+    public static function canImport(): bool
+    {
+        return self::userCan(TravelExpensePermission::Import);
+    }
+
+    public static function canExport(): bool
+    {
+        return self::userCan(TravelExpensePermission::Export);
+    }
+
+    private static function userCan(TravelExpensePermission $permission): bool
     {
         $project = Filament::getTenant();
         $user = auth()->user();
@@ -73,6 +85,6 @@ class TravelExpenseResource extends Resource
             return false;
         }
 
-        return app(ProjectAccess::class)->can($user, $ability, $project);
+        return app(ProjectAccess::class)->can($user, $permission->value, $project);
     }
 }

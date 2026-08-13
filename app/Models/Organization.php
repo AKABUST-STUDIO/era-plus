@@ -7,7 +7,6 @@ use App\Enums\Subscription\SubscriptionTier;
 use App\Models\Organization\OrganizationUser;
 use App\Observers\OrganizationObserver;
 use App\Policies\OrganizationPolicy;
-use App\Services\ProjectAccess;
 use Database\Factories\OrganizationFactory;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\HasAvatar;
@@ -181,10 +180,9 @@ class Organization extends Model implements HasAvatar, HasMedia
     public function admins(): BelongsToMany
     {
         return $this->users()->whereExists(function (QueryBuilder $query): void {
-            $query->from('role_has_permissions')
-                ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-                ->whereColumn('role_has_permissions.role_id', 'organization_users.role_id')
-                ->where('permissions.name', ProjectAccess::ABILITY_ADMINISTER_ORGANIZATION);
+            $query->from('roles')
+                ->whereColumn('roles.id', 'organization_users.role_id')
+                ->where('roles.name', OrganizationRole::Admin->value);
         });
     }
 

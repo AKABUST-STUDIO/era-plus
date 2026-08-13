@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies\Organization;
 
+use App\Enums\Permissions\InvoicePermission;
 use App\Facades\OrganizationService;
 use App\Models\Organization;
 use App\Models\User;
@@ -16,6 +17,6 @@ class InvoicePolicy
         $organization = OrganizationService::current();
 
         return $organization instanceof Organization
-            && app(ProjectAccess::class)->organizationAllows($user, 'view_invoice', $organization);
+            && app(ProjectAccess::class)->organizationAllows($user, InvoicePermission::View->value, $organization);
     }
 }

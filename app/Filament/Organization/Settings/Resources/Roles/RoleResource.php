@@ -3,6 +3,7 @@
 namespace App\Filament\Organization\Settings\Resources\Roles;
 
 use App\Facades\OrganizationService;
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Organization\Settings\Resources\Roles\Pages\EditRole;
 use App\Filament\Organization\Settings\Resources\Roles\Pages\ListRoles;
 use App\Filament\Organization\Settings\Resources\Roles\Schemas\RoleForm;
@@ -14,7 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class RoleResource extends Resource
+class RoleResource extends Resource implements HasOrganizationPermissions
 {
     protected static ?string $model = Role::class;
 
@@ -70,10 +71,5 @@ class RoleResource extends Resource
     public static function organization(): ?Organization
     {
         return OrganizationService::current();
-    }
-
-    public static function resourceKey(string $resource): string
-    {
-        return 'permissions_'.$resource;
     }
 }

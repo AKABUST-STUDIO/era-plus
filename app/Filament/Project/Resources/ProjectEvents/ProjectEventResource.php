@@ -2,6 +2,7 @@
 
 namespace App\Filament\Project\Resources\ProjectEvents;
 
+use App\Filament\Contracts\HasProjectPermissions;
 use App\Filament\Project\Resources\ProjectEvents\Pages\ListProjectEvents;
 use App\Filament\Project\Resources\ProjectEvents\Schemas\ProjectEventForm;
 use App\Models\Project\ProjectEvent;
@@ -9,7 +10,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 
-class ProjectEventResource extends Resource
+class ProjectEventResource extends Resource implements HasProjectPermissions
 {
     protected static ?string $model = ProjectEvent::class;
 

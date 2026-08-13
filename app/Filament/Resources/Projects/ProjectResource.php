@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Projects;
 
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
@@ -14,7 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
-class ProjectResource extends Resource
+class ProjectResource extends Resource implements HasOrganizationPermissions
 {
     protected static ?string $model = Project::class;
 

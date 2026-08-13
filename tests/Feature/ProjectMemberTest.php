@@ -201,7 +201,7 @@ class ProjectMemberTest extends TestCase
         ]);
     }
 
-    public function test_participant_cannot_open_the_members_page(): void
+    public function test_participant_can_view_but_cannot_invite(): void
     {
         $participant = User::factory()->create();
         $participant->joinOrganization($this->organization);
@@ -210,7 +210,8 @@ class ProjectMemberTest extends TestCase
         $this->actingAs($participant);
 
         Livewire::test(ListProjectMembers::class)
-            ->assertForbidden();
+            ->assertOk()
+            ->assertActionHidden('create');
     }
 
     public function test_creator_is_attached_as_project_admin(): void

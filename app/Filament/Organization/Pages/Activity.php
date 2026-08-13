@@ -2,7 +2,9 @@
 
 namespace App\Filament\Organization\Pages;
 
+use App\Enums\Permissions\ActivityPermission;
 use App\Facades\OrganizationService;
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Tables\ActivityLogTable;
 use App\Models\ActivityLog;
 use App\Models\Organization;
@@ -12,7 +14,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 
-class Activity extends Page implements HasTable
+class Activity extends Page implements HasOrganizationPermissions, HasTable
 {
     use InteractsWithTable;
 
@@ -21,6 +23,11 @@ class Activity extends Page implements HasTable
     protected static ?int $navigationSort = 50;
 
     protected string $view = 'filament.organization.pages.activity';
+
+    public static function getPermissionEnum(): string
+    {
+        return ActivityPermission::class;
+    }
 
     public ?Organization $organization = null;
 

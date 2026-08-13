@@ -35,65 +35,68 @@ class ProjectAccessTest extends TestCase
         $this->access = app(ProjectAccess::class);
     }
 
-    public function test_org_admin_bypasses_all_abilities(): void
+    public function test_org_admin_bypasses_all_project_permissions(): void
     {
         $admin = User::factory()->create();
         $admin->joinOrganization($this->organization, OrganizationRole::Admin);
 
-        $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
-        $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
-        $this->assertTrue($this->access->can($admin, ProjectAccess::ABILITY_MANAGE_SETTINGS, $this->project));
+        $this->assertTrue($this->access->can($admin, 'view_any_participant', $this->project));
+        $this->assertTrue($this->access->can($admin, 'create_project_user', $this->project));
+        $this->assertTrue($this->access->can($admin, 'country_limits_travel_expense', $this->project));
     }
 
-    public function test_project_admin_can_manage_participants(): void
+    public function test_project_admin_bypasses_all_project_permissions(): void
     {
         $projectAdmin = User::factory()->create();
         $projectAdmin->joinOrganization($this->organization);
         $projectAdmin->joinProject($this->project, ProjectRole::Admin);
 
-        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
-        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
-        $this->assertTrue($this->access->can($projectAdmin, ProjectAccess::ABILITY_MANAGE_SETTINGS, $this->project));
+        $this->assertTrue($this->access->can($projectAdmin, 'view_any_participant', $this->project));
+        $this->assertTrue($this->access->can($projectAdmin, 'create_project_user', $this->project));
+        $this->assertTrue($this->access->can($projectAdmin, 'country_limits_travel_expense', $this->project));
     }
 
-    public function test_participant_granted_manage_participants_cannot_manage_members(): void
+    public function test_participant_granted_a_single_permission_does_not_get_others(): void
     {
         $participant = User::factory()->create();
         $participant->joinOrganization($this->organization);
         $participant->joinProject($this->project, ProjectRole::Participant);
 
-        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
+        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo('create_participant');
 
-        $this->assertTrue($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
-        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
-        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_SETTINGS, $this->project));
+        $this->assertTrue($this->access->can($participant, 'create_participant', $this->project));
+        $this->assertFalse($this->access->can($participant, 'create_project_user', $this->project));
+        $this->assertFalse($this->access->can($participant, 'country_limits_travel_expense', $this->project));
     }
 
-    public function test_participant_cannot_manage_participants(): void
+    public function test_default_participant_gets_only_read_permissions(): void
     {
         $participant = User::factory()->create();
         $participant->joinOrganization($this->organization);
         $participant->joinProject($this->project, ProjectRole::Participant);
 
-        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
-        $this->assertFalse($this->access->can($participant, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
+        $this->assertTrue($this->access->can($participant, 'view_any_project_user', $this->project));
+        $this->assertTrue($this->access->can($participant, 'view_any_project_event', $this->project));
+        $this->assertFalse($this->access->can($participant, 'create_project_user', $this->project));
+        $this->assertFalse($this->access->can($participant, 'view_any_participant', $this->project));
+        $this->assertFalse($this->access->can($participant, 'create_participant', $this->project));
     }
 
-    public function test_non_member_has_no_abilities(): void
+    public function test_non_member_has_no_permissions(): void
     {
         $stranger = User::factory()->create();
 
-        $this->assertFalse($this->access->can($stranger, ProjectAccess::ABILITY_MANAGE_PARTICIPANTS, $this->project));
-        $this->assertFalse($this->access->can($stranger, ProjectAccess::ABILITY_MANAGE_MEMBERS, $this->project));
+        $this->assertFalse($this->access->can($stranger, 'view_any_participant', $this->project));
+        $this->assertFalse($this->access->can($stranger, 'view_any_project_user', $this->project));
     }
 
-    public function test_gates_follow_the_granted_ability(): void
+    public function test_gates_follow_the_granted_permission(): void
     {
         $viewer = User::factory()->create();
         $viewer->joinOrganization($this->organization);
         $viewer->joinProject($this->project, ProjectRole::Participant);
 
-        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
+        $this->project->roleFor(ProjectRole::Participant)->givePermissionTo(['view_any_participant', 'create_participant']);
 
         $this->actingAs($viewer);
         Filament::setCurrentPanel(Filament::getPanel('project'));
@@ -101,20 +104,7 @@ class ProjectAccessTest extends TestCase
 
         $this->assertTrue(Gate::allows('viewAny', Participant::class));
         $this->assertTrue(Gate::allows('create', Participant::class));
-        $this->assertFalse(ProjectMemberResource::canViewAny());
+        $this->assertTrue(ProjectMemberResource::canViewAny());
         $this->assertFalse(ProjectMemberResource::canCreate());
-    }
-
-    public function test_participant_policy_denies_bare_participant(): void
-    {
-        $participant = User::factory()->create();
-        $participant->joinOrganization($this->organization);
-        $participant->joinProject($this->project, ProjectRole::Participant);
-
-        $this->actingAs($participant);
-        Filament::setCurrentPanel(Filament::getPanel('project'));
-        Filament::setTenant($this->project);
-
-        $this->assertFalse(Gate::allows('viewAny', Participant::class));
     }
 }

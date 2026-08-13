@@ -16,6 +16,6 @@ class CountryLimitPolicy
         $project = Filament::getTenant();
 
         return $project instanceof Project
-            && app(ProjectAccess::class)->can($user, ProjectAccess::ABILITY_MANAGE_COUNTRY_LIMITS, $project);
+            && app(ProjectAccess::class)->can($user, 'country_limits_travel_expense', $project);
     }
 }

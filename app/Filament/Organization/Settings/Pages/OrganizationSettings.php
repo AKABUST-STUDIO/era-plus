@@ -2,7 +2,9 @@
 
 namespace App\Filament\Organization\Settings\Pages;
 
+use App\Enums\Permissions\OrganizationPermission;
 use App\Facades\OrganizationService;
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use App\Providers\Filament\OrganizationPanelProvider;
@@ -16,7 +18,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class OrganizationSettings extends Page
+class OrganizationSettings extends Page implements HasOrganizationPermissions
 {
     use HasOrgSettingsBreadcrumbs;
 
@@ -25,6 +27,11 @@ class OrganizationSettings extends Page
     protected static ?int $navigationSort = 0;
 
     protected string $view = 'filament.organization.settings.pages.general-settings';
+
+    public static function getPermissionEnum(): string
+    {
+        return OrganizationPermission::class;
+    }
 
     public ?Organization $organization = null;
 

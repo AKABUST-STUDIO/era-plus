@@ -2,6 +2,8 @@
 
 namespace App\Enums\Organization;
 
+use App\Enums\Permissions\OrganizationUserPermission;
+use App\Enums\Permissions\ProjectPermission;
 use App\Services\PermissionRegistry;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
@@ -35,11 +37,11 @@ enum OrganizationRole: string implements HasColor, HasLabel
     public function defaultPermissions(): array
     {
         return match ($this) {
-            self::Admin => PermissionRegistry::all(),
+            self::Admin => PermissionRegistry::granular(PermissionRegistry::SCOPE_ORGANIZATION),
             self::Member => [
-                'view_any_project',
-                'view_any_organization_user',
-                'view_organization_user',
+                ProjectPermission::ViewAny->value,
+                OrganizationUserPermission::ViewAny->value,
+                OrganizationUserPermission::View->value,
             ],
         };
     }

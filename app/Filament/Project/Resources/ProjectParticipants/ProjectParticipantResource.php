@@ -2,6 +2,8 @@
 
 namespace App\Filament\Project\Resources\ProjectParticipants;
 
+use App\Enums\Permissions\ParticipantPermission;
+use App\Filament\Contracts\HasProjectPermissions;
 use App\Filament\Project\Resources\ProjectParticipants\Pages\EditProjectParticipant;
 use App\Filament\Project\Resources\ProjectParticipants\Pages\ListProjectParticipants;
 use App\Filament\Project\Resources\ProjectParticipants\Schemas\ProjectParticipantForm;
@@ -14,13 +16,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
-class ProjectParticipantResource extends Resource
+class ProjectParticipantResource extends Resource implements HasProjectPermissions
 {
     protected static ?string $model = ProjectParticipant::class;
 
     protected static ?string $slug = 'participants';
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getPermissionEnum(): string
+    {
+        return ParticipantPermission::class;
+    }
 
     #[Override]
     public static function getEloquentQuery(): Builder

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Enums\Permissions\RolePermission;
 use App\Facades\OrganizationService;
 use App\Models\Organization;
 use App\Models\Project;
@@ -16,37 +17,37 @@ class RolePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $this->allows($user, 'view_any_role', $this->activeTenant());
+        return $this->allows($user, RolePermission::ViewAny->value, $this->activeTenant());
     }
 
     public function view(User $user, Role $role): bool
     {
-        return $this->allows($user, 'view_role', $role->roleable);
+        return $this->allows($user, RolePermission::View->value, $role->roleable);
     }
 
     public function create(User $user): bool
     {
-        return $this->allows($user, 'create_role', $this->activeTenant());
+        return $this->allows($user, RolePermission::Create->value, $this->activeTenant());
     }
 
     public function update(User $user, Role $role): bool
     {
-        return $this->allows($user, 'update_role', $role->roleable);
+        return $this->allows($user, RolePermission::Update->value, $role->roleable);
     }
 
     public function updateAny(User $user): bool
     {
-        return $this->allows($user, 'update_any_role', $this->activeTenant());
+        return $this->allows($user, RolePermission::UpdateAny->value, $this->activeTenant());
     }
 
     public function delete(User $user, Role $role): bool
     {
-        return ! $role->locked && $this->allows($user, 'delete_role', $role->roleable);
+        return ! $role->locked && $this->allows($user, RolePermission::Delete->value, $role->roleable);
     }
 
     public function deleteAny(User $user): bool
     {
-        return $this->allows($user, 'delete_any_role', $this->activeTenant());
+        return $this->allows($user, RolePermission::DeleteAny->value, $this->activeTenant());
     }
 
     private function allows(User $user, string $permission, ?object $tenant): bool

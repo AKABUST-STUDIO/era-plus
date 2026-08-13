@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Enums\Alignment;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -51,12 +52,10 @@ class EditRole extends EditRecord
         $role = $this->record;
 
         $data['label'] = $role->displayLabel();
-
-        $granted = $role->permissions->pluck('name')->all();
-
-        foreach (PermissionRegistry::grouped() as $resource => $permissions) {
-            $data[RoleResource::resourceKey($resource)] = array_values(array_intersect($granted, $permissions));
-        }
+        $data['permissions'] = array_values(array_intersect(
+            $role->permissions->pluck('name')->all(),
+            PermissionRegistry::granular(PermissionRegistry::SCOPE_ORGANIZATION),
+        ));
 
         return $data;
     }
@@ -64,15 +63,8 @@ class EditRole extends EditRecord
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         /** @var Role $record */
-        $permissions = [];
-
-        foreach (array_keys(PermissionRegistry::grouped()) as $resource) {
-            $key = RoleResource::resourceKey($resource);
-            $permissions = [...$permissions, ...($data[$key] ?? [])];
-        }
-
         $record->update(['label' => $data['label']]);
-        $record->syncPermissions($permissions);
+        $record->syncPermissions($data['permissions'] ?? []);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return $record;
@@ -87,5 +79,24 @@ class EditRole extends EditRecord
     {
         return parent::getSaveFormAction()
             ->hidden(fn (): bool => (bool) $this->record?->locked);
+    }
+
+    protected function getCancelFormAction(): Action
+    {
+        return parent::getCancelFormAction()->hidden();
+    }
+
+    public function getFormActionsAlignment(): string|Alignment
+    {
+        return Alignment::End;
+    }
+
+    private function memberCount(Role $role): int
+    {
+        $organization = RoleResource::organization();
+
+        return $organization === null
+            ? 0
+            : $organization->users()->wherePivot('role_id', $role->id)->count();
     }
 }

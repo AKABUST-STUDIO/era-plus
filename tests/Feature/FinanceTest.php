@@ -19,7 +19,6 @@ use App\Models\Project\ParticipantOrganization;
 use App\Models\Project\ProjectParticipant;
 use App\Models\Project\TravelExpense;
 use App\Models\User;
-use App\Services\ProjectAccess;
 use Database\Seeders\TravelExpenseSeeder;
 use Filament\Actions\Exports\Models\Export;
 use Filament\Facades\Filament;
@@ -637,7 +636,7 @@ class FinanceTest extends TestCase
         $coordinator->joinProject($this->project, ProjectRole::Participant);
 
         $this->project->roleFor(ProjectRole::Participant)
-            ->givePermissionTo(ProjectAccess::ABILITY_MANAGE_FINANCE);
+            ->givePermissionTo('create_travel_expense', 'update_travel_expense', 'delete_travel_expense');
 
         $this->actingAs($coordinator);
 
@@ -677,9 +676,9 @@ class FinanceTest extends TestCase
         $coordinator->joinProject($this->project, ProjectRole::Participant);
 
         $this->project->roleFor(ProjectRole::Participant)
-            ->givePermissionTo(ProjectAccess::ABILITY_MANAGE_FINANCE);
+            ->givePermissionTo('create_travel_expense', 'update_travel_expense', 'delete_travel_expense');
         $this->project->roleFor(ProjectRole::Participant)
-            ->givePermissionTo(ProjectAccess::ABILITY_VIEW_ALL_TRAVEL_EXPENSES);
+            ->givePermissionTo('view_any_travel_expense');
 
         $this->actingAs($coordinator);
 
@@ -834,7 +833,7 @@ class FinanceTest extends TestCase
         $user->joinProject($this->project, ProjectRole::Participant);
 
         $this->project->roleFor(ProjectRole::Participant)
-            ->givePermissionTo(ProjectAccess::ABILITY_MANAGE_FINANCE);
+            ->givePermissionTo('create_travel_expense', 'update_travel_expense', 'delete_travel_expense');
 
         $sending = ParticipantOrganization::create(['name' => 'Employer']);
         $participation = $this->project->addParticipant($user, $this->countryId(), $sending);
@@ -919,7 +918,7 @@ class FinanceTest extends TestCase
         $stranger->joinProject($this->project, ProjectRole::Participant);
 
         $this->project->roleFor(ProjectRole::Participant)
-            ->givePermissionTo(ProjectAccess::ABILITY_MANAGE_FINANCE);
+            ->givePermissionTo('create_travel_expense', 'update_travel_expense', 'delete_travel_expense');
 
         $this->actingAs($stranger);
 

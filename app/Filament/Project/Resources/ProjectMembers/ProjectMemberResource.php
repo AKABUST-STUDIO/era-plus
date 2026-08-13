@@ -2,6 +2,7 @@
 
 namespace App\Filament\Project\Resources\ProjectMembers;
 
+use App\Filament\Contracts\HasProjectPermissions;
 use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
 use App\Filament\Project\Resources\ProjectMembers\Tables\ProjectMembersTable;
 use App\Models\ProjectUser;
@@ -9,7 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class ProjectMemberResource extends Resource
+class ProjectMemberResource extends Resource implements HasProjectPermissions
 {
     protected static ?string $model = ProjectUser::class;
 

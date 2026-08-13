@@ -61,9 +61,9 @@ class ListTravelExpenses extends ListRecords
                 ->authorize(fn (): bool => (bool) Filament::auth()->user()?->can('update', CountryLimit::class)),
             ActionGroup::make([
                 ImportTravelExpensesAction::make()
-                    ->authorize(fn (): bool => TravelExpenseResource::canViewAllExpenses()),
+                    ->authorize(fn (): bool => TravelExpenseResource::canImport()),
                 ExportTravelExpensesAction::make()
-                    ->authorize(fn (): bool => TravelExpenseResource::canViewAllExpenses()),
+                    ->authorize(fn (): bool => TravelExpenseResource::canExport()),
             ])
                 ->label(__('finance.actions.tools'))
                 ->icon('lucide-more-horizontal')

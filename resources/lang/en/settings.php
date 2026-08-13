@@ -147,6 +147,7 @@ return [
             'label' => 'Label',
             'label_helper' => 'Display name shown to members throughout the app.',
             'permissions' => 'Permissions',
+            'permissions_heading' => 'Permissions',
         ],
 
         'edit' => [

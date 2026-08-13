@@ -3,7 +3,7 @@
 namespace App\Filament\Organization\Resources\OrganizationUsers;
 
 use App\Facades\OrganizationService;
-use App\Filament\Concerns\GatedByOrganizationPermission;
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Organization\Resources\OrganizationUsers\Pages\ListOrganizationUsers;
 use App\Filament\Organization\Resources\OrganizationUsers\Tables\OrganizationUsersTable;
 use App\Models\Organization;
@@ -12,25 +12,13 @@ use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class OrganizationUserResource extends Resource
+class OrganizationUserResource extends Resource implements HasOrganizationPermissions
 {
-    use GatedByOrganizationPermission;
-
     protected static ?string $model = OrganizationUser::class;
 
     protected static ?string $slug = 'users';
 
     protected static ?int $navigationSort = 10;
-
-    protected static function organizationPermission(): string
-    {
-        return 'view_any_organization_user';
-    }
-
-    public static function canViewAny(): bool
-    {
-        return static::canAccess();
-    }
 
     public static function getNavigationLabel(): string
     {

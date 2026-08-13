@@ -2,8 +2,10 @@
 
 namespace App\Filament\Organization\Settings\Pages;
 
+use App\Enums\Permissions\BillingPermission;
 use App\Enums\Subscription\SubscriptionTier;
 use App\Facades\OrganizationService;
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use Filament\Actions\Action;
@@ -16,7 +18,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class Billing extends Page
+class Billing extends Page implements HasOrganizationPermissions
 {
     use HasOrgSettingsBreadcrumbs;
 
@@ -25,6 +27,11 @@ class Billing extends Page
     protected static ?int $navigationSort = 40;
 
     protected string $view = 'filament.organization.settings.pages.billing';
+
+    public static function getPermissionEnum(): string
+    {
+        return BillingPermission::class;
+    }
 
     public ?Organization $organization = null;
 

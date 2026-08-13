@@ -28,11 +28,9 @@ use App\Policies\Project\CountryLimitPolicy;
 use App\Policies\Project\ParticipantPolicy;
 use App\Policies\Project\ProjectParticipantPolicy;
 use App\Policies\Project\TravelExpensePolicy;
-use App\Policies\ProjectPolicy;
 use App\Policies\ProjectUserPolicy;
 use App\Policies\RolePolicy;
 use App\Services\PermissionRegistry;
-use App\Services\ProjectAccess;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -47,7 +45,6 @@ class PolicyAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     private const CRUD_POLICIES = [
-        ProjectPolicy::class,
         ProjectUserPolicy::class,
         RolePolicy::class,
         ParticipantPolicy::class,
@@ -134,6 +131,14 @@ class PolicyAuthorizationTest extends TestCase
         );
     }
 
+    public function test_project_view_is_membership_based_and_not_permission_gated(): void
+    {
+        $this->assertArrayNotHasKey(
+            'view_project',
+            array_flip(PermissionRegistry::grouped()['project'] ?? []),
+        );
+    }
+
     public function test_organization_settings_gate_follows_the_organization_policy(): void
     {
         $member = User::factory()->create();
@@ -207,21 +212,7 @@ class PolicyAuthorizationTest extends TestCase
         $this->assertTrue($member->fresh()->can('update', Billing::class));
     }
 
-    public function test_permission_registry_actions_match_the_supported_abilities(): void
-    {
-        $actions = PermissionRegistry::actions();
-        sort($actions);
-
-        $expected = array_map(
-            fn (string $ability): string => (string) str($ability)->snake(),
-            self::SUPPORTED_ABILITIES,
-        );
-        sort($expected);
-
-        $this->assertSame($expected, $actions);
-    }
-
-    public function test_update_any_follows_the_granted_project_ability(): void
+    public function test_update_any_follows_the_granted_project_permission(): void
     {
         $this->actAsParticipantInProject();
 
@@ -232,10 +223,10 @@ class PolicyAuthorizationTest extends TestCase
         $this->assertFalse(Gate::allows('update', CountryLimit::class));
 
         $this->grantToParticipantRole(
-            ProjectAccess::ABILITY_MANAGE_FINANCE,
-            ProjectAccess::ABILITY_MANAGE_PARTICIPANTS,
-            ProjectAccess::ABILITY_MANAGE_MEMBERS,
-            ProjectAccess::ABILITY_MANAGE_COUNTRY_LIMITS,
+            'update_any_travel_expense',
+            'update_any_participant',
+            'update_any_project_user',
+            'country_limits_travel_expense',
         );
 
         $this->assertTrue(Gate::allows('updateAny', TravelExpense::class));
@@ -252,7 +243,7 @@ class PolicyAuthorizationTest extends TestCase
         $this->assertFalse(ProjectParticipantResource::canViewAny());
         $this->assertFalse(ProjectParticipantResource::canCreate());
 
-        $this->grantToParticipantRole(ProjectAccess::ABILITY_MANAGE_PARTICIPANTS);
+        $this->grantToParticipantRole('view_any_participant', 'create_participant');
 
         $this->assertTrue(ProjectParticipantResource::canViewAny());
         $this->assertTrue(ProjectParticipantResource::canCreate());
@@ -264,7 +255,7 @@ class PolicyAuthorizationTest extends TestCase
 
         $this->assertFalse(TravelExpenseResource::canViewAny());
 
-        $this->grantToParticipantRole(ProjectAccess::ABILITY_MANAGE_FINANCE);
+        $this->grantToParticipantRole('view_any_travel_expense', 'create_travel_expense');
 
         $this->assertTrue(TravelExpenseResource::canViewAny());
         $this->assertTrue(TravelExpenseResource::canCreate());
@@ -273,27 +264,27 @@ class PolicyAuthorizationTest extends TestCase
     public function test_country_limits_action_is_authorized_by_the_country_limit_policy(): void
     {
         $this->actAsParticipantInProject();
-        $this->grantToParticipantRole(ProjectAccess::ABILITY_MANAGE_FINANCE);
+        $this->grantToParticipantRole('view_any_travel_expense');
 
         Livewire::test(ListTravelExpenses::class)
             ->assertActionHidden('countryLimits');
 
-        $this->grantToParticipantRole(ProjectAccess::ABILITY_MANAGE_COUNTRY_LIMITS);
+        $this->grantToParticipantRole('country_limits_travel_expense');
 
         Livewire::test(ListTravelExpenses::class)
             ->assertActionVisible('countryLimits');
     }
 
-    public function test_finance_tools_are_authorized_by_the_view_all_expenses_ability(): void
+    public function test_import_and_export_are_authorized_by_their_own_permissions(): void
     {
         $this->actAsParticipantInProject();
-        $this->grantToParticipantRole(ProjectAccess::ABILITY_MANAGE_FINANCE);
+        $this->grantToParticipantRole('view_any_travel_expense', 'create_travel_expense');
 
         Livewire::test(ListTravelExpenses::class)
             ->assertActionHidden('export')
             ->assertActionHidden('import');
 
-        $this->grantToParticipantRole(ProjectAccess::ABILITY_VIEW_ALL_TRAVEL_EXPENSES);
+        $this->grantToParticipantRole('import_travel_expense', 'export_travel_expense');
 
         Livewire::test(ListTravelExpenses::class)
             ->assertActionVisible('export')
@@ -317,6 +308,55 @@ class PolicyAuthorizationTest extends TestCase
 
         Livewire::test(ListRoles::class)
             ->assertActionVisible('create');
+    }
+
+    public function test_travel_expense_resource_declaring_the_interface_appears_in_the_registry(): void
+    {
+        $grouped = PermissionRegistry::grouped(PermissionRegistry::SCOPE_PROJECT);
+
+        $this->assertArrayHasKey('travel_expense', $grouped);
+        $this->assertSame(
+            [
+                'view_any_travel_expense',
+                'create_travel_expense',
+                'update_travel_expense',
+                'update_any_travel_expense',
+                'delete_travel_expense',
+                'delete_any_travel_expense',
+                'import_travel_expense',
+                'export_travel_expense',
+                'country_limits_travel_expense',
+            ],
+            $grouped['travel_expense'],
+        );
+    }
+
+    public function test_organization_user_resource_declaring_the_interface_appears_in_the_registry(): void
+    {
+        $grouped = PermissionRegistry::grouped(PermissionRegistry::SCOPE_ORGANIZATION);
+
+        $this->assertArrayHasKey('organization_user', $grouped);
+        $this->assertSame(
+            [
+                'view_any_organization_user',
+                'view_organization_user',
+                'create_organization_user',
+                'update_organization_user',
+                'update_any_organization_user',
+                'delete_organization_user',
+                'delete_any_organization_user',
+            ],
+            $grouped['organization_user'],
+        );
+    }
+
+    public function test_dropped_country_limit_group_is_absent_from_the_registry(): void
+    {
+        $projectGrouped = PermissionRegistry::grouped(PermissionRegistry::SCOPE_PROJECT);
+        $orgGrouped = PermissionRegistry::grouped(PermissionRegistry::SCOPE_ORGANIZATION);
+
+        $this->assertArrayNotHasKey('country_limit', $projectGrouped);
+        $this->assertArrayNotHasKey('country_limit', $orgGrouped);
     }
 
     public function test_locked_roles_cannot_be_updated_or_deleted(): void

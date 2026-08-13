@@ -2,13 +2,15 @@
 
 namespace App\Filament\Organization\Settings\Pages;
 
+use App\Enums\Permissions\InvoicePermission;
 use App\Facades\OrganizationService;
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Models\Organization;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 
-class Invoices extends Page
+class Invoices extends Page implements HasOrganizationPermissions
 {
     use HasOrgSettingsBreadcrumbs;
 
@@ -17,6 +19,11 @@ class Invoices extends Page
     protected static ?int $navigationSort = 50;
 
     protected string $view = 'filament.organization.settings.pages.invoices';
+
+    public static function getPermissionEnum(): string
+    {
+        return InvoicePermission::class;
+    }
 
     public ?Organization $organization = null;
 

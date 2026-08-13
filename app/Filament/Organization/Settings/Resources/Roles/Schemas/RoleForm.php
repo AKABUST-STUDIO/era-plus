@@ -2,15 +2,12 @@
 
 namespace App\Filament\Organization\Settings\Resources\Roles\Schemas;
 
-use App\Filament\Organization\Settings\Resources\Roles\RoleResource;
 use App\Models\Role;
 use App\Services\PermissionRegistry;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Str;
 
 class RoleForm
 {
@@ -30,64 +27,35 @@ class RoleForm
                             ->helperText(__('settings.roles.form.label_helper')),
                     ]),
 
-                ...self::permissionSections(),
+                View::make('filament.roles.permissions-matrix')
+                    ->viewData(fn (?Role $record): array => [
+                        'title' => __('settings.roles.form.permissions_heading'),
+                        'groups' => PermissionRegistry::grouped(PermissionRegistry::SCOPE_ORGANIZATION),
+                        'actionLabels' => self::actionLabels(),
+                        'resourceLabels' => self::resourceLabels(),
+                        'statePath' => 'data.permissions',
+                        'disabled' => (bool) $record?->locked,
+                    ]),
             ]);
     }
 
     /**
-     * @return array<int, Section>
-     */
-    private static function permissionSections(): array
-    {
-        $sections = [];
-
-        foreach (PermissionRegistry::grouped() as $resource => $permissions) {
-            $sections[] = Section::make(__('permissions.resources.'.$resource))
-                ->schema([
-                    CheckboxList::make(RoleResource::resourceKey($resource))
-                        ->hiddenLabel()
-                        ->options(self::optionsFor($permissions))
-                        ->columns(3)
-                        ->bulkToggleable()
-                        ->disabled(fn (?Role $record): bool => (bool) $record?->locked),
-                ])
-                ->collapsible();
-        }
-
-        return $sections;
-    }
-
-    /**
-     * @param  list<string>  $permissions
      * @return array<string, string>
      */
-    private static function optionsFor(array $permissions): array
+    private static function actionLabels(): array
     {
-        $options = [];
+        $translations = trans('permissions.actions');
 
-        foreach ($permissions as $permission) {
-            [$action] = self::splitPermission($permission);
-            $options[$permission] = __('permissions.actions.'.$action);
-        }
-
-        return $options;
+        return is_array($translations) ? $translations : [];
     }
 
     /**
-     * @return array{0: string, 1: string}
+     * @return array<string, string>
      */
-    private static function splitPermission(string $name): array
+    private static function resourceLabels(): array
     {
-        $actions = PermissionRegistry::actions();
-        usort($actions, fn (string $a, string $b): int => strlen($b) <=> strlen($a));
+        $translations = trans('permissions.resources');
 
-        foreach ($actions as $action) {
-            $prefix = $action.'_';
-            if (str_starts_with($name, $prefix)) {
-                return [$action, Str::after($name, $prefix)];
-            }
-        }
-
-        return ['', $name];
+        return is_array($translations) ? $translations : [];
     }
 }
