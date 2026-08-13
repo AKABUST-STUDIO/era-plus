@@ -64,10 +64,10 @@ return [
     ],
 
     'users' => [
-        'navigation_label' => 'Members',
-        'title' => 'Members',
+        'navigation_label' => 'Users',
+        'title' => 'Users',
 
-        'singular' => 'Member',
+        'singular' => 'User',
 
         'invite' => [
             'heading' => 'Invite people',

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Filament\Panels\PanelPage;
 use App\Filament\Project\Pages\Overview;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Organization;
@@ -53,13 +54,12 @@ class ProjectService
             ->value('id');
     }
 
-    public function urlFor(Project $project): string
+    public function urlFor(Project $project, ?string $page = null): string
     {
-        return Overview::getUrl(
-            ['organization' => $project->organization->slug],
-            panel: ProjectPanelProvider::PANEL_ID,
-            tenant: $project,
-        );
+        $parameters = ['organization' => $project->organization->slug];
+
+        return PanelPage::url(ProjectPanelProvider::PANEL_ID, (string) $page, $project, $parameters)
+            ?? Overview::getUrl($parameters, panel: ProjectPanelProvider::PANEL_ID, tenant: $project);
     }
 
     public function createUrlFor(Organization $organization): string

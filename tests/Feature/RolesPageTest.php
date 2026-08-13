@@ -63,11 +63,10 @@ class RolesPageTest extends TestCase
         $memberRole = $this->organization->roleFor(OrganizationRole::Member);
 
         $this->assertTrue($memberRole->hasPermissionTo('view_any_project'));
-        $this->assertTrue($memberRole->hasPermissionTo('view_project'));
         $this->assertTrue($memberRole->hasPermissionTo('view_any_organization_user'));
         $this->assertTrue($memberRole->hasPermissionTo('view_organization_user'));
         $this->assertFalse($memberRole->hasPermissionTo('create_project'));
-        $this->assertFalse($memberRole->hasPermissionTo('delete_project'));
+        $this->assertFalse($memberRole->hasPermissionTo('delete_any_project'));
     }
 
     public function test_built_in_admin_role_is_listed(): void
@@ -142,15 +141,15 @@ class RolesPageTest extends TestCase
         Livewire::test(EditRole::class, ['record' => $role->id])
             ->fillForm([
                 'label' => 'Coordinator EU',
-                'permissions_project' => ['view_any_project', 'view_project'],
+                'permissions_project' => ['view_any_project', 'create_project'],
             ])
             ->call('save');
 
         $role->refresh();
         $this->assertSame('Coordinator EU', $role->label);
         $this->assertTrue($role->hasPermissionTo('view_any_project'));
-        $this->assertTrue($role->hasPermissionTo('view_project'));
-        $this->assertFalse($role->hasPermissionTo('delete_project'));
+        $this->assertTrue($role->hasPermissionTo('create_project'));
+        $this->assertFalse($role->hasPermissionTo('delete_any_project'));
     }
 
     public function test_edit_role_replaces_previous_permissions(): void
@@ -165,11 +164,11 @@ class RolesPageTest extends TestCase
         Livewire::test(EditRole::class, ['record' => $role->id])
             ->fillForm([
                 'label' => 'Coordinator',
-                'permissions_project' => ['view_project'],
+                'permissions_project' => ['view_any_project'],
             ])
             ->call('save');
 
         $role->refresh();
-        $this->assertSame(['view_project'], $role->permissions->pluck('name')->all());
+        $this->assertSame(['view_any_project'], $role->permissions->pluck('name')->all());
     }
 }

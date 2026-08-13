@@ -28,7 +28,8 @@ class PermissionRegistry
     public static function actions(?string $resource = null): array
     {
         return match ($resource) {
-            'organization' => ['view', 'update', 'delete'],
+            'organization' => ['update', 'delete'],
+            'project' => ['view_any', 'create', 'update_any', 'delete_any'],
             'billing' => ['view', 'update'],
             'invoice', 'activity' => ['view'],
             default => [

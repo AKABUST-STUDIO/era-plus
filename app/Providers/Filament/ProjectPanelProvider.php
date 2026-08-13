@@ -3,7 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Panels\ProjectPanel;
-use App\Filament\Project\Settings\Pages\GeneralSettings;
+use App\Filament\Project\Settings\Pages\ProjectSettings;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Http\Middleware\ApplyTenantContext;
 use App\Http\Middleware\EnforceOrganizationEmailVerification;
@@ -80,8 +80,9 @@ class ProjectPanelProvider extends BasePanelProvider
                     ->label(__('navigation.settings'))
                     ->icon('lucide-settings')
                     ->sort(99)
-                    ->visible(fn (): bool => GeneralSettings::canAccess())
-                    ->url(fn (): string => GeneralSettings::getUrl(
+                    ->extraAttributes(['class' => 'border-t border-gray-950/10 pt-1 dark:border-white/10'])
+                    ->visible(fn (): bool => ProjectSettings::canAccess())
+                    ->url(fn (): string => ProjectSettings::getUrl(
                         panel: SettingsPanelProvider::PANEL_ID,
                     )),
             ])

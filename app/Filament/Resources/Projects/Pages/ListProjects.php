@@ -3,17 +3,16 @@
 namespace App\Filament\Resources\Projects\Pages;
 
 use App\Filament\Resources\Projects\ProjectResource;
-use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\Page;
 
-class ListProjects extends ListRecords
+class ListProjects extends Page
 {
     protected static string $resource = ProjectResource::class;
 
-    protected function getHeaderActions(): array
+    protected string $view = 'filament-panels::pages.page';
+
+    public function getTitle(): string
     {
-        return [
-            CreateAction::make(),
-        ];
+        return __('navigation.projects');
     }
 }

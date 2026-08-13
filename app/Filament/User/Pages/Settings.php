@@ -65,11 +65,11 @@ class Settings extends Page
             ->components([
                 $this->avatarSection(),
                 $this->profileSection(),
-                $this->usernameSection(),
+                // $this->usernameSection(),
                 $this->emailSection(),
-                $this->phoneSection(),
+                // $this->phoneSection(),
                 $this->defaultOrganizationSection(),
-                $this->userIdSection(),
+                // $this->userIdSection(),
                 $this->deleteSection(),
             ]);
     }

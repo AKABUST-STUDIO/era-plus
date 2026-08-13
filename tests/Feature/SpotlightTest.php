@@ -75,7 +75,7 @@ class SpotlightTest extends TestCase
         $organization = $user->organizations()->sole();
 
         $this->actingAs($user)
-            ->get($this->url('/'.$organization->slug.'/overview'))
+            ->get($this->url('/'.$organization->slug.'/projects'))
             ->assertSuccessful()
             ->assertSee('livewire-ui-spotlight');
 

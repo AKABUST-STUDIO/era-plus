@@ -73,7 +73,7 @@ class EmailVerificationRequired extends Page
         if ($user?->fresh()?->hasVerifiedEmail()) {
             Event::dispatch(new Verified($user));
 
-            $this->redirect(\App\Filament\Organization\Settings\Pages\GeneralSettings::getUrl([
+            $this->redirect(OrganizationSettings::getUrl([
                 'tenant' => $this->organization->slug,
             ]));
         }

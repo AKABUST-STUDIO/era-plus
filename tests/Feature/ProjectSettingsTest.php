@@ -10,7 +10,7 @@ use App\Enums\Project\ErasmusPriority;
 use App\Enums\Project\ProjectStatus;
 use App\Facades\OrganizationService;
 use App\Facades\ProjectService;
-use App\Filament\Project\Settings\Pages\GeneralSettings;
+use App\Filament\Project\Settings\Pages\ProjectSettings;
 use App\Http\Middleware\ApplyTenantContext;
 use App\Models\Organization;
 use App\Models\Project;
@@ -118,18 +118,18 @@ class ProjectSettingsTest extends TestCase
 
         $this->assertSame(
             parse_url($this->settingsUrl(), PHP_URL_PATH),
-            parse_url(GeneralSettings::getUrl(panel: 'project.settings'), PHP_URL_PATH),
+            parse_url(ProjectSettings::getUrl(panel: 'project.settings'), PHP_URL_PATH),
         );
     }
 
     public function test_settings_page_renders(): void
     {
-        Livewire::test(GeneralSettings::class)->assertSuccessful();
+        Livewire::test(ProjectSettings::class)->assertSuccessful();
     }
 
     public function test_can_save_details(): void
     {
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(ProjectSettings::class)
             ->fillForm([
                 'name' => 'Renamed',
                 'slug' => 'renamed',
@@ -149,14 +149,14 @@ class ProjectSettingsTest extends TestCase
 
     public function test_saving_a_new_slug_redirects_to_the_new_url(): void
     {
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(ProjectSettings::class)
             ->fillForm([
                 'name' => 'Renamed',
                 'slug' => 'renamed',
                 'status' => ProjectStatus::Running->value,
             ])
             ->callAction(TestAction::make('saveDetails')->schemaComponent('details-section', 'form'))
-            ->assertRedirect(GeneralSettings::getUrl(['project' => 'renamed']));
+            ->assertRedirect(ProjectSettings::getUrl(['project' => 'renamed']));
     }
 
     public function test_can_save_programme(): void
@@ -166,7 +166,7 @@ class ProjectSettingsTest extends TestCase
             ->where('name', ErasmusPriority::InclusionAndDiversity->getLabel())
             ->firstOrFail();
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(ProjectSettings::class)
             ->fillForm([
                 'erasmus_field' => ErasmusField::Youth->value,
                 'erasmus_key_action' => ErasmusKeyAction::KeyAction1->value,
@@ -186,7 +186,7 @@ class ProjectSettingsTest extends TestCase
 
     public function test_can_save_dates(): void
     {
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(ProjectSettings::class)
             ->fillForm([
                 'beginning_date' => '2026-10-01',
                 'end_date' => '2027-03-31',
@@ -201,7 +201,7 @@ class ProjectSettingsTest extends TestCase
 
     public function test_end_date_must_be_after_start_date(): void
     {
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(ProjectSettings::class)
             ->fillForm([
                 'beginning_date' => '2026-09-01',
                 'end_date' => '2026-08-01',
@@ -212,7 +212,7 @@ class ProjectSettingsTest extends TestCase
 
     public function test_can_delete_project(): void
     {
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(ProjectSettings::class)
             ->callAction(TestAction::make('delete')->schemaComponent('danger-section', 'form'));
 
         $this->assertDatabaseMissing('projects', ['id' => $this->project->id]);
@@ -221,7 +221,7 @@ class ProjectSettingsTest extends TestCase
 
     public function test_breadcrumbs_link_back_to_the_project(): void
     {
-        $breadcrumbs = Livewire::test(GeneralSettings::class)
+        $breadcrumbs = Livewire::test(ProjectSettings::class)
             ->instance()
             ->getBreadcrumbs();
 
@@ -229,7 +229,7 @@ class ProjectSettingsTest extends TestCase
         $this->assertCount(3, $values);
         $this->assertSame($this->project->name, $values[0]);
         $this->assertSame(__('settings.breadcrumb'), $values[1]);
-        $this->assertSame(__('forms.project.settings.title'), $values[2]);
+        $this->assertSame(__('navigation.project'), $values[2]);
         $this->assertSame(
             ProjectService::urlFor($this->project),
             array_key_first($breadcrumbs),

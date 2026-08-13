@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Facades\OrganizationService;
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Livewire\OrganizationMenu;
 use App\Livewire\ProjectMenu;
 use App\Models\Organization;
@@ -30,7 +32,7 @@ class MultiPanelTest extends TestCase
         return 'http://'.$this->host.$path;
     }
 
-    public function test_organization_panel_serves_dashboard_to_member(): void
+    public function test_organization_panel_root_lands_a_member_on_the_projects_page(): void
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
@@ -38,7 +40,12 @@ class MultiPanelTest extends TestCase
 
         $this->actingAs($user)
             ->get($this->url('/'.$organization->slug))
-            ->assertSuccessful();
+            ->assertRedirect(ProjectResource::getUrl('index', panel: 'organization', tenant: $organization));
+
+        $this->actingAs($user)
+            ->get($this->url('/'.$organization->slug.'/projects'))
+            ->assertSuccessful()
+            ->assertSee(__('navigation.projects'));
     }
 
     public function test_organization_panel_404s_for_unknown_slug(): void
@@ -216,5 +223,21 @@ class MultiPanelTest extends TestCase
             ->assertSee('Current Org')
             ->assertSee('Other Org')
             ->assertDontSee('Stranger Org');
+    }
+
+    public function test_organization_menu_trigger_links_to_organization_overview(): void
+    {
+        $user = User::factory()->create();
+
+        $organization = Organization::factory()->create(['name' => 'Current Org']);
+        $user->joinOrganization($organization);
+
+        Filament::setCurrentPanel(Filament::getPanel('organization'));
+        $this->actingAs($user);
+        Filament::setTenant($organization);
+
+        Livewire::test(OrganizationMenu::class)
+            ->assertSeeHtml('href="'.OrganizationService::urlFor($organization).'"')
+            ->assertSeeHtml('fi-tenant-menu-toggle');
     }
 }

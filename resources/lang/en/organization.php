@@ -5,6 +5,10 @@ return [
         'admin' => 'Admin',
         'member' => 'Member',
     ],
+    'select_project' => [
+        'heading' => 'Select a project',
+        'description' => 'This page belongs to a single project. Pick one to continue.',
+    ],
     'register' => [
         'label' => 'Create your first organization',
         'action' => 'Continue',

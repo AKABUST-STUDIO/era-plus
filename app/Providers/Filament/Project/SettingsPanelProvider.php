@@ -41,6 +41,8 @@ class SettingsPanelProvider extends BasePanelProvider
             ->id(self::PANEL_ID)
             ->path('{organization}/{project}/settings')
 
+            ->breadcrumbs()
+
             ->discoverResources(
                 in: app_path('Filament/Project/Settings/Resources'),
                 for: 'App\\Filament\\Project\\Settings\\Resources',
@@ -59,6 +61,7 @@ class SettingsPanelProvider extends BasePanelProvider
                     ->label(__('navigation.back'))
                     ->icon('lucide-arrow-left')
                     ->sort(-1)
+                    ->extraAttributes(['class' => '[&_.fi-sidebar-item-label]:me-9 [&_.fi-sidebar-item-label]:text-center'])
                     ->url(function (): ?string {
                         $project = ProjectService::current();
 

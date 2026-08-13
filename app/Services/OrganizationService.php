@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Subscription\SubscriptionTier;
-use App\Filament\Organization\Pages\Overview;
+use App\Filament\Panels\PanelPage;
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
+use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Facades\Filament;
 use Illuminate\Support\Collection;
 
@@ -37,9 +39,10 @@ class OrganizationService
             ->get();
     }
 
-    public function urlFor(Organization $organization): string
+    public function urlFor(Organization $organization, ?string $page = null): string
     {
-        return Overview::getUrl(panel: 'organization', tenant: $organization);
+        return PanelPage::url(OrganizationPanelProvider::PANEL_ID, (string) $page, $organization)
+            ?? ProjectResource::getUrl('index', panel: OrganizationPanelProvider::PANEL_ID, tenant: $organization);
     }
 
     public function remember(Organization $organization): void

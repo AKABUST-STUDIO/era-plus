@@ -184,7 +184,7 @@
                 {!! $contentHtml !!}
 
                 @if ($hasFooter)
-                    <footer class="fi-section-footer w-full flex items-center justify-between bg-gray-50 rounded-b-xl border-t-gray-100">
+                    <footer class="fi-section-footer w-full flex items-center justify-between bg-gray-50 dark:bg-gray-950 rounded-b-xl border-t-gray-100 dark:border-t-gray-900 ">
                         @if ($hasDescription)
                             <p
                                 @if (filled($descriptionId)) id="{{ $descriptionId }}" @endif

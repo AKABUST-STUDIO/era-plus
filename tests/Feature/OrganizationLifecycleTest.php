@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
-use App\Filament\Organization\Settings\Pages\GeneralSettings;
+use App\Filament\Organization\Settings\Pages\OrganizationSettings;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
@@ -36,7 +36,7 @@ class OrganizationLifecycleTest extends TestCase
 
         $this->actOnSettingsPanel($admin, $organization);
 
-        Livewire::test(GeneralSettings::class)->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
+        Livewire::test(OrganizationSettings::class)->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
 
         $this->assertTrue($organization->fresh()->users->contains($admin));
     }
@@ -51,7 +51,7 @@ class OrganizationLifecycleTest extends TestCase
 
         $this->actOnSettingsPanel($admin, $organization);
 
-        Livewire::test(GeneralSettings::class)->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
+        Livewire::test(OrganizationSettings::class)->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
 
         $this->assertFalse($organization->fresh()->users->contains($admin));
     }
@@ -64,7 +64,7 @@ class OrganizationLifecycleTest extends TestCase
 
         $this->actOnSettingsPanel($admin, $organization);
 
-        $instance = Livewire::test(GeneralSettings::class)->instance();
+        $instance = Livewire::test(OrganizationSettings::class)->instance();
 
         $action = collect($instance->form(Schema::make($instance))->getComponents(withHidden: true))
             ->flatMap(fn ($component) => method_exists($component, 'getFooterActions') ? $component->getFooterActions() : [])
@@ -89,7 +89,7 @@ class OrganizationLifecycleTest extends TestCase
 
         $this->actOnSettingsPanel($admin, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->callAction(TestAction::make('delete')->schemaComponent('delete-section', 'form'), data: [
                 'name_confirm' => 'Acme Corp',
                 'phrase_confirm' => __('settings.general.delete.confirm_phrase'),

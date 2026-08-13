@@ -7,10 +7,7 @@
                 ->color('gray')
                 ->outlined()
                 ->extraAttributes(['class' => 'drop-shadow-none ring-0 shadow-none w-full place-content-start'])
-                ->url(\App\Filament\Organization\Pages\Overview::getUrl(
-                    panel: \App\Providers\Filament\OrganizationPanelProvider::PANEL_ID,
-                    tenant: $organization,
-                ))
+                ->url(\App\Facades\OrganizationService::urlFor($organization))
                 ->toHtml()
         !!}
     </div>

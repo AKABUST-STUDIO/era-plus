@@ -10,11 +10,6 @@ use App\Services\ProjectAccess;
 
 class OrganizationPolicy
 {
-    public function view(User $user, Organization $organization): bool
-    {
-        return $this->allows($user, 'view_organization', $organization);
-    }
-
     public function update(User $user, Organization $organization): bool
     {
         return $this->allows($user, 'update_organization', $organization);

@@ -79,7 +79,7 @@ return [
         'new' => [
             'heading' => 'New support ticket',
             'description' => 'Tell us what happened. We\'ll get back to you as soon as we can.',
-            'email_note' => 'You can also send us an email at <strong>support@rasmo.eu</strong>.',
+            'email_note' => 'You can also send us an email at <strong>support@era-plus.network</strong>.',
         ],
         'empty' => [
             'heading' => 'No support tickets yet',

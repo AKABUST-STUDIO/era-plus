@@ -27,7 +27,7 @@ class FeedbackTest extends TestCase
     {
         Mail::fake();
 
-        config()->set('app.feedback.recipient', 'feedback@rasmo.eu');
+        config()->set('app.feedback.recipient', 'feedback@era-plus.network');
 
         Feedback::create([
             'user_id' => $this->user->id,
@@ -37,7 +37,7 @@ class FeedbackTest extends TestCase
         ]);
 
         Mail::assertQueued(FeedbackReceived::class, function (FeedbackReceived $mail): bool {
-            return $mail->hasTo('feedback@rasmo.eu')
+            return $mail->hasTo('feedback@era-plus.network')
                 && $mail->feedback->subject === 'Love the new sidebar'
                 && $mail->feedback->rating === 5;
         });

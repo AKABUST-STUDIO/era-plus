@@ -158,8 +158,8 @@ return [
         'validation' => [
             'priority_unavailable' => 'That priority is not available to this organisation.',
         ],
-        'activity_log' => [
-            'title' => 'Project activity log',
+        'activity' => [
+            'title' => 'Activity',
         ],
         'create_wizard' => [
             'programme_step' => 'Programme',
@@ -204,7 +204,7 @@ return [
             'profile_description' => 'The name others see across your organizations.',
             'display_name' => 'Display name',
             'username_heading' => 'Username',
-            'username_description' => 'This is your URL namespace within Rasmo.',
+            'username_description' => 'This is your URL namespace within Era+.',
             'username_placeholder' => 'yourname',
             'email_heading' => 'Email',
             'email_description' => 'Primary contact and sign-in address.',
@@ -219,7 +219,7 @@ return [
             'default_org' => 'Default organization',
             'default_org_placeholder' => 'Pick on sign-in',
             'user_id_heading' => 'User ID',
-            'user_id_description' => 'This is your user ID within Rasmo. Used when interacting with the API.',
+            'user_id_description' => 'This is your user ID within Era+. Used when interacting with the API.',
             'delete_heading' => 'Delete account',
             'delete_description' => 'Permanently remove your account. Cannot be undone.',
             'delete_account' => 'Delete account',

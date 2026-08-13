@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Settings\Pages\GeneralSettings;
+use App\Filament\Organization\Settings\Pages\OrganizationSettings;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
@@ -46,7 +46,7 @@ class GeneralSettingsTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->assertOk()
             ->assertSchemaStateSet([
                 'name' => $organization->name,
@@ -59,7 +59,7 @@ class GeneralSettingsTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->fillForm(['name' => 'Renamed Organization'])
             ->callAction(TestAction::make('saveName')->schemaComponent('name-section', 'form'))
             ->assertNotified()
@@ -76,11 +76,11 @@ class GeneralSettingsTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->fillForm(['slug' => 'renamed-org'])
             ->callAction(TestAction::make('saveUrl')->schemaComponent('url-section', 'form'))
             ->assertNotified()
-            ->assertRedirect(GeneralSettings::getUrl(['organization' => 'renamed-org']));
+            ->assertRedirect(OrganizationSettings::getUrl(['organization' => 'renamed-org']));
 
         $this->assertDatabaseHas('organizations', [
             'id' => $organization->id,
@@ -94,7 +94,7 @@ class GeneralSettingsTest extends TestCase
         Organization::factory()->create(['name' => 'Taken', 'slug' => 'taken']);
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->fillForm(['slug' => 'taken'])
             ->callAction(TestAction::make('saveUrl')->schemaComponent('url-section', 'form'))
             ->assertHasFormErrors(['slug']);
@@ -110,7 +110,7 @@ class GeneralSettingsTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->fillForm(['slug' => ''])
             ->callAction(TestAction::make('saveUrl')->schemaComponent('url-section', 'form'))
             ->assertHasFormErrors(['slug' => 'required']);
@@ -122,7 +122,7 @@ class GeneralSettingsTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->fillForm(['avatar' => [UploadedFile::fake()->image('avatar.png')]])
             ->callAction(TestAction::make('saveAvatar')->schemaComponent('avatar-section', 'form'))
             ->assertNotified();
@@ -136,7 +136,7 @@ class GeneralSettingsTest extends TestCase
         User::factory()->create()->joinOrganization($organization, OrganizationRole::Admin);
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'))
             ->assertNotified()
             ->assertRedirect();
@@ -149,7 +149,7 @@ class GeneralSettingsTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
 
         $this->assertTrue($organization->fresh()->users->contains($user));
@@ -160,7 +160,7 @@ class GeneralSettingsTest extends TestCase
         [$user, $organization] = $this->memberOfOrganization();
         $this->actingOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->callAction(TestAction::make('delete')->schemaComponent('delete-section', 'form'), data: [
                 'name_confirm' => $organization->name,
                 'phrase_confirm' => __('settings.general.delete.confirm_phrase'),

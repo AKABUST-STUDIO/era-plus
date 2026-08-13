@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Facades\OrganizationService;
+use App\Filament\Panels\PanelPage;
 use App\Models\Organization;
 use App\Models\User;
 use App\Providers\Filament\OrganizationPanelProvider;
@@ -12,6 +13,13 @@ use Livewire\Component;
 
 class OrganizationMenu extends Component
 {
+    public string $page = '';
+
+    public function mount(): void
+    {
+        $this->page = PanelPage::currentSlug();
+    }
+
     public function render(): View
     {
         $user = auth()->user();
@@ -28,8 +36,7 @@ class OrganizationMenu extends Component
 
         $items = OrganizationService::organizationsFor($user)->map(fn (Organization $organization) => [
             'name' => $organization->name,
-            'slug' => $organization->slug,
-            'url' => OrganizationService::urlFor($organization),
+            'url' => OrganizationService::urlFor($organization, $this->page),
             'image' => $organization->getAvatarUrl(),
             'badge' => $organization->subscription_tier->getLabel(),
             'isCurrent' => $organization->is($currentOrganization),

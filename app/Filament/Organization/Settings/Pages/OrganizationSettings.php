@@ -16,7 +16,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class GeneralSettings extends Page
+class OrganizationSettings extends Page
 {
     use HasOrgSettingsBreadcrumbs;
 
@@ -35,20 +35,17 @@ class GeneralSettings extends Page
 
     public static function canAccess(): bool
     {
-        $organization = OrganizationService::current();
-
-        return $organization instanceof Organization
-            && (Filament::auth()->user()?->can('view', $organization) ?? false);
+        return OrganizationService::current() instanceof Organization;
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('settings.general.navigation_label');
+        return __('navigation.organization');
     }
 
     public function getTitle(): string
     {
-        return __('settings.general.title');
+        return __('navigation.organization');
     }
 
     public function mount(): void

@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Filament\Organization\Settings\Pages\Billing;
-use App\Filament\Organization\Settings\Pages\GeneralSettings;
 use App\Filament\Organization\Settings\Pages\Invoices;
+use App\Filament\Organization\Settings\Pages\OrganizationSettings;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -37,13 +37,23 @@ class SettingsBreadcrumbsTest extends TestCase
         URL::defaults(['organization' => $this->organization->slug]);
     }
 
+    public function test_only_settings_panels_render_breadcrumbs(): void
+    {
+        $this->assertTrue(Filament::getPanel('organization.settings')->hasBreadcrumbs());
+        $this->assertTrue(Filament::getPanel('project.settings')->hasBreadcrumbs());
+
+        $this->assertFalse(Filament::getPanel('organization')->hasBreadcrumbs());
+        $this->assertFalse(Filament::getPanel('project')->hasBreadcrumbs());
+        $this->assertFalse(Filament::getPanel('user')->hasBreadcrumbs());
+    }
+
     /**
      * @return array<string, array{0: class-string, 1: string}>
      */
     public static function pageProvider(): array
     {
         return [
-            'general' => [GeneralSettings::class, 'General settings'],
+            'organization' => [OrganizationSettings::class, 'Organization'],
             'billing' => [Billing::class, 'Billing'],
             'invoices' => [Invoices::class, 'Invoices'],
         ];

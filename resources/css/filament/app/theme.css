@@ -237,6 +237,7 @@
     --cols-lg: 1fr auto !important;
     @apply items-center;
 }
+.fi-resource-members .fi-ta-filters > .fi-grid, 
 .fi-resource-users .fi-ta-filters > .fi-grid {
     --cols-lg: 1fr auto auto auto !important;
     @apply items-center;

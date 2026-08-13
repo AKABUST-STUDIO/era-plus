@@ -4,9 +4,8 @@ namespace App\Providers\Filament;
 
 use App\Filament\Organization\Pages\Auth\Login;
 use App\Filament\Organization\Pages\Auth\Register;
-use App\Filament\Organization\Pages\Overview;
 use App\Filament\Organization\Pages\Tenancy\CreateOrganization;
-use App\Filament\Organization\Settings\Pages\GeneralSettings;
+use App\Filament\Organization\Settings\Pages\OrganizationSettings;
 use App\Http\Middleware\ApplyTenantContext;
 use App\Http\Middleware\EnforceOrganizationEmailVerification;
 use App\Http\Middleware\EnforceOrganizationTwoFactor;
@@ -21,10 +20,6 @@ use Illuminate\Contracts\View\View;
 class OrganizationPanelProvider extends BasePanelProvider
 {
     public const PANEL_ID = 'organization';
-
-    protected const pages = [
-        Overview::class,
-    ];
 
     protected const authMiddleware = [
         Authenticate::class,
@@ -68,7 +63,6 @@ class OrganizationPanelProvider extends BasePanelProvider
                 fn (): View => view('filament.auth.login-layout-footer'),
             )
 
-            ->pages(self::pages)
             ->discoverResources(
                 in: app_path('Filament/Organization/Resources'),
                 for: 'App\\Filament\\Organization\\Resources',
@@ -106,8 +100,9 @@ class OrganizationPanelProvider extends BasePanelProvider
                 NavigationItem::make('Settings')
                     ->icon('lucide-settings')
                     ->sort(99)
-                    ->visible(fn (): bool => GeneralSettings::canAccess())
-                    ->url(fn (): string => GeneralSettings::getUrl(
+                    ->extraAttributes(['class' => 'border-t border-gray-950/10 pt-1 dark:border-white/10'])
+                    ->visible(fn (): bool => OrganizationSettings::canAccess())
+                    ->url(fn (): string => OrganizationSettings::getUrl(
                         panel: 'organization.settings',
                     )),
             ])

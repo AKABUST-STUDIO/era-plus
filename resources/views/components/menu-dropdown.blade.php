@@ -11,7 +11,6 @@
     'searchPlaceholder' => null,
     'noMatchesMessage' => null,
     'wide' => true,
-    'menuType' => null,
     'url' => null,
     'toggleLabel' => null,
 ])
@@ -138,36 +137,7 @@
                 }).observe(panel, { attributeFilter: ['style'] });
             }
         "
-        x-data="{
-            query: '',
-            switchTenant(slug) {
-                const parts = window.location.pathname.split('/').filter(Boolean);
-                const type = @js($menuType);
-                let newPath;
-                if (type === 'organization') {
-                    if (parts.length === 0) {
-                        newPath = '/' + slug + '/overview';
-                    } else {
-                        parts[0] = slug;
-                        if (parts.length >= 3) {
-                            parts.length = 1;
-                            parts.push('overview');
-                        }
-                        newPath = '/' + parts.join('/');
-                    }
-                } else if (type === 'project') {
-                    if (parts.length >= 3) {
-                        parts[1] = slug;
-                        newPath = '/' + parts.join('/');
-                    } else if (parts.length >= 1) {
-                        newPath = '/' + parts[0] + '/' + slug + '/overview';
-                    }
-                }
-                if (newPath) {
-                    Livewire.navigate(newPath);
-                }
-            },
-        }"
+        x-data="{ query: '' }"
         class="fi-tenant-menu-panel flex flex-col gap-1.5 p-1.5"
     >
         <div class="fi-tenant-menu-search pt-0.5 px-1">
@@ -185,11 +155,7 @@
             @foreach ($items as $item)
                 <a
                     href="{{ $item['url'] }}"
-                    @if ($menuType && ! empty($item['slug']))
-                        x-on:click.prevent="switchTenant({{ \Illuminate\Support\Js::from($item['slug']) }})"
-                    @else
-                        wire:navigate.hover
-                    @endif
+                    wire:navigate.hover
                     x-show="query === '' || {{ \Illuminate\Support\Js::from(mb_strtolower($item['name'])) }}.includes(query.toLowerCase())"
                     @class([
                         'fi-tenant-menu-item flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-800 no-underline transition hover:bg-gray-950/5 focus-visible:bg-gray-950/5 focus-visible:outline-hidden dark:text-gray-200 dark:hover:bg-white/5 dark:focus-visible:bg-white/5',

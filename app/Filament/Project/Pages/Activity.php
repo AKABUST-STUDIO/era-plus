@@ -39,12 +39,12 @@ class Activity extends Page implements HasTable
 
     public static function getNavigationLabel(): string
     {
-        return __('navigation.activity_log');
+        return __('navigation.activity');
     }
 
     public function getTitle(): string
     {
-        return __('forms.project.activity_log.title');
+        return __('forms.project.activity.title');
     }
 
     public function table(Table $table): Table

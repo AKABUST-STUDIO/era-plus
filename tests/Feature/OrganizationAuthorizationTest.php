@@ -6,7 +6,7 @@ use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
 use App\Filament\Organization\Resources\OrganizationUsers\OrganizationUserResource;
 use App\Filament\Organization\Settings\Pages\Billing;
-use App\Filament\Organization\Settings\Pages\GeneralSettings;
+use App\Filament\Organization\Settings\Pages\OrganizationSettings;
 use App\Filament\Organization\Settings\Resources\Roles\RoleResource;
 use App\Models\Organization;
 use App\Models\Project;
@@ -57,28 +57,29 @@ class OrganizationAuthorizationTest extends TestCase
         [$user, $organization] = $this->userWithRole(OrganizationRole::Admin);
         $this->actOnSettingsPanel($user, $organization);
 
-        $this->assertTrue(GeneralSettings::canAccess());
+        $this->assertTrue(OrganizationSettings::canAccess());
         $this->assertTrue(Billing::canAccess());
     }
 
-    public function test_member_cannot_access_the_settings_pages(): void
+    public function test_member_can_open_organization_settings_but_not_billing(): void
     {
         [$user, $organization] = $this->userWithRole(OrganizationRole::Member);
         $this->actOnSettingsPanel($user, $organization);
 
-        $this->assertFalse(GeneralSettings::canAccess());
+        $this->assertTrue(OrganizationSettings::canAccess());
+        $this->assertFalse($user->can('update', $organization));
         $this->assertFalse(Billing::canAccess());
     }
 
-    public function test_member_gets_forbidden_when_mounting_a_settings_page(): void
+    public function test_member_gets_forbidden_when_mounting_a_gated_settings_page(): void
     {
         [$user, $organization] = $this->userWithRole(OrganizationRole::Member);
         $this->actOnSettingsPanel($user, $organization);
 
-        Livewire::test(GeneralSettings::class)->assertForbidden();
+        Livewire::test(Billing::class)->assertForbidden();
     }
 
-    public function test_role_without_permissions_cannot_access_anything(): void
+    public function test_role_without_permissions_can_only_view_the_organization(): void
     {
         $user = User::factory()->create();
         $organization = Organization::factory()->create();
@@ -93,7 +94,8 @@ class OrganizationAuthorizationTest extends TestCase
         $user->joinOrganization($organization, $empty);
         $this->actOnSettingsPanel($user, $organization);
 
-        $this->assertFalse(GeneralSettings::canAccess());
+        $this->assertTrue(OrganizationSettings::canAccess());
+        $this->assertFalse($user->can('update', $organization));
         $this->assertFalse(OrganizationUserResource::canViewAny());
         $this->assertFalse(RoleResource::canViewAny());
     }
@@ -158,10 +160,13 @@ class OrganizationAuthorizationTest extends TestCase
 
         $this->actOnOrganizationPanel($member, $organization);
         $this->assertTrue(Gate::forUser($member)->allows('viewAny', Project::class));
-        $this->assertTrue(Gate::forUser($member)->allows('view', $project));
+        $this->assertFalse(Gate::forUser($member)->allows('view', $project));
         $this->assertFalse(Gate::forUser($member)->allows('create', Project::class));
         $this->assertFalse(Gate::forUser($member)->allows('update', $project));
         $this->assertFalse(Gate::forUser($member)->allows('delete', $project));
+
+        $member->joinProject($project);
+        $this->assertTrue(Gate::forUser($member->fresh())->allows('view', $project));
     }
 
     public function test_outsider_is_denied_every_organization_permission(): void
@@ -200,14 +205,14 @@ class OrganizationAuthorizationTest extends TestCase
             'label' => 'Settings Viewer',
             'locked' => false,
         ]);
-        $viewer->syncPermissions(['view_organization']);
+        $viewer->syncPermissions(['view_any_project']);
 
         $user->joinOrganization($organization, $viewer);
         $this->actOnSettingsPanel($user->fresh(), $organization);
 
-        $this->assertTrue(GeneralSettings::canAccess());
+        $this->assertTrue(OrganizationSettings::canAccess());
 
-        Livewire::test(GeneralSettings::class)
+        Livewire::test(OrganizationSettings::class)
             ->fillForm(['name' => 'Nope'])
             ->assertActionDoesNotExist(TestAction::make('saveName')->schemaComponent('name-section', 'form'));
 

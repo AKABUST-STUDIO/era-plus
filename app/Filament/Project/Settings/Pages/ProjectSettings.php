@@ -19,7 +19,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class GeneralSettings extends Page
+class ProjectSettings extends Page
 {
     use HasProjectSettingsBreadcrumbs;
 
@@ -46,12 +46,12 @@ class GeneralSettings extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('settings.project.general.navigation_label');
+        return __('navigation.project');
     }
 
     public function getTitle(): string
     {
-        return __('forms.project.settings.title');
+        return __('navigation.project');
     }
 
     public function mount(): void

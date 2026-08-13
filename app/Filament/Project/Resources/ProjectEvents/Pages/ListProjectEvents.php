@@ -21,14 +21,6 @@ class ListProjectEvents extends Page
 
     public string $calendarTitle = '';
 
-    /**
-     * @return array<string, string>
-     */
-    public function getBreadcrumbs(): array
-    {
-        return [];
-    }
-
     public function getTitle(): string
     {
         return $this->calendarTitle !== ''

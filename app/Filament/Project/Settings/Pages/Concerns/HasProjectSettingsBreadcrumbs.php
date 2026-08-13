@@ -3,7 +3,7 @@
 namespace App\Filament\Project\Settings\Pages\Concerns;
 
 use App\Facades\ProjectService;
-use App\Filament\Project\Settings\Pages\GeneralSettings;
+use App\Filament\Project\Settings\Pages\ProjectSettings;
 use App\Models\Project;
 
 trait HasProjectSettingsBreadcrumbs
@@ -21,7 +21,7 @@ trait HasProjectSettingsBreadcrumbs
 
         return [
             ProjectService::urlFor($project) => $project->name,
-            GeneralSettings::getUrl(['project' => $project->slug]) => __('settings.breadcrumb'),
+            ProjectSettings::getUrl(['project' => $project->slug]) => __('settings.breadcrumb'),
             $this->getTitle(),
         ];
     }

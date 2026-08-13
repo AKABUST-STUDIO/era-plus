@@ -4,7 +4,6 @@
     <div class="flex items-center gap-4 group">
         <x-menu-dropdown
             extra-class="fi-project-menu"
-            menu-type="project"
             :wide="false"
             :tooltip="$currentProject?->name ?? __('menu.project.open')"
             :avatar="$currentProject ?? $organization"

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static Organization|null current()
  * @method static Collection<int, Organization> organizationsFor(User $user)
- * @method static string urlFor(Organization $organization)
+ * @method static string urlFor(Organization $organization, string|null $page = null)
  * @method static void remember(Organization $organization)
  * @method static Organization|null selected()
  * @method static void forget()

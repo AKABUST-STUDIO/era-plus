@@ -20,6 +20,13 @@ class ProjectResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    protected static ?int $navigationSort = -2;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.projects');
+    }
+
     public static function canCreate(): bool
     {
         $organization = Filament::getTenant();

@@ -8,6 +8,7 @@ use App\Facades\OrganizationService;
 use App\Filament\Organization\Pages\Activity;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\Invoices;
+use App\Filament\Organization\Settings\Pages\OrganizationSettings;
 use App\Filament\Organization\Settings\Resources\Roles\Pages\ListRoles;
 use App\Filament\Project\Resources\ProjectParticipants\ProjectParticipantResource;
 use App\Filament\Project\Resources\TravelExpenses\Pages\ListTravelExpenses;
@@ -111,17 +112,25 @@ class PolicyAuthorizationTest extends TestCase
         $this->assertSame(['update'], $abilities);
     }
 
-    public function test_organization_policy_only_exposes_view_update_and_delete(): void
+    public function test_organization_policy_only_exposes_update_and_delete(): void
     {
         $abilities = array_map(
             fn (ReflectionMethod $method): string => $method->getName(),
             (new ReflectionClass(OrganizationPolicy::class))->getMethods(ReflectionMethod::IS_PUBLIC),
         );
 
-        $this->assertSame(['view', 'update', 'delete'], $abilities);
+        $this->assertSame(['update', 'delete'], $abilities);
         $this->assertSame(
-            ['view_organization', 'update_organization', 'delete_organization'],
+            ['update_organization', 'delete_organization'],
             PermissionRegistry::grouped()['organization'],
+        );
+    }
+
+    public function test_project_permissions_are_organization_wide_only(): void
+    {
+        $this->assertSame(
+            ['view_any_project', 'create_project', 'update_any_project', 'delete_any_project'],
+            PermissionRegistry::grouped()['project'],
         );
     }
 
@@ -130,13 +139,12 @@ class PolicyAuthorizationTest extends TestCase
         $member = User::factory()->create();
         $member->joinOrganization($this->organization, OrganizationRole::Member);
         $role = $this->organization->roleFor(OrganizationRole::Member);
-        $role->givePermissionTo('view_organization');
 
         $this->actingAs($member);
         Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
         Filament::setTenant($this->organization);
 
-        $this->assertTrue($member->can('view', $this->organization));
+        $this->assertTrue(OrganizationSettings::canAccess());
         $this->assertFalse($member->can('update', $this->organization));
         $this->assertFalse($member->can('delete', $this->organization));
 

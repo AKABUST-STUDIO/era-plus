@@ -124,11 +124,11 @@ return [
     ],
 
     'feedback' => [
-        'recipient' => env('FEEDBACK_RECIPIENT', 'feedback@rasmo.eu'),
+        'recipient' => env('FEEDBACK_RECIPIENT', 'feedback@era-plus.network'),
     ],
 
     'support' => [
-        'recipient' => env('SUPPORT_RECIPIENT', 'support@rasmo.eu'),
+        'recipient' => env('SUPPORT_RECIPIENT', 'support@era-plus.network'),
     ],
 
     'locales' => [

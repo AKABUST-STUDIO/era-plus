@@ -1,12 +1,12 @@
 <div>
     <x-menu-dropdown
         extra-class="fi-organization-menu"
-        menu-type="organization"
         :tooltip="$currentOrganization?->name"
         :avatar="$currentOrganization"
         :label="__('menu.organization.label')"
         :name="$currentOrganization?->name ?? '—'"
         :url="$organizationUrl"
+        :toggle-label="__('menu.organization.select')"
         :badge="$currentOrganization?->subscription_tier->getLabel()"
         :items="$items->all()"
         :search-placeholder="__('menu.organization.search')"

@@ -38,7 +38,7 @@ class SupportTicketTest extends TestCase
     public function test_user_can_create_ticket_from_list_header_action(): void
     {
         Mail::fake();
-        config()->set('app.support.recipient', 'support@rasmo.eu');
+        config()->set('app.support.recipient', 'support@era-plus.network');
 
         Livewire::test(ListSupportTickets::class)
             ->callAction(CreateSupportTicketAction::make()->getName(), data: [
@@ -53,7 +53,7 @@ class SupportTicketTest extends TestCase
         ]);
 
         Mail::assertQueued(SupportTicketReceived::class, function (SupportTicketReceived $mail): bool {
-            return $mail->hasTo('support@rasmo.eu');
+            return $mail->hasTo('support@era-plus.network');
         });
     }
 

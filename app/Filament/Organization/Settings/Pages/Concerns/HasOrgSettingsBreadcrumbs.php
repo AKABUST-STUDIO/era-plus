@@ -3,7 +3,8 @@
 namespace App\Filament\Organization\Settings\Pages\Concerns;
 
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Settings\Pages\GeneralSettings;
+use App\Filament\Organization\Settings\Pages\OrganizationSettings;
+use App\Providers\Filament\Organization\SettingsPanelProvider;
 use App\Providers\Filament\OrganizationPanelProvider;
 use Filament\Facades\Filament;
 
@@ -15,7 +16,7 @@ trait HasOrgSettingsBreadcrumbs
 
         return [
             Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getUrl(tenant: $organization) => $organization->name,
-            GeneralSettings::getUrl(tenant: $organization) => __('settings.breadcrumb'),
+            OrganizationSettings::getUrl(panel: SettingsPanelProvider::PANEL_ID, tenant: $organization) => __('settings.breadcrumb'),
             $this->getTitle(),
         ];
     }

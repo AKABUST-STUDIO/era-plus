@@ -2,35 +2,32 @@
 
 namespace App\Filament\Project\Resources\ProjectMembers;
 
-use App\Filament\Project\Resources\ProjectMembers\Pages\CreateProjectMember;
-use App\Filament\Project\Resources\ProjectMembers\Pages\EditProjectMember;
 use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
-use App\Filament\Project\Resources\ProjectMembers\Schemas\ProjectMemberForm;
 use App\Filament\Project\Resources\ProjectMembers\Tables\ProjectMembersTable;
 use App\Models\ProjectUser;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProjectMemberResource extends Resource
 {
     protected static ?string $model = ProjectUser::class;
 
+    protected static ?string $slug = 'users';
+
     public static function getNavigationLabel(): string
     {
-        return __('navigation.members');
+        return __('navigation.users');
     }
 
     public static function getModelLabel(): string
     {
-        return __('navigation.member');
+        return __('member.singular');
     }
 
-    protected static ?string $pluralModelLabel = 'members';
-
-    public static function form(Schema $schema): Schema
+    public static function getPluralModelLabel(): string
     {
-        return ProjectMemberForm::configure($schema);
+        return __('member.title');
     }
 
     public static function table(Table $table): Table
@@ -38,17 +35,15 @@ class ProjectMemberResource extends Resource
         return ProjectMembersTable::configure($table);
     }
 
-    public static function getRelations(): array
+    public static function getEloquentQuery(): Builder
     {
-        return [];
+        return parent::getEloquentQuery()->with(['user', 'role']);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListProjectMembers::route('/'),
-            'create' => CreateProjectMember::route('/create'),
-            'edit' => EditProjectMember::route('/{record}/edit'),
         ];
     }
 }

@@ -7,7 +7,6 @@ use App\Filament\Organization\Resources\OrganizationUsers\OrganizationUserResour
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
-use Override;
 
 class ListOrganizationUsers extends ListRecords
 {
@@ -30,12 +29,6 @@ class ListOrganizationUsers extends ListRecords
         return [
             InviteUserAction::make(),
         ];
-    }
-
-    #[Override]
-    public function getBreadcrumbs(): array
-    {
-        return [];
     }
 
     /**

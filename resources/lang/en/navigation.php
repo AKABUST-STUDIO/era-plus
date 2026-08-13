@@ -2,12 +2,15 @@
 
 return [
     'back' => 'Back',
-    'members' => 'Members',
-    'member' => 'member',
+    'organization' => 'Organization',
+    'project' => 'Project',
+    'projects' => 'Projects',
+    'users' => 'Users',
+    'user' => 'user',
     'participants' => 'Participants',
     'participant' => 'participant',
     'finance' => 'Travel expenses',
-    'activity_log' => 'Activity log',
+    'activity' => 'Activity',
     'settings' => 'Settings',
     'organizations' => 'Organizations',
     'authentication' => 'Authentication',

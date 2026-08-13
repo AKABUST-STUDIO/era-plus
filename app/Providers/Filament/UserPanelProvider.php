@@ -47,6 +47,7 @@ class UserPanelProvider extends BasePanelProvider
                     ->label(__('navigation.back'))
                     ->icon('lucide-arrow-left')
                     ->sort(-1)
+                    ->extraAttributes(['class' => '[&_.fi-sidebar-item-label]:me-9 [&_.fi-sidebar-item-label]:text-center'])
                     ->url(fn (): ?string => Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getUrl()),
             ])
             ->renderHook(
