@@ -10,7 +10,7 @@
     $pollingInterval = $this->getPollingInterval();
 @endphp
 
-<div class="fi-no-database">
+<div class="fi-no-database" wire:init="loadNextModal">
     <x-filament::modal
         :alignment="$hasNotifications ? null : Alignment::Center"
         close-button
@@ -31,7 +31,7 @@
         class="fi-no-database"
         :attributes="
             new \Illuminate\View\ComponentAttributeBag([
-                'wire:poll.' . $pollingInterval => $pollingInterval ? '' : false,
+                'wire:poll.' . $pollingInterval => $pollingInterval ? 'loadNextModal' : false,
             ])
         "
     >
@@ -112,4 +112,6 @@
             @endif
         @endif
     </x-filament::modal>
+
+    <x-filament-actions::modals />
 </div>

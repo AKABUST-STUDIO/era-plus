@@ -7,6 +7,9 @@ use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Events\UserUpdated;
 use App\Facades\ProjectAccess;
+use App\ModalNotifications\Contracts\ModalDefinition;
+use App\ModalNotifications\ModalPayload;
+use App\ModalNotifications\Notifications\ModalDatabaseNotification;
 use App\Models\Organization\OrganizationUser;
 use App\Observers\UserObserver;
 use App\Traits\User\HasAuthenticationMailable;
@@ -24,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Laravel\Cashier\Billable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
@@ -199,6 +203,27 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         $this->projects()->syncWithoutDetaching([
             $project->getKey() => ['role_id' => $project->roleFor($role)?->id],
         ]);
+    }
+
+    /**
+     * @param  class-string<ModalDefinition<TPayload>>  $modalClass
+     * @param  TPayload  $payload
+     *
+     * @template TPayload of ModalPayload
+     */
+    public function notifyWithModal(string $modalClass, ModalPayload $payload): void
+    {
+        if (! is_subclass_of($modalClass, ModalDefinition::class)) {
+            throw new InvalidArgumentException(sprintf('[%s] is not a %s.', $modalClass, ModalDefinition::class));
+        }
+
+        $expected = $modalClass::payloadClass();
+
+        if (! $payload instanceof $expected) {
+            throw new InvalidArgumentException(sprintf('Modal [%s] expects payload of type [%s], got [%s].', $modalClass, $expected, $payload::class));
+        }
+
+        $this->notify(new ModalDatabaseNotification($modalClass, $payload));
     }
 
     /**

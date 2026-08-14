@@ -26,6 +26,7 @@
 @endphp
 
 <x-filament::modal
+    teleport="body"
     :alignment="$actionModalAlignment"
     :autofocus="$actionIsModalAutofocused"
     :close-button="$actionHasModalCloseButton"

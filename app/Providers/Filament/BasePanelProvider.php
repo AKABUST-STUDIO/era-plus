@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Panels\SpotlightPlugin;
 use App\Filament\Panels\UserMenu;
 use App\Http\Middleware\SetUserLocale;
+use App\Livewire\DatabaseNotifications;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Contracts\Plugin;
 use Filament\Enums\DatabaseNotificationsPosition;
@@ -63,7 +64,11 @@ abstract class BasePanelProvider extends PanelProvider
             ->topbar(false)
             ->sidebarFullyCollapsibleOnDesktop(true)
             ->globalSearch(false)
-            ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
+
+            ->databaseNotifications(
+                livewireComponent: DatabaseNotifications::class,
+                position: DatabaseNotificationsPosition::Sidebar,
+            )
             ->databaseNotificationsPolling('5s')
 
             ->brandName(config('app.name'))
