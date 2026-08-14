@@ -21,7 +21,6 @@ class OrganizationSubscriptionTest extends TestCase
         $organization = Organization::factory()->create();
 
         $this->assertSame(SubscriptionTier::Basic, $organization->subscription_tier);
-        $this->assertSame(1, $organization->projectLimit());
     }
 
     public function test_tier_is_derived_from_the_linked_subscription(): void
@@ -29,7 +28,6 @@ class OrganizationSubscriptionTest extends TestCase
         $organization = Organization::factory()->subscribed(SubscriptionTier::Pro)->create();
 
         $this->assertSame(SubscriptionTier::Pro, $organization->fresh()->subscription_tier);
-        $this->assertNull($organization->fresh()->projectLimit());
     }
 
     public function test_owner_is_the_subscription_user(): void

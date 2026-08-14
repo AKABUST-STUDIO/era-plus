@@ -18,7 +18,15 @@ class RegisterOrganization
             ? $data['subscription_tier']
             : SubscriptionTier::from($data['subscription_tier']);
 
-        $subscription = $user->newSubscription('default', $tier->stripePriceId())->create();
+        $builder = $user->newSubscription('default', $tier->stripePriceId());
+
+        $freeProjectPriceId = config('services.stripe.prices.project_free');
+
+        if (is_string($freeProjectPriceId) && $freeProjectPriceId !== '') {
+            $builder->price($freeProjectPriceId, 1);
+        }
+
+        $subscription = $builder->create();
 
         $organization = Organization::create([
             'name' => $data['name'],

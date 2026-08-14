@@ -33,7 +33,7 @@ class CashierBillableTest extends TestCase
         $this->assertSame(SubscriptionTier::Pro, $organization->fresh()->subscription_tier);
     }
 
-    public function test_basic_tier_allows_one_project(): void
+    public function test_org_without_paid_slots_allows_only_the_free_project(): void
     {
         $organization = Organization::factory()->create();
 
@@ -42,24 +42,5 @@ class CashierBillableTest extends TestCase
         Project::factory()->for($organization)->create();
 
         $this->assertFalse($organization->fresh()->canCreateProject());
-    }
-
-    public function test_pro_tier_has_unlimited_projects(): void
-    {
-        $organization = Organization::factory()->subscribed(SubscriptionTier::Pro)->create();
-
-        Project::factory()->for($organization)->count(10)->create();
-
-        $this->assertTrue($organization->fresh()->canCreateProject());
-        $this->assertNull($organization->fresh()->projectLimit());
-    }
-
-    public function test_trial_tier_has_unlimited_projects(): void
-    {
-        $organization = Organization::factory()->subscribed(SubscriptionTier::Trial)->create();
-
-        Project::factory()->for($organization)->count(10)->create();
-
-        $this->assertNull($organization->fresh()->projectLimit());
     }
 }

@@ -40,4 +40,15 @@ class OrganizationFactory extends Factory
     {
         return $this->subscribed($tier, $owner);
     }
+
+    public function withProjectSlots(int $quantity, SubscriptionTier $tier = SubscriptionTier::Basic, ?User $owner = null): static
+    {
+        return $this->state(fn (): array => [
+            'subscription_id' => Subscription::factory()
+                ->for($owner ?? User::factory(), 'user')
+                ->withSlots($quantity)
+                ->create(['stripe_price' => $tier->stripePriceId()])
+                ->id,
+        ]);
+    }
 }

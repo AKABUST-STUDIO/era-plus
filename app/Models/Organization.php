@@ -78,7 +78,7 @@ class Organization extends Model implements HasAvatar, HasMedia
 
     protected function subscriptionTier(): Attribute
     {
-        return Attribute::get(fn (): SubscriptionTier => SubscriptionTier::fromStripePriceId($this->subscription?->stripe_price) ?? SubscriptionTier::Basic);
+        return Attribute::get(fn (): SubscriptionTier => $this->subscription?->tier() ?? SubscriptionTier::Basic);
     }
 
     public function getSlugOptions(): SlugOptions
@@ -194,19 +194,47 @@ class Organization extends Model implements HasAvatar, HasMedia
         return $this->hasMany(Project::class);
     }
 
-    public function projectLimit(): ?int
+    public function purchasedProjectSlots(): int
     {
-        return $this->subscription_tier->baseProjectLimit();
+        $slotPriceId = config('services.stripe.prices.project_slot');
+
+        if (! is_string($slotPriceId) || $slotPriceId === '') {
+            return 0;
+        }
+
+        return (int) ($this->subscription?->items->firstWhere('stripe_price', $slotPriceId)?->quantity ?? 0);
+    }
+
+    public function freeProjectAllowance(): int
+    {
+        $freePriceId = config('services.stripe.prices.project_free');
+
+        if (! is_string($freePriceId) || $freePriceId === '') {
+            return 1;
+        }
+
+        $item = $this->subscription?->items->firstWhere('stripe_price', $freePriceId);
+
+        return $item === null ? 0 : (int) ($item->quantity ?? 1);
+    }
+
+    public function projectLimit(): int
+    {
+        return $this->freeProjectAllowance() + $this->purchasedProjectSlots();
+    }
+
+    public function activeProjectCount(): int
+    {
+        return $this->projects()->count();
     }
 
     public function canCreateProject(): bool
     {
-        $limit = $this->projectLimit();
+        return $this->activeProjectCount() < $this->projectLimit();
+    }
 
-        if ($limit === null) {
-            return true;
-        }
-
-        return $this->projects()->count() < $limit;
+    public function canReduceProjectSlotsTo(int $newQuantity): bool
+    {
+        return $newQuantity + $this->freeProjectAllowance() >= $this->activeProjectCount();
     }
 }

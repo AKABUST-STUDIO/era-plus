@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Subscription\SubscriptionTier;
 use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,5 +24,10 @@ class Subscription extends CashierSubscription
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function tier(): SubscriptionTier
+    {
+        return SubscriptionTier::fromStripePriceId($this->stripe_price) ?? SubscriptionTier::Basic;
     }
 }

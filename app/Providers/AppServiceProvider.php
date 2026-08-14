@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Filament\Organization\Settings\Pages\Billing;
+use App\Filament\Organization\Settings\Pages\BillingItems;
 use App\Filament\Organization\Settings\Pages\Invoices;
 use App\Models\Organization;
 use App\Models\Project;
@@ -45,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
     protected function registerPagePolicies(): void
     {
         Gate::policy(Billing::class, BillingPolicy::class);
+        Gate::policy(BillingItems::class, BillingPolicy::class);
         Gate::policy(Invoices::class, InvoicePolicy::class);
     }
 

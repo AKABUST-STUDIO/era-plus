@@ -49,6 +49,21 @@ class CreateOrganizationWizardTest extends TestCase
         $this->assertTrue($this->user->fresh()->isOrgAdmin($organization));
     }
 
+    public function test_register_attaches_the_free_project_subscription_item(): void
+    {
+        Livewire::test(CreateOrganization::class)
+            ->fillForm([
+                'name' => 'Free Slot Co',
+                'subscription_tier' => SubscriptionTier::Basic->value,
+            ])
+            ->call('register');
+
+        $organization = Organization::query()->where('name', 'Free Slot Co')->firstOrFail();
+
+        $this->assertSame(1, $organization->freeProjectAllowance());
+        $this->assertSame(1, $organization->projectLimit());
+    }
+
     public function test_first_organization_becomes_default(): void
     {
         Livewire::test(CreateOrganization::class)

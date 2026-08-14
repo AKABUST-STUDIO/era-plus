@@ -41,5 +41,7 @@
         <env name="STRIPE_PRICE_BASIC" value="price_basic"/>
         <env name="STRIPE_PRICE_PRO" value="price_pro"/>
         <env name="STRIPE_PRICE_TRIAL" value="price_trial"/>
+        <env name="STRIPE_PRICE_PROJECT_FREE" value="price_project_free"/>
+        <env name="STRIPE_PRICE_PROJECT_SLOT" value="price_project_slot"/>
     </php>
 </phpunit>

@@ -232,6 +232,20 @@ return [
             'action' => 'Save tax ID',
             'saved' => 'Tax ID updated',
         ],
+
+    ],
+
+    'billing_items' => [
+        'navigation_label' => 'Billing items',
+        'title' => 'Billing items',
+        'item_description' => 'Visit :name\'s project settings for details.',
+        'view' => 'View project settings',
+        'empty' => 'No projects yet.',
+
+        'tier' => [
+            'free' => 'Free',
+            'paid' => 'Paid',
+        ],
     ],
 
     'activity' => [

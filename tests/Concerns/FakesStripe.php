@@ -55,7 +55,23 @@ trait FakesStripe
              */
             private function subscription(array $params): array
             {
-                $price = $params['items'][0]['price'] ?? 'price_fake';
+                $items = $params['items'] ?? [['price' => 'price_fake', 'quantity' => 1]];
+
+                $data = [];
+
+                foreach ($items as $item) {
+                    $data[] = [
+                        'id' => 'si_'.uniqid(),
+                        'object' => 'subscription_item',
+                        'quantity' => $item['quantity'] ?? 1,
+                        'price' => [
+                            'id' => $item['price'] ?? 'price_fake',
+                            'object' => 'price',
+                            'product' => 'prod_'.uniqid(),
+                            'recurring' => ['interval' => 'month'],
+                        ],
+                    ];
+                }
 
                 return [
                     'id' => 'sub_'.uniqid(),
@@ -66,17 +82,7 @@ trait FakesStripe
                         'object' => 'list',
                         'has_more' => false,
                         'url' => '/v1/subscription_items',
-                        'data' => [[
-                            'id' => 'si_'.uniqid(),
-                            'object' => 'subscription_item',
-                            'quantity' => $params['items'][0]['quantity'] ?? 1,
-                            'price' => [
-                                'id' => $price,
-                                'object' => 'price',
-                                'product' => 'prod_'.uniqid(),
-                                'recurring' => ['interval' => 'month'],
-                            ],
-                        ]],
+                        'data' => $data,
                     ],
                 ];
             }
