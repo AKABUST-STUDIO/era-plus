@@ -20,6 +20,27 @@
     padding: 4rem;
 }
 
+/* Tenant registration — uncontained, no card wrapper */
+.fi-organization-tenant-registration.fi-simple-main {
+    @apply bg-transparent p-0 shadow-none ring-0;
+}
+
+.fi-organization-tenant-registration .fi-simple-header {
+    @apply hidden;
+}
+
+.fi-organization-tenant-registration .fi-section-header-heading {
+    @apply text-3xl font-bold tracking-tight;
+}
+
+/* Animatable gradient tint — driven by Alpine, interpolated by the browser */
+@property --tier-tint {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 5%;
+}
+
+
 /* -------------------------------------------------------------------------- */
 /* Sidebar border — matches the topbar's edge color                           */
 /* -------------------------------------------------------------------------- */

@@ -7,11 +7,11 @@ use Tests\TestCase;
 
 class SubscriptionTierTest extends TestCase
 {
-    public function test_only_basic_pro_and_trial_exist(): void
+    public function test_only_basic_pro_trial_and_corporate_exist(): void
     {
         $values = array_map(fn (SubscriptionTier $tier): string => $tier->value, SubscriptionTier::cases());
 
-        $this->assertSame(['basic', 'pro', 'trial'], $values);
+        $this->assertSame(['basic', 'pro', 'trial', 'corporate'], $values);
         $this->assertNull(SubscriptionTier::tryFrom('premium'));
     }
 
@@ -20,13 +20,15 @@ class SubscriptionTierTest extends TestCase
         $this->assertSame('Basic', SubscriptionTier::Basic->getLabel());
         $this->assertSame('Pro', SubscriptionTier::Pro->getLabel());
         $this->assertSame('Trial', SubscriptionTier::Trial->getLabel());
+        $this->assertSame('Corporate', SubscriptionTier::Corporate->getLabel());
     }
 
-    public function test_basic_is_limited_to_one_project_pro_and_trial_are_unlimited(): void
+    public function test_basic_is_limited_to_one_project_others_are_unlimited(): void
     {
         $this->assertSame(1, SubscriptionTier::Basic->baseProjectLimit());
         $this->assertNull(SubscriptionTier::Pro->baseProjectLimit());
         $this->assertNull(SubscriptionTier::Trial->baseProjectLimit());
+        $this->assertNull(SubscriptionTier::Corporate->baseProjectLimit());
     }
 
     public function test_stripe_price_id_reads_the_matching_config_key(): void

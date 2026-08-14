@@ -97,7 +97,7 @@ class Billing extends Page implements HasOrganizationPermissions
         return Section::make(__('settings.billing.plan.heading'))
             ->description(match ($this->organization->subscription_tier) {
                 SubscriptionTier::Basic => __('settings.billing.plan.basic_pitch'),
-                SubscriptionTier::Pro, SubscriptionTier::Trial => __('settings.billing.plan.pro_active'),
+                SubscriptionTier::Pro, SubscriptionTier::Trial, SubscriptionTier::Corporate => __('settings.billing.plan.pro_active'),
             })
             ->footerActions([
                 Action::make('checkoutPro')

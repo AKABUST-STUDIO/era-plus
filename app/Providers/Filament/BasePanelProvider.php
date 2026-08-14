@@ -26,6 +26,7 @@ abstract class BasePanelProvider extends PanelProvider
 {
     protected const colors = [
         'primary' => Color::Zinc,
+        'accent' => Color::Sky,
     ];
 
     protected const plugins = [

@@ -10,6 +10,7 @@ enum SubscriptionTier: string implements HasColor, HasLabel
     case Basic = 'basic';
     case Pro = 'pro';
     case Trial = 'trial';
+    case Corporate = 'corporate';
 
     public function getLabel(): string
     {
@@ -17,6 +18,7 @@ enum SubscriptionTier: string implements HasColor, HasLabel
             self::Basic => 'Basic',
             self::Pro => 'Pro',
             self::Trial => 'Trial',
+            self::Corporate => 'Corporate',
         };
     }
 
@@ -25,6 +27,7 @@ enum SubscriptionTier: string implements HasColor, HasLabel
         return match ($this) {
             self::Basic => 'gray',
             self::Pro, self::Trial => 'primary',
+            self::Corporate => 'accent',
         };
     }
 
@@ -32,8 +35,21 @@ enum SubscriptionTier: string implements HasColor, HasLabel
     {
         return match ($this) {
             self::Basic => 1,
-            self::Pro, self::Trial => null,
+            self::Pro, self::Trial, self::Corporate => null,
         };
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function features(): array
+    {
+        return __('organization.register.plans.'.$this->value.'.features');
+    }
+
+    public function title(): string
+    {
+        return __('organization.register.plans.'.$this->value.'.title');
     }
 
     public function stripePriceId(): ?string
