@@ -13,19 +13,19 @@ class GoogleCalendarCredentials
 
     public static function isConfigured(): bool
     {
-        return env('GOOGLE_CALENDAR_CREDENTIALS_B64', '') !== '';
+        return (string) config('services.google.credentials_b64') !== '';
     }
 
     public static function impersonate(): ?string
     {
-        $email = (string) env('GOOGLE_CALENDAR_IMPERSONATE', '');
+        $email = (string) config('services.google.impersonate');
 
         return $email !== '' ? $email : null;
     }
 
     public static function materialize(): void
     {
-        $encoded = (string) env('GOOGLE_CALENDAR_CREDENTIALS_B64', '');
+        $encoded = (string) config('services.google.credentials_b64');
 
         if ($encoded === '') {
             return;
