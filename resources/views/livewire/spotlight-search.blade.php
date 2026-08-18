@@ -21,8 +21,8 @@
         <span class="flex-1 text-start">{{ __('menu.spotlight.placeholder') }}</span>
 
         <kbd class="ms-auto inline-flex items-center rounded border border-gray-950/10 bg-white px-1 py-px text-[10px] font-medium text-gray-500 dark:border-white/10 dark:bg-gray-900 dark:text-gray-400">
-            <span x-show="mac" x-cloak>⌘F</span>
-            <span x-show="! mac" x-cloak>Ctrl F</span>
+            <span x-show="mac" x-cloak>⌘K</span>
+            <span x-show="! mac" x-cloak>Ctrl K</span>
         </kbd>
     </button>
 </div>

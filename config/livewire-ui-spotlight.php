@@ -15,7 +15,7 @@ return [
     */
 
     'shortcuts' => [
-        'f',
+        'k',
     ],
 
     /*
@@ -67,6 +67,6 @@ return [
     | having to type anything in the search input.
     |
     */
-    'show_results_without_input' => false,
+    'show_results_without_input' => true,
 
 ];

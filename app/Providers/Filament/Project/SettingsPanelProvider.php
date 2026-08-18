@@ -4,8 +4,6 @@ namespace App\Providers\Filament\Project;
 
 use App\Facades\ProjectService;
 use App\Http\Middleware\ApplyTenantContext;
-use App\Http\Middleware\EnforceOrganizationEmailVerification;
-use App\Http\Middleware\EnforceOrganizationTwoFactor;
 use App\Http\Middleware\EnsureOrganizationAccess;
 use App\Http\Middleware\EnsureProjectAccess;
 use App\Http\Middleware\RedirectToOrganizationLogin;
@@ -23,8 +21,6 @@ class SettingsPanelProvider extends BasePanelProvider
 
     protected const persistentMiddleware = [
         ApplyTenantContext::class,
-        EnforceOrganizationEmailVerification::class,
-        EnforceOrganizationTwoFactor::class,
         RegisterSpotlightCommands::class,
     ];
 

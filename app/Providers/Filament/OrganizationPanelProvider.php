@@ -7,8 +7,6 @@ use App\Filament\Organization\Pages\Auth\Register;
 use App\Filament\Organization\Pages\Tenancy\CreateOrganization;
 use App\Filament\Organization\Settings\Pages\OrganizationSettings;
 use App\Http\Middleware\ApplyTenantContext;
-use App\Http\Middleware\EnforceOrganizationEmailVerification;
-use App\Http\Middleware\EnforceOrganizationTwoFactor;
 use App\Http\Middleware\RegisterSpotlightCommands;
 use App\Models\Organization;
 use Filament\Http\Middleware\Authenticate;
@@ -27,8 +25,6 @@ class OrganizationPanelProvider extends BasePanelProvider
 
     protected const tenantMiddleware = [
         ApplyTenantContext::class,
-        EnforceOrganizationEmailVerification::class,
-        EnforceOrganizationTwoFactor::class,
         RegisterSpotlightCommands::class,
     ];
 

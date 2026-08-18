@@ -6,8 +6,6 @@ use App\Filament\Panels\ProjectPanel;
 use App\Filament\Project\Settings\Pages\ProjectSettings;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Http\Middleware\ApplyTenantContext;
-use App\Http\Middleware\EnforceOrganizationEmailVerification;
-use App\Http\Middleware\EnforceOrganizationTwoFactor;
 use App\Http\Middleware\EnsureOrganizationAccess;
 use App\Http\Middleware\RedirectToOrganizationLogin;
 use App\Http\Middleware\RegisterSpotlightCommands;
@@ -31,8 +29,6 @@ class ProjectPanelProvider extends BasePanelProvider
 
     protected const tenantMiddleware = [
         ApplyTenantContext::class,
-        EnforceOrganizationEmailVerification::class,
-        EnforceOrganizationTwoFactor::class,
         RegisterSpotlightCommands::class,
     ];
 

@@ -5,6 +5,18 @@ return [
     'no_matches' => 'No matches',
     'spotlight' => [
         'placeholder' => 'Search',
+        'panels' => [
+            'user' => 'Account',
+            'organization' => 'Organization',
+            'organization_settings' => 'Organization / Settings',
+            'project' => 'Project',
+            'project_settings' => 'Project / Settings',
+        ],
+        'footer' => [
+            'select' => 'Select',
+            'open' => 'Open',
+            'close' => 'Close',
+        ],
     ],
     'organization' => [
         'label' => 'Organization',

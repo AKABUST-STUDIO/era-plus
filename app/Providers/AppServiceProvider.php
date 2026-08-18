@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\BillingItems;
 use App\Filament\Organization\Settings\Pages\Invoices;
+use App\Livewire\Spotlight;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Subscription;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
+use Livewire\Livewire;
 use SocialiteProviders\Apple\Provider as AppleProvider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\Provider as MicrosoftProvider;
@@ -39,8 +41,14 @@ class AppServiceProvider extends ServiceProvider
         $this->registerRouteBindings();
         $this->deprioritizeProjectTenantRoute();
         $this->registerSocialiteProviders();
+        $this->registerSpotlightComponent();
 
         GoogleCalendarCredentials::materialize();
+    }
+
+    protected function registerSpotlightComponent(): void
+    {
+        Livewire::component('livewire-ui-spotlight', Spotlight::class);
     }
 
     protected function registerPagePolicies(): void
