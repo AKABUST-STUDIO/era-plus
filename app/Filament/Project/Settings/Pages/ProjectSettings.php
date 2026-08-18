@@ -12,12 +12,12 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class ProjectSettings extends Page
 {
@@ -71,48 +71,62 @@ class ProjectSettings extends Page
             ->record($this->project)
             ->statePath('data')
             ->components([
-                $this->detailsSection(),
+                $this->nameSection(),
+                $this->urlSection(),
                 $this->programmeSection(),
                 $this->datesSection(),
-                $this->dangerSection(),
+                $this->archiveSection(),
+                $this->deleteSection(),
             ]);
     }
 
-    protected function detailsSection(): Section
+    protected function nameSection(): Section
     {
-        return Section::make(__('forms.project.settings.details_heading'))
-            ->key('details-section')
-            ->description(__('forms.project.settings.details_description'))
+        return Section::make(__('forms.project.settings.name_heading'))
+            ->key('name-section')
+            ->description(__('forms.project.settings.name_description'))
             ->schema([
-                TextInput::make('name')->required()->maxLength(255),
+                TextInput::make('name')
+                    ->label(__('forms.project.fields.name'))
+                    ->required()
+                    ->maxLength(255),
+            ])
+            ->footerActions([
+                Action::make('saveName')
+                    ->authorize('update', $this->project)
+                    ->label(__('forms.project.settings.save_name'))
+                    ->action(function (): void {
+                        $this->project->update(['name' => $this->form->getState()['name']]);
+
+                        Notification::make()->title(__('notifications.project_name_saved'))->success()->send();
+                    }),
+            ]);
+    }
+
+    protected function urlSection(): Section
+    {
+        $prefix = parse_url(config('app.url'), PHP_URL_HOST).'/'.$this->project?->organization?->slug.'/';
+
+        return Section::make(__('forms.project.settings.url_heading'))
+            ->key('url-section')
+            ->description(__('forms.project.settings.url_description'))
+            ->schema([
                 TextInput::make('slug')
+                    ->label(__('forms.project.settings.url_field'))
                     ->required()
                     ->alphaDash()
                     ->maxLength(255)
+                    ->prefix($prefix)
                     ->unique(Project::class, 'slug', ignoreRecord: true),
-                TextInput::make('project_reference')
-                    ->label(__('forms.project.fields.project_reference'))
-                    ->maxLength(64),
-                Select::make('status')
-                    ->label(__('forms.project.fields.status'))
-                    ->options(ProjectStatus::options())
-                    ->required(),
             ])
-            ->columns(2)
             ->footerActions([
-                Action::make('saveDetails')
-                    ->label(__('forms.project.settings.save_details'))
+                Action::make('saveUrl')
+                    ->authorize('update', $this->project)
+                    ->label(__('forms.project.settings.save_url'))
                     ->action(function (): void {
-                        $data = $this->form->getState();
+                        $this->project->update(['slug' => $this->form->getState()['slug']]);
 
-                        $this->project->update([
-                            'name' => $data['name'],
-                            'slug' => $data['slug'],
-                            'project_reference' => $data['project_reference'] ?? null,
-                            'status' => $data['status'] ?? null,
-                        ]);
-
-                        Notification::make()->title(__('notifications.project_details_saved'))->success()->send();
+                        Notification::make()->title(__('notifications.project_url_saved'))->success()->send();
 
                         $this->redirect(static::getUrl(['project' => $this->project->slug]));
                     }),
@@ -121,13 +135,12 @@ class ProjectSettings extends Page
 
     protected function programmeSection(): Section
     {
-        return Section::make(__('forms.project.sections.programme'))
+        return ProjectForm::programmeComponents()[0]
             ->key('programme-section')
-            ->description(__('forms.project.sections.programme_description'))
-            ->schema(ProjectForm::programmeComponents())
-            ->columns(2)
+            ->icon(null)
             ->footerActions([
                 Action::make('saveProgramme')
+                    ->authorize('update', $this->project)
                     ->label(__('forms.project.settings.save_programme'))
                     ->action(function (): void {
                         $data = $this->form->getState();
@@ -151,12 +164,14 @@ class ProjectSettings extends Page
         return Section::make(__('forms.project.settings.dates_heading'))
             ->key('dates-section')
             ->description(__('forms.project.settings.dates_description'))
+            ->columns(2)
             ->schema([
                 DatePicker::make('beginning_date'),
                 DatePicker::make('end_date')->afterOrEqual('beginning_date'),
             ])
             ->footerActions([
                 Action::make('saveDates')
+                    ->authorize('update', $this->project)
                     ->label(__('forms.project.settings.save_dates'))
                     ->action(function (): void {
                         $data = $this->form->getState();
@@ -171,17 +186,87 @@ class ProjectSettings extends Page
             ]);
     }
 
-    protected function dangerSection(): Section
+    protected function archiveSection(): Section
     {
+        $isArchived = $this->project?->status === ProjectStatus::Closed;
+
+        return Section::make(__('forms.project.settings.archive_heading'))
+            ->key('archive-section')
+            ->description($isArchived
+                ? __('forms.project.settings.unarchive_description')
+                : __('forms.project.settings.archive_description'))
+            ->footerActions([
+                Action::make('archive')
+                    ->authorize('delete', $this->project)
+                    ->visible(! $isArchived)
+                    ->label(__('forms.project.settings.archive'))
+                    ->color('warning')
+                    ->icon(Heroicon::ArchiveBox)
+                    ->requiresConfirmation()
+                    ->action(function (): void {
+                        $this->project->update(['status' => ProjectStatus::Closed]);
+
+                        Notification::make()->title(__('notifications.project_archived'))->success()->send();
+
+                        $this->redirect(static::getUrl(['project' => $this->project->slug]));
+                    }),
+                Action::make('unarchive')
+                    ->authorize('delete', $this->project)
+                    ->visible($isArchived)
+                    ->label(__('forms.project.settings.unarchive'))
+                    ->color('success')
+                    ->icon(Heroicon::ArchiveBoxArrowDown)
+                    ->requiresConfirmation()
+                    ->action(function (): void {
+                        $this->project->update(['status' => ProjectStatus::Draft]);
+
+                        Notification::make()->title(__('notifications.project_unarchived'))->success()->send();
+
+                        $this->redirect(static::getUrl(['project' => $this->project->slug]));
+                    }),
+            ]);
+    }
+
+    protected function deleteSection(): Section
+    {
+        $projectName = (string) $this->project?->name;
+        $confirmPhrase = __('forms.project.settings.delete_confirm_phrase');
+
         return Section::make(__('forms.project.settings.danger_zone'))
             ->key('danger-section')
             ->description(__('forms.project.settings.danger_zone_description'))
             ->footerActions([
                 DeleteAction::make('delete')
                     ->record(fn (): ?Project => $this->project)
+                    ->authorize('delete')
                     ->label(__('forms.project.settings.delete'))
                     ->color('danger')
-                    ->requiresConfirmation()
+                    ->modalIcon('lucide-triangle-alert')
+                    ->modalIconColor('danger')
+                    ->modalHeading(__('forms.project.settings.delete_modal_heading', ['name' => $projectName]))
+                    ->modalDescription(__('forms.project.settings.delete_modal_description', [
+                        'name' => $projectName,
+                        'phrase' => $confirmPhrase,
+                    ]))
+                    ->modalSubmitActionLabel(__('forms.project.settings.delete'))
+                    ->form([
+                        TextInput::make('name_confirm')
+                            ->label(__('forms.project.settings.delete_name_label', ['name' => $projectName]))
+                            ->required()
+                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($projectName): void {
+                                if ((string) $value !== $projectName) {
+                                    $fail(__('forms.project.settings.delete_name_mismatch'));
+                                }
+                            }),
+                        TextInput::make('phrase_confirm')
+                            ->label(__('forms.project.settings.delete_phrase_label', ['phrase' => $confirmPhrase]))
+                            ->required()
+                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($confirmPhrase): void {
+                                if ((string) $value !== $confirmPhrase) {
+                                    $fail(__('forms.project.settings.delete_phrase_mismatch'));
+                                }
+                            }),
+                    ])
                     ->using(function (Project $record): bool {
                         $deleted = (bool) $record->delete();
 
@@ -190,8 +275,13 @@ class ProjectSettings extends Page
                         return $deleted;
                     })
                     ->successNotificationTitle(__('notifications.project_deleted'))
-                    ->successRedirectUrl(fn (Project $record): string => Filament::getPanel(OrganizationPanelProvider::PANEL_ID)
-                        ->getUrl(tenant: $record->organization) ?? '/'),
+                    ->successRedirectUrl(fn (): string => $this->organizationPanelUrl()),
             ]);
+    }
+
+    protected function organizationPanelUrl(): string
+    {
+        return Filament::getPanel(OrganizationPanelProvider::PANEL_ID)
+            ->getUrl(tenant: $this->project?->organization) ?? '/';
     }
 }

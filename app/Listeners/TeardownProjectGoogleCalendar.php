@@ -21,6 +21,10 @@ class TeardownProjectGoogleCalendar implements ShouldQueue
 
     public function handle(ProjectDeleting $event): void
     {
+        if (! $event->project->isForceDeleting()) {
+            return;
+        }
+
         if (! $this->calendarService->isConfigured()) {
             return;
         }

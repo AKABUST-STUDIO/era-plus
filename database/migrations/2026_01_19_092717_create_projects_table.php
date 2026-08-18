@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->string('timezone', 64)->default('UTC');
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['organization_id', 'slug']);
         });

@@ -6,7 +6,7 @@
             extra-class="fi-project-menu"
             :wide="false"
             :tooltip="$currentProject?->name ?? __('menu.project.open')"
-            :avatar="$currentProject ?? $organization"
+            :avatar="$currentProject"
             :label="__('menu.project.label')"
             :name="$currentProject?->name ?? __('menu.project.select')"
             :items="$items->all()"

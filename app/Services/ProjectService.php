@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Project\ProjectStatus;
 use App\Filament\Panels\PanelPage;
 use App\Filament\Project\Pages\Overview;
 use App\Filament\Resources\Projects\ProjectResource;
@@ -33,6 +34,7 @@ class ProjectService
         return $user
             ->projects()
             ->where('projects.organization_id', $organization->id)
+            ->where('projects.status', '!=', ProjectStatus::Closed->value)
             ->orderBy('name')
             ->get()
             ->each(fn (Project $project) => $project->setRelation('organization', $organization));

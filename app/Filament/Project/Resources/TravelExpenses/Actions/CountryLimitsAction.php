@@ -30,7 +30,7 @@ class CountryLimitsAction
             ->modalIcon('lucide-gauge')
             ->modalHeading(__('finance.limits.heading'))
             ->modalDescription(__('finance.limits.description'))
-            ->modalWidth(Width::Large)
+            ->modalWidth(Width::Small)
             ->modalCloseButton(false)
             ->modalCancelAction(false)
             ->modalFooterActionsAlignment(Alignment::End)
