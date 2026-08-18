@@ -246,7 +246,9 @@ class TravelExpenseForm
                 ->reorderable()
                 ->openable()
                 ->downloadable()
-                ->acceptedFileTypes(['image/*', 'application/pdf']),
+                ->acceptedFileTypes(['image/*', 'application/pdf'])
+                ->maxSize(10 * 1024)
+                ->conversion('preview'),
         ];
     }
 
@@ -264,7 +266,9 @@ class TravelExpenseForm
                 ->reorderable()
                 ->openable()
                 ->downloadable()
-                ->acceptedFileTypes(['image/*', 'application/pdf']),
+                ->acceptedFileTypes(['image/*', 'application/pdf'])
+                ->maxSize(10 * 1024)
+                ->conversion('preview'),
         ];
     }
 

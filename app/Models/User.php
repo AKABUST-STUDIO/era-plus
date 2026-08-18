@@ -35,10 +35,8 @@ use Propaganistas\LaravelPhone\Casts\RawPhoneNumberCast;
 use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
-use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 
 #[ObservedBy(UserObserver::class)]
@@ -239,16 +237,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
         $this->addMediaCollection('avatar')->singleFile();
     }
 
-    public function registerMediaConversions(?Media $media = null): void
-    {
-        $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 256, 256)
-            ->nonQueued();
-    }
-
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->getFirstMediaUrl('avatar', 'thumb') ?: null;
+        return $this->getFirstMediaUrl('avatar') ?: null;
     }
 
     public function avatarUrl(): string

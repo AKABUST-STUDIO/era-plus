@@ -116,11 +116,14 @@ class OrganizationSettings extends Page implements HasOrganizationPermissions
                 SpatieMediaLibraryFileUpload::make('avatar')
                     ->hiddenLabel()
                     ->collection('avatar')
-                    ->conversion('thumb')
                     ->avatar()
                     ->image()
                     ->imageEditor()
-                    ->circleCropper(),
+                    ->circleCropper()
+                    ->automaticallyResizeImagesMode('cover')
+                    ->automaticallyResizeImagesToWidth(512)
+                    ->automaticallyResizeImagesToHeight(512)
+                    ->maxSize(5 * 1024),
             ])
             ->footerActions([
                 Action::make('saveAvatar')

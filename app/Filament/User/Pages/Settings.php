@@ -85,11 +85,14 @@ class Settings extends Page
                 SpatieMediaLibraryFileUpload::make('avatar')
                     ->hiddenLabel()
                     ->collection('avatar')
-                    ->conversion('thumb')
                     ->avatar()
                     ->image()
                     ->imageEditor()
                     ->circleCropper()
+                    ->automaticallyResizeImagesMode('cover')
+                    ->automaticallyResizeImagesToWidth(512)
+                    ->automaticallyResizeImagesToHeight(512)
+                    ->maxSize(5 * 1024)
                     ->afterStateHydrated(function (SpatieMediaLibraryFileUpload $component): void {
                         if (blank($component->getState()) && blank($this->user->getFilamentAvatarUrl())) {
                             $component->rawState(['__fallback' => '__fallback']);

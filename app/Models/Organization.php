@@ -24,10 +24,8 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
-use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -100,13 +98,6 @@ class Organization extends Model implements HasAvatar, HasMedia
             ->singleFile();
     }
 
-    public function registerMediaConversions(?Media $media = null): void
-    {
-        $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 256, 256)
-            ->nonQueued();
-    }
-
     public function getAvatarUrl(): string
     {
         return Filament::getTenantAvatarUrl($this);
@@ -114,7 +105,7 @@ class Organization extends Model implements HasAvatar, HasMedia
 
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->getFirstMediaUrl('avatar', 'thumb') ?: null;
+        return $this->getFirstMediaUrl('avatar') ?: null;
     }
 
     /**

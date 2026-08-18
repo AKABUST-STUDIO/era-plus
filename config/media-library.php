@@ -101,7 +101,7 @@ return [
      * When urls to files get generated, this class will be called. Use the default
      * if your files are stored locally above the site root or on s3.
      */
-    'url_generator' => Spatie\MediaLibrary\Support\UrlGenerator\DefaultUrlGenerator::class,
+    'url_generator' => App\Support\MediaLibrary\SignedUrlGenerator::class,
 
     /*
      * Moves media on updating to keep path consistent. Enable it only with a custom
@@ -231,7 +231,7 @@ return [
      * The default lifetime in minutes for temporary urls.
      * This is used when you call the `getLastTemporaryUrl` or `getLastTemporaryUrl` method on a media item.
      */
-    'temporary_url_default_lifetime' => env('MEDIA_TEMPORARY_URL_DEFAULT_LIFETIME', 5),
+    'temporary_url_default_lifetime' => env('MEDIA_TEMPORARY_URL_DEFAULT_LIFETIME', 60),
 
     'remote' => [
         /*
