@@ -26,7 +26,8 @@
     }
 @endphp
 
-<table class="fi-permissions-matrix w-full">
+<div class="fi-permissions-matrix-wrapper overflow-x-auto">
+<table class="fi-permissions-matrix w-full min-w-max">
     <thead>
         <tr class="border-b border-gray-950/10 dark:border-white/10">
             <th class="py-3 pr-6 text-left font-semibold text-gray-950 dark:text-white">
@@ -73,3 +74,4 @@
         @endforeach
     </tbody>
 </table>
+</div>

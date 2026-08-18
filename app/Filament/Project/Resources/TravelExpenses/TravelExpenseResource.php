@@ -3,12 +3,14 @@
 namespace App\Filament\Project\Resources\TravelExpenses;
 
 use App\Enums\Permissions\TravelExpensePermission;
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Contracts\HasProjectPermissions;
 use App\Filament\Project\Resources\TravelExpenses\Pages\ListTravelExpenses;
 use App\Filament\Project\Resources\TravelExpenses\Schemas\TravelExpenseForm;
 use App\Filament\Project\Resources\TravelExpenses\Tables\TravelExpensesTable;
 use App\Models\Project;
 use App\Models\Project\TravelExpense;
+use App\Services\PermissionRegistry;
 use App\Services\ProjectAccess;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
@@ -16,13 +18,21 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class TravelExpenseResource extends Resource implements HasProjectPermissions
+class TravelExpenseResource extends Resource implements HasOrganizationPermissions, HasProjectPermissions
 {
     protected static ?string $model = TravelExpense::class;
 
     protected static ?string $slug = 'finance';
 
     protected static bool $isScopedToTenant = false;
+
+    /**
+     * @return list<string>|null
+     */
+    public static function getPermissionActions(string $scope): ?array
+    {
+        return $scope === PermissionRegistry::SCOPE_ORGANIZATION ? ['view'] : null;
+    }
 
     public static function getNavigationLabel(): string
     {

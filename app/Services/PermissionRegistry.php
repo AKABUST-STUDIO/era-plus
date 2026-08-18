@@ -17,14 +17,6 @@ class PermissionRegistry
     public const SCOPE_PROJECT = 'project';
 
     /**
-     * @var array<string, list<string>>
-     */
-    private const SCOPE_PANELS = [
-        self::SCOPE_ORGANIZATION => ['organization', 'organization.settings'],
-        self::SCOPE_PROJECT => ['project', 'project.settings'],
-    ];
-
-    /**
      * @var array<string, string>
      */
     private const SCOPE_MARKERS = [
@@ -50,13 +42,7 @@ class PermissionRegistry
         $groups = [];
 
         if ($marker !== null) {
-            foreach (self::SCOPE_PANELS[$scope] ?? [] as $panelId) {
-                $panel = Filament::getPanel($panelId, isStrict: false);
-
-                if ($panel === null) {
-                    continue;
-                }
-
+            foreach (Filament::getPanels() as $panel) {
                 $candidates = [
                     ...array_values($panel->getResources()),
                     ...array_values($panel->getPages()),
@@ -73,10 +59,24 @@ class PermissionRegistry
                         continue;
                     }
 
-                    $groups[self::resolveResourceKey($enumClass)] = array_map(
-                        static fn (BackedEnum $case): string => (string) $case->value,
-                        $enumClass::cases(),
-                    );
+                    $resourceKey = self::resolveResourceKey($enumClass);
+                    $actionFilter = self::resolveActionFilter($class, $scope);
+
+                    $values = [];
+                    foreach ($enumClass::cases() as $case) {
+                        $value = (string) $case->value;
+
+                        if ($actionFilter !== null
+                            && ! in_array(self::actionOf($value, $resourceKey), $actionFilter, true)) {
+                            continue;
+                        }
+
+                        $values[] = $value;
+                    }
+
+                    if ($values !== []) {
+                        $groups[$resourceKey] = $values;
+                    }
                 }
             }
         }
@@ -139,6 +139,27 @@ class PermissionRegistry
         }
 
         return null;
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    private static function resolveActionFilter(string $class, string $scope): ?array
+    {
+        if (! method_exists($class, 'getPermissionActions')) {
+            return null;
+        }
+
+        $actions = $class::getPermissionActions($scope);
+
+        return is_array($actions) ? array_values($actions) : null;
+    }
+
+    private static function actionOf(string $permission, string $resourceKey): string
+    {
+        return str_ends_with($permission, '_'.$resourceKey)
+            ? substr($permission, 0, -strlen('_'.$resourceKey))
+            : $permission;
     }
 
     private static function resolveResourceKey(string $enumClass): string

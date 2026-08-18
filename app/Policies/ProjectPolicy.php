@@ -29,7 +29,8 @@ class ProjectPolicy
 
     public function update(User $user, Project $project): bool
     {
-        return $this->allows($user, ProjectPermission::UpdateAny->value, $project->organization);
+        return $this->allows($user, ProjectPermission::UpdateAny->value, $project->organization)
+            || app(ProjectAccess::class)->can($user, ProjectPermission::Update->value, $project);
     }
 
     public function updateAny(User $user): bool
@@ -39,7 +40,8 @@ class ProjectPolicy
 
     public function delete(User $user, Project $project): bool
     {
-        return $this->allows($user, ProjectPermission::DeleteAny->value, $project->organization);
+        return $this->allows($user, ProjectPermission::DeleteAny->value, $project->organization)
+            || app(ProjectAccess::class)->can($user, ProjectPermission::Delete->value, $project);
     }
 
     public function deleteAny(User $user): bool

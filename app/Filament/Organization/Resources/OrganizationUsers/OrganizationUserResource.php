@@ -8,6 +8,7 @@ use App\Filament\Organization\Resources\OrganizationUsers\Pages\ListOrganization
 use App\Filament\Organization\Resources\OrganizationUsers\Tables\OrganizationUsersTable;
 use App\Models\Organization;
 use App\Models\Organization\OrganizationUser;
+use App\Services\PermissionRegistry;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,6 +20,14 @@ class OrganizationUserResource extends Resource implements HasOrganizationPermis
     protected static ?string $slug = 'users';
 
     protected static ?int $navigationSort = 10;
+
+    /**
+     * @return list<string>|null
+     */
+    public static function getPermissionActions(string $scope): ?array
+    {
+        return $scope === PermissionRegistry::SCOPE_ORGANIZATION ? ['view'] : null;
+    }
 
     public static function getNavigationLabel(): string
     {

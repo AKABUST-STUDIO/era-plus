@@ -40,7 +40,6 @@ enum OrganizationRole: string implements HasColor, HasLabel
             self::Admin => PermissionRegistry::granular(PermissionRegistry::SCOPE_ORGANIZATION),
             self::Member => [
                 ProjectPermission::ViewAny->value,
-                OrganizationUserPermission::ViewAny->value,
                 OrganizationUserPermission::View->value,
             ],
         };

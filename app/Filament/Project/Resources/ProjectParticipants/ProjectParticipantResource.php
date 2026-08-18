@@ -3,12 +3,14 @@
 namespace App\Filament\Project\Resources\ProjectParticipants;
 
 use App\Enums\Permissions\ParticipantPermission;
+use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Contracts\HasProjectPermissions;
 use App\Filament\Project\Resources\ProjectParticipants\Pages\EditProjectParticipant;
 use App\Filament\Project\Resources\ProjectParticipants\Pages\ListProjectParticipants;
 use App\Filament\Project\Resources\ProjectParticipants\Schemas\ProjectParticipantForm;
 use App\Filament\Project\Resources\ProjectParticipants\Tables\ProjectParticipantsTable;
 use App\Models\Project\ProjectParticipant;
+use App\Services\PermissionRegistry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -16,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
-class ProjectParticipantResource extends Resource implements HasProjectPermissions
+class ProjectParticipantResource extends Resource implements HasOrganizationPermissions, HasProjectPermissions
 {
     protected static ?string $model = ProjectParticipant::class;
 
@@ -27,6 +29,14 @@ class ProjectParticipantResource extends Resource implements HasProjectPermissio
     public static function getPermissionEnum(): string
     {
         return ParticipantPermission::class;
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    public static function getPermissionActions(string $scope): ?array
+    {
+        return $scope === PermissionRegistry::SCOPE_ORGANIZATION ? ['view'] : null;
     }
 
     #[Override]

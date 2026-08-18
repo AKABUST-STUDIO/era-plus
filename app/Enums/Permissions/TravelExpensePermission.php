@@ -7,6 +7,7 @@ namespace App\Enums\Permissions;
 enum TravelExpensePermission: string
 {
     case ViewAny = 'view_any_travel_expense';
+    case View = 'view_travel_expense';
     case Create = 'create_travel_expense';
     case Update = 'update_travel_expense';
     case UpdateAny = 'update_any_travel_expense';

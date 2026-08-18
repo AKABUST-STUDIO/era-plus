@@ -21,7 +21,7 @@ return [
         'participant' => 'Participants',
         'travel_expense' => 'Travel expenses',
         'project_event' => 'Events',
-        'organization_user' => 'Organization users',
+        'organization_user' => 'Users',
         'role' => 'Roles',
         'organization' => 'Organization',
         'billing' => 'Billing',
