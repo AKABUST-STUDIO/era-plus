@@ -205,10 +205,17 @@
         </div>
 
         @if ($create)
-            <a
-                href="{{ $create['url'] }}"
-                wire:navigate.hover
-                class="fi-tenant-menu-create flex items-start gap-2.5 rounded-b-md border-t border-gray-950/5 px-2 py-2.5 no-underline transition hover:bg-gray-950/5 focus-visible:bg-gray-950/5 focus-visible:outline-hidden dark:border-white/10 dark:hover:bg-white/5 dark:focus-visible:bg-white/5"
+            @php
+                $isClick = ! empty($create['click']);
+                $createTag = $isClick ? 'button' : 'a';
+                $createAttributes = new ComponentAttributeBag($isClick
+                    ? ['type' => 'button', 'wire:click' => $create['click']]
+                    : ['href' => $create['url'], 'wire:navigate.hover' => '']);
+            @endphp
+            <{{ $createTag }}
+                {{ $createAttributes->class([
+                    'fi-tenant-menu-create flex w-full items-start gap-2.5 rounded-b-md border-t border-gray-950/5 px-2 py-2.5 text-start no-underline transition hover:bg-gray-950/5 focus-visible:bg-gray-950/5 focus-visible:outline-hidden dark:border-white/10 dark:hover:bg-white/5 dark:focus-visible:bg-white/5',
+                ]) }}
             >
                 {{
                     \Filament\Support\generate_icon_html(
@@ -225,7 +232,7 @@
                         <span class="fi-tenant-menu-create-subtitle text-xs text-gray-500">{{ $create['subtitle'] }}</span>
                     @endif
                 </span>
-            </a>
+            </{{ $createTag }}>
         @endif
     </div>
 </x-filament::dropdown>

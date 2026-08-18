@@ -20,15 +20,16 @@ class Invoices extends Page implements HasOrganizationPermissions
 
     protected string $view = 'filament.organization.settings.pages.invoices';
 
-    public static function getPermissionEnum(): string
-    {
-        return InvoicePermission::class;
-    }
+    // public static function getPermissionEnum(): string
+    // {
+    //     return InvoicePermission::class;
+    // }
 
     public ?Organization $organization = null;
 
     public static function canAccess(): bool
     {
+        return false;
         return Filament::auth()->user()?->can('view', self::class) ?? false;
     }
 

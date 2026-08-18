@@ -8,6 +8,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Override;
 
 class Invoices extends Page implements HasTable
 {
@@ -16,6 +17,12 @@ class Invoices extends Page implements HasTable
     protected static ?int $navigationSort = 52;
 
     protected string $view = 'filament.user.pages.invoices';
+
+    #[Override]
+    public static function canAccess(): bool
+    {
+        return false;
+    }
 
     public static function getNavigationLabel(): string
     {

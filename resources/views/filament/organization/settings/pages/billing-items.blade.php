@@ -11,10 +11,6 @@
                         />
 
                         <span>{{ $project->name }}</span>
-
-                        <x-filament::badge :color="$this->tierColorFor($project)">
-                            {{ $this->tierLabelFor($project) }}
-                        </x-filament::badge>
                     </div>
                 </x-slot>
 

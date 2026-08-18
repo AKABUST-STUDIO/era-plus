@@ -2,22 +2,55 @@
 
 namespace App\Livewire;
 
+use App\Actions\RegisterOrganization;
 use App\Facades\OrganizationService;
+use App\Filament\Organization\Schemas\OrganizationForm;
 use App\Filament\Panels\PanelPage;
 use App\Models\Organization;
 use App\Models\User;
-use App\Providers\Filament\OrganizationPanelProvider;
-use Filament\Facades\Filament;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\Width;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
-class OrganizationMenu extends Component
+class OrganizationMenu extends Component implements HasActions, HasSchemas
 {
+    use InteractsWithActions;
+    use InteractsWithSchemas;
+
     public string $page = '';
 
     public function mount(): void
     {
         $this->page = PanelPage::currentSlug();
+    }
+
+    public function createOrganizationAction(): Action
+    {
+        return Action::make('createOrganization')
+            ->label(__('menu.organization.create'))
+            ->modalHeading(__('menu.organization.create'))
+            ->modalWidth(Width::Small)
+            ->modalCloseButton(false)
+            ->modalCancelAction(false)
+            ->modalFooterActionsAlignment(Alignment::End)
+            ->schema(OrganizationForm::innerFields())
+            ->action(function (array $data): void {
+                $organization = RegisterOrganization::handle(auth()->user(), $data);
+
+                Notification::make()
+                    ->title(__('notifications.organization_created'))
+                    ->success()
+                    ->send();
+
+                $this->redirect(OrganizationService::urlFor($organization), navigate: true);
+            });
     }
 
     public function render(): View
@@ -30,7 +63,7 @@ class OrganizationMenu extends Component
                 'currentOrganization' => null,
                 'organizationUrl' => null,
                 'items' => collect(),
-                'createUrl' => null,
+                'canCreate' => false,
             ]);
         }
 
@@ -38,7 +71,6 @@ class OrganizationMenu extends Component
             'name' => $organization->name,
             'url' => OrganizationService::urlFor($organization, $this->page),
             'image' => $organization->getAvatarUrl(),
-            'badge' => $organization->subscription_tier->getLabel(),
             'isCurrent' => $organization->is($currentOrganization),
         ]);
 
@@ -46,7 +78,7 @@ class OrganizationMenu extends Component
             'currentOrganization' => $currentOrganization,
             'organizationUrl' => OrganizationService::urlFor($currentOrganization),
             'items' => $items,
-            'createUrl' => Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getTenantRegistrationUrl(),
+            'canCreate' => true,
         ]);
     }
 }

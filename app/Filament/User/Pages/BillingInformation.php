@@ -13,6 +13,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Nnjeim\World\Models\Country;
+use Override;
 
 class BillingInformation extends Page
 {
@@ -26,6 +27,12 @@ class BillingInformation extends Page
      * @var array<string, mixed>
      */
     public ?array $data = [];
+
+    #[Override]
+    public static function canAccess(): bool
+    {
+        return false;
+    }
 
     public function mount(): void
     {

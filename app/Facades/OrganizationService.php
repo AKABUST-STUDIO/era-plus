@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static void remember(Organization $organization)
  * @method static Organization|null selected()
  * @method static void forget()
- * @method static bool shouldShowUpgradeCta()
  * @method static bool isSoleAdmin(Organization $organization, User $user)
  *
  * @see \App\Services\OrganizationService

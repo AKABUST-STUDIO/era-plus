@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Subscription\SubscriptionTier;
 use App\Filament\Organization\Pages\Tenancy\CreateOrganization;
 use App\Models\Organization;
 use App\Models\User;
@@ -37,10 +36,7 @@ class CreateOrganizationWizardTest extends TestCase
     public function test_register_persists_organization_and_attaches_user_as_admin(): void
     {
         Livewire::test(CreateOrganization::class)
-            ->fillForm([
-                'name' => 'Acme Nordic',
-                'subscription_tier' => SubscriptionTier::Basic->value,
-            ])
+            ->fillForm(['name' => 'Acme Nordic'])
             ->call('register');
 
         $organization = Organization::query()->where('name', 'Acme Nordic')->firstOrFail();
@@ -49,25 +45,10 @@ class CreateOrganizationWizardTest extends TestCase
         $this->assertTrue($this->user->fresh()->isOrgAdmin($organization));
     }
 
-    public function test_register_attaches_the_free_project_subscription_item(): void
-    {
-        Livewire::test(CreateOrganization::class)
-            ->fillForm([
-                'name' => 'Free Slot Co',
-                'subscription_tier' => SubscriptionTier::Basic->value,
-            ])
-            ->call('register');
-
-        $organization = Organization::query()->where('name', 'Free Slot Co')->firstOrFail();
-
-        $this->assertSame(1, $organization->freeProjectAllowance());
-        $this->assertSame(1, $organization->projectLimit());
-    }
-
     public function test_first_organization_becomes_default(): void
     {
         Livewire::test(CreateOrganization::class)
-            ->fillForm(['name' => 'First Org', 'subscription_tier' => SubscriptionTier::Basic->value])
+            ->fillForm(['name' => 'First Org'])
             ->call('register');
 
         $organization = Organization::query()->where('name', 'First Org')->firstOrFail();
@@ -82,7 +63,7 @@ class CreateOrganizationWizardTest extends TestCase
         $this->user->update(['default_organization_id' => $existing->id]);
 
         Livewire::test(CreateOrganization::class)
-            ->fillForm(['name' => 'Second Org', 'subscription_tier' => SubscriptionTier::Basic->value])
+            ->fillForm(['name' => 'Second Org'])
             ->call('register');
 
         $this->assertSame($existing->id, $this->user->fresh()->default_organization_id);

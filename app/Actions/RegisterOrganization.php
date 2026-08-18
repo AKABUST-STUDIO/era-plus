@@ -14,19 +14,9 @@ class RegisterOrganization
      */
     public static function handle(User $user, array $data): Organization
     {
-        $tier = $data['subscription_tier'] instanceof SubscriptionTier
-            ? $data['subscription_tier']
-            : SubscriptionTier::from($data['subscription_tier']);
-
-        $builder = $user->newSubscription('default', $tier->stripePriceId());
-
-        $freeProjectPriceId = config('services.stripe.prices.project_free');
-
-        if (is_string($freeProjectPriceId) && $freeProjectPriceId !== '') {
-            $builder->price($freeProjectPriceId, 1);
-        }
-
-        $subscription = $builder->create();
+        $subscription = $user
+            ->newSubscription('default', SubscriptionTier::Pro->stripePriceId())
+            ->create();
 
         $organization = Organization::create([
             'name' => $data['name'],

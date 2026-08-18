@@ -187,9 +187,6 @@ return [
         'plan' => [
             'heading' => 'Plan',
             'current_label' => 'Current plan',
-            'basic_pitch' => 'Upgrade to Pro for unlimited projects, advanced reporting, and priority support.',
-            'upgrade' => 'Upgrade plan',
-            'upgrade_pro' => 'Upgrade to Pro',
             'manage' => 'Manage subscription',
             'pro_active' => 'You are on the Pro plan. Unlimited projects.',
         ],
@@ -241,11 +238,6 @@ return [
         'item_description' => 'Visit :name\'s project settings for details.',
         'view' => 'View project settings',
         'empty' => 'No projects yet.',
-
-        'tier' => [
-            'free' => 'Free',
-            'paid' => 'Paid',
-        ],
     ],
 
     'activity' => [

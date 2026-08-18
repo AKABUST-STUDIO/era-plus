@@ -12,10 +12,6 @@
 
                         <span>{{ $organization->name }}</span>
 
-                        <x-filament::badge :color="$this->tierBadgeColorFor($organization)">
-                            {{ $this->tierLabelFor($organization) }}
-                        </x-filament::badge>
-
                         <x-filament::badge :color="$this->statusBadgeColorFor($organization)">
                             {{ $this->statusLabelFor($organization) }}
                         </x-filament::badge>

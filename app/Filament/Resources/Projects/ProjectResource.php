@@ -8,9 +8,7 @@ use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
 use App\Filament\Resources\Projects\Schemas\ProjectForm;
 use App\Filament\Resources\Projects\Tables\ProjectsTable;
-use App\Models\Organization;
 use App\Models\Project;
-use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -26,15 +24,6 @@ class ProjectResource extends Resource implements HasOrganizationPermissions
     public static function getNavigationLabel(): string
     {
         return __('navigation.projects');
-    }
-
-    public static function canCreate(): bool
-    {
-        $organization = Filament::getTenant();
-
-        return parent::canCreate()
-            && $organization instanceof Organization
-            && $organization->canCreateProject();
     }
 
     public static function form(Schema $schema): Schema

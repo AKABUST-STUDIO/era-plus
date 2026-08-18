@@ -26,6 +26,7 @@ class BillingItems extends Page
 
     public static function canAccess(): bool
     {
+        return false;
         return Filament::auth()->user()?->can('view', self::class) ?? false;
     }
 
@@ -54,28 +55,6 @@ class BillingItems extends Page
     public function getProjects(): Collection
     {
         return $this->organization->projects()->orderBy('id')->get();
-    }
-
-    public function isFreeProject(Project $project): bool
-    {
-        $freeIds = $this->organization->projects()
-            ->orderBy('id')
-            ->limit($this->organization->freeProjectAllowance())
-            ->pluck('id');
-
-        return $freeIds->contains($project->id);
-    }
-
-    public function tierLabelFor(Project $project): string
-    {
-        return $this->isFreeProject($project)
-            ? __('settings.billing_items.tier.free')
-            : __('settings.billing_items.tier.paid');
-    }
-
-    public function tierColorFor(Project $project): string
-    {
-        return $this->isFreeProject($project) ? 'gray' : 'primary';
     }
 
     public function projectSettingsUrl(Project $project): string

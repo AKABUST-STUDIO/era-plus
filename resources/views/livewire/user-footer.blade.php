@@ -23,16 +23,6 @@
                     {{ __('user.menu.account') }}
                 </x-filament::dropdown.list.item>
 
-                @if ($showUpgrade && $upgradeUrl)
-                    <x-filament::dropdown.list.item
-                        :href="$upgradeUrl"
-                        icon="lucide-sparkles"
-                        tag="a"
-                    >
-                        {{ __('user.menu.upgrade') }}
-                    </x-filament::dropdown.list.item>
-                @endif
-
                 <x-filament::dropdown.list.item
                     icon="lucide-log-out"
                     :form="$logoutFormAction"

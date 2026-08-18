@@ -24,11 +24,7 @@ return [
 
     'stripe' => [
         'prices' => [
-            'basic' => env('STRIPE_PRICE_BASIC'),
             'pro' => env('STRIPE_PRICE_PRO'),
-            'trial' => env('STRIPE_PRICE_TRIAL'),
-            'project_free' => env('STRIPE_PRICE_PROJECT_FREE'),
-            'project_slot' => env('STRIPE_PRICE_PROJECT_SLOT'),
         ],
     ],
 

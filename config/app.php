@@ -131,10 +131,6 @@ return [
         'recipient' => env('SUPPORT_RECIPIENT', 'support@era-plus.network'),
     ],
 
-    'sales' => [
-        'recipient' => env('SALES_RECIPIENT', 'sales@era-plus.network'),
-    ],
-
     'locales' => [
         'en' => ['name' => 'English', 'flag' => 'gb'],
         'es' => ['name' => 'Español', 'flag' => 'es'],

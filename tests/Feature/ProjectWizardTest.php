@@ -9,7 +9,6 @@ use App\Enums\Project\ErasmusKeyAction;
 use App\Enums\Project\ErasmusManagingBody;
 use App\Enums\Project\ProjectRole;
 use App\Enums\Project\ProjectStatus;
-use App\Enums\Subscription\SubscriptionTier;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Models\Organization;
 use App\Models\Project;
@@ -33,7 +32,7 @@ class ProjectWizardTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->organization = Organization::factory()->subscribed(SubscriptionTier::Pro)->create();
+        $this->organization = Organization::factory()->create();
         $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
 
         $this->actingAs($this->user);

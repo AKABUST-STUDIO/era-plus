@@ -3,7 +3,6 @@
 namespace App\Filament\Organization\Settings\Pages;
 
 use App\Enums\Permissions\BillingPermission;
-use App\Enums\Subscription\SubscriptionTier;
 use App\Facades\OrganizationService;
 use App\Filament\Contracts\HasOrganizationPermissions;
 use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
@@ -28,10 +27,10 @@ class Billing extends Page implements HasOrganizationPermissions
 
     protected string $view = 'filament.organization.settings.pages.billing';
 
-    public static function getPermissionEnum(): string
-    {
-        return BillingPermission::class;
-    }
+    // public static function getPermissionEnum(): string
+    // {
+    //     return BillingPermission::class;
+    // }
 
     public ?Organization $organization = null;
 
@@ -42,6 +41,7 @@ class Billing extends Page implements HasOrganizationPermissions
 
     public static function canAccess(): bool
     {
+        return false;
         return Filament::auth()->user()?->can('view', self::class) ?? false;
     }
 
@@ -92,37 +92,12 @@ class Billing extends Page implements HasOrganizationPermissions
 
     protected function planSection(): Section
     {
-        $isBasic = $this->organization->subscription_tier === SubscriptionTier::Basic;
-
         return Section::make(__('settings.billing.plan.heading'))
-            ->description(match ($this->organization->subscription_tier) {
-                SubscriptionTier::Basic => __('settings.billing.plan.basic_pitch'),
-                SubscriptionTier::Pro, SubscriptionTier::Trial, SubscriptionTier::Corporate => __('settings.billing.plan.pro_active'),
-            })
+            ->description(__('settings.billing.plan.pro_active'))
             ->footerActions([
-                Action::make('checkoutPro')
-                    ->authorize('update', self::class)
-                    ->label(__('settings.billing.plan.upgrade_pro'))
-                    ->color('primary')
-                    ->visible(fn (): bool => $isBasic && filled(config('services.stripe.prices.pro')))
-                    ->action(function (): RedirectResponse {
-                        $priceId = config('services.stripe.prices.pro');
-
-                        abort_unless($priceId, 400, 'Stripe price ID not configured.');
-
-                        $checkout = $this->organization
-                            ->newSubscription('default', $priceId)
-                            ->checkout([
-                                'success_url' => static::getUrl(['tenant' => $this->organization]),
-                                'cancel_url' => static::getUrl(['tenant' => $this->organization]),
-                            ]);
-
-                        return redirect()->away($checkout->url);
-                    }),
                 Action::make('manage')
                     ->authorize('update', self::class)
                     ->label(__('settings.billing.plan.manage'))
-                    ->visible(! $isBasic)
                     ->action(fn (): RedirectResponse => auth()->user()->redirectToBillingPortal(
                         route('filament.organization.home', ['tenant' => $this->organization])
                     )),

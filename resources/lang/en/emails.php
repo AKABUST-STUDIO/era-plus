@@ -132,20 +132,6 @@ return [
 
     ],
 
-    'corporate_enquiry_received' => [
-
-        'subject' => 'Corporate enquiry: :subject',
-
-        'heading' => 'New corporate enquiry',
-
-        'from' => 'From',
-
-        'subject_label' => 'Subject',
-
-        'outro' => 'Thanks,',
-
-    ],
-
     'email_change_confirm' => [
 
         'subject' => 'Confirm your new :app email address',

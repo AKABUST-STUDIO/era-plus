@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Enums\Organization\OrganizationRole;
-use App\Enums\Subscription\SubscriptionTier;
 use App\Filament\Panels\PanelPage;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Organization;
@@ -60,14 +59,6 @@ class OrganizationService
     public function forget(): void
     {
         session()->forget(self::SESSION_KEY);
-    }
-
-    public function shouldShowUpgradeCta(): bool
-    {
-        $organization = $this->current();
-
-        return $organization instanceof Organization
-            && $organization->subscription_tier === SubscriptionTier::Basic;
     }
 
     public function isSoleAdmin(Organization $organization, User $user): bool

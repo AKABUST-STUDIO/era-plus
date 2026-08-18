@@ -2,7 +2,6 @@
 
 namespace App\Filament\Organization\Schemas;
 
-use App\Filament\Organization\Schemas\Components\SubscriptionTierField;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
@@ -23,17 +22,22 @@ class OrganizationForm
         return [
             Section::make(__('organization.register.label'))
                 ->contained(false)
-                ->schema([
-                    TextInput::make('name')
-                        ->hiddenLabel()
-                        ->placeholder(__('organization.register.name_placeholder'))
-                        ->autofocus()
-                        ->required()
-                        ->maxLength(255),
-                    SubscriptionTierField::make('subscription_tier')
-                        ->hiddenLabel()
-                        ->required(),
-                ]),
+                ->schema(self::innerFields()),
+        ];
+    }
+
+    /**
+     * @return array<int, Component>
+     */
+    public static function innerFields(): array
+    {
+        return [
+            TextInput::make('name')
+                ->hiddenLabel()
+                ->placeholder(__('organization.register.name_placeholder'))
+                ->autofocus()
+                ->required()
+                ->maxLength(255),
         ];
     }
 }

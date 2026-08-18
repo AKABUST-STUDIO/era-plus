@@ -28,6 +28,6 @@ class Subscription extends CashierSubscription
 
     public function tier(): SubscriptionTier
     {
-        return SubscriptionTier::fromStripePriceId($this->stripe_price) ?? SubscriptionTier::Basic;
+        return SubscriptionTier::fromStripePriceId($this->stripe_price) ?? SubscriptionTier::Pro;
     }
 }

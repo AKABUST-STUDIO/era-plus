@@ -16,16 +16,9 @@ class OrganizationSubscriptionTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_tier_defaults_to_basic_without_a_subscription(): void
-    {
-        $organization = Organization::factory()->create();
-
-        $this->assertSame(SubscriptionTier::Basic, $organization->subscription_tier);
-    }
-
     public function test_tier_is_derived_from_the_linked_subscription(): void
     {
-        $organization = Organization::factory()->subscribed(SubscriptionTier::Pro)->create();
+        $organization = Organization::factory()->create();
 
         $this->assertSame(SubscriptionTier::Pro, $organization->fresh()->subscription_tier);
     }

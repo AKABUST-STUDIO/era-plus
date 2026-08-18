@@ -2,17 +2,23 @@
 
 namespace App\Filament\User\Pages;
 
-use App\Enums\Subscription\SubscriptionTier;
 use App\Filament\Organization\Settings\Pages\Billing as OrganizationBilling;
 use App\Models\Organization;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
+use Override;
 
 class BillingItems extends Page
 {
     protected static ?int $navigationSort = 51;
 
     protected string $view = 'filament.user.pages.billing-items';
+
+    #[Override]
+    public static function canAccess(): bool
+    {
+        return false;
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -37,16 +43,6 @@ class BillingItems extends Page
             ->unique(fn (Organization $organization): int => $organization->id)
             ->sortBy('name')
             ->values();
-    }
-
-    public function tierLabelFor(Organization $organization): string
-    {
-        return ($organization->subscription_tier ?? SubscriptionTier::Basic)->getLabel();
-    }
-
-    public function tierBadgeColorFor(Organization $organization): string
-    {
-        return ($organization->subscription_tier ?? SubscriptionTier::Basic)->getColor();
     }
 
     public function statusLabelFor(Organization $organization): string
