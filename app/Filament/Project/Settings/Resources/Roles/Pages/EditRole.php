@@ -2,6 +2,7 @@
 
 namespace App\Filament\Project\Settings\Resources\Roles\Pages;
 
+use App\Filament\Project\Settings\Pages\Concerns\HasProjectSettingsBreadcrumbs;
 use App\Filament\Project\Settings\Resources\Roles\RoleResource;
 use App\Models\Role;
 use App\Services\PermissionRegistry;
@@ -15,6 +16,8 @@ use Spatie\Permission\PermissionRegistrar;
 
 class EditRole extends EditRecord
 {
+    use HasProjectSettingsBreadcrumbs;
+
     protected static string $resource = RoleResource::class;
 
     protected function getHeaderActions(): array
