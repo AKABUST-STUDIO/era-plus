@@ -51,6 +51,7 @@ abstract class BasePanelProvider extends PanelProvider
     {
         return $panel
             ->spa(hasPrefetching: true)
+            ->spaUrlExceptions(['*/auth/*/redirect'])
             ->domain('app.'.parse_url(config('app.url'), PHP_URL_HOST))
 
             ->revealablePasswords()
