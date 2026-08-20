@@ -46,11 +46,13 @@ class ProjectMenu extends Component
             'isCurrent' => $currentProject instanceof Project && $project->is($currentProject),
         ]);
 
+        $canCreate = $user->can('create', Project::class) && $organization->canCreateProject();
+
         return view($this->view, [
             'organization' => $organization,
             'currentProject' => $currentProject,
             'items' => $items,
-            'createUrl' => ProjectService::createUrlFor($organization),
+            'createUrl' => $canCreate ? ProjectService::createUrlFor($organization) : null,
             'clearUrl' => OrganizationService::urlFor($organization, $this->page),
         ]);
     }
