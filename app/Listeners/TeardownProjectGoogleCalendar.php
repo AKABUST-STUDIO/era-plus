@@ -12,12 +12,15 @@ use Throwable;
 
 class TeardownProjectGoogleCalendar implements ShouldQueue
 {
-    public string $queue = 'google-calendar';
-
     public function __construct(
         private readonly CalendarService $calendarService,
         private readonly WebhookService $webhookService,
     ) {}
+
+    public function viaQueue(): string
+    {
+        return config('queue.names.google');
+    }
 
     public function handle(ProjectDeleting $event): void
     {

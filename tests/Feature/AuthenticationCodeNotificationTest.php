@@ -84,7 +84,7 @@ class AuthenticationCodeNotificationTest extends TestCase
         $oneTimePassword = $user->createOneTimePassword();
 
         foreach ([LoginCodeNotification::class, RegistrationCodeNotification::class, AccountAlreadyExistsNotification::class] as $notification) {
-            $this->assertSame(['mail' => 'email'], (new $notification($oneTimePassword))->viaQueues());
+            $this->assertSame(['mail' => config('queue.names.email')], (new $notification($oneTimePassword))->viaQueues());
         }
     }
 

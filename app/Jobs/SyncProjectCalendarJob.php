@@ -19,7 +19,7 @@ class SyncProjectCalendarJob implements ShouldQueue
 
     public function __construct(public int $projectId)
     {
-        $this->onQueue('google-calendar-webhook');
+        $this->onQueue(config('queue.names.google'));
     }
 
     public function handle(EventService $eventService): void

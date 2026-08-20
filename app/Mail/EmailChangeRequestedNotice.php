@@ -20,7 +20,7 @@ class EmailChangeRequestedNotice extends Mailable implements ShouldQueue
         public User $user,
         public string $newEmail,
     ) {
-        $this->onQueue('email');
+        $this->onQueue(config('queue.names.email'));
     }
 
     public function envelope(): Envelope

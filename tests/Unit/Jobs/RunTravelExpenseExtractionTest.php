@@ -27,7 +27,7 @@ class RunTravelExpenseExtractionTest extends TestCase
     {
         $job = new RunTravelExpenseExtraction(1);
 
-        $this->assertSame('ai-extraction', $job->queue);
+        $this->assertSame(config('queue.names.ai'), $job->queue);
     }
 
     public function test_journey_extraction_stores_agent_output_and_completed_at(): void

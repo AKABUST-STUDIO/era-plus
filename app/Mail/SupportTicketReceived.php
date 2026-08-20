@@ -17,7 +17,7 @@ class SupportTicketReceived extends Mailable implements ShouldQueue
 
     public function __construct(public SupportTicket $ticket)
     {
-        $this->onQueue('email');
+        $this->onQueue(config('queue.names.email'));
     }
 
     public function envelope(): Envelope

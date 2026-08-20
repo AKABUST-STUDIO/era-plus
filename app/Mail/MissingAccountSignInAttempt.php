@@ -17,7 +17,7 @@ class MissingAccountSignInAttempt extends Mailable implements ShouldQueue
 
     public function __construct(public string $email)
     {
-        $this->onQueue('email');
+        $this->onQueue(config('queue.names.email'));
     }
 
     public function envelope(): Envelope

@@ -21,7 +21,7 @@ class EmailChangeConfirmation extends Mailable implements ShouldQueue
         public string $confirmUrl,
         public int $expiresInMinutes,
     ) {
-        $this->onQueue('email');
+        $this->onQueue(config('queue.names.email'));
     }
 
     public function envelope(): Envelope

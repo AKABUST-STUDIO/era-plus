@@ -126,4 +126,21 @@ return [
         'table' => 'failed_jobs',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Application Queue Names
+    |--------------------------------------------------------------------------
+    |
+    | Named queues used throughout the application. Jobs, listeners, and
+    | mailables reference these via `config('queue.names.<key>')` so the
+    | queue assignment can be tuned per environment.
+    |
+    */
+
+    'names' => [
+        'email' => env('QUEUE_EMAIL', 'email'),
+        'ai' => env('QUEUE_AI', 'ai-extraction'),
+        'google' => env('QUEUE_GOOGLE', 'google-calendar-webhook'),
+    ],
+
 ];

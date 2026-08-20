@@ -14,7 +14,7 @@ abstract class AuthenticationCodeNotification extends OneTimePasswordNotificatio
      */
     public function viaQueues(): array
     {
-        return ['mail' => 'email'];
+        return ['mail' => config('queue.names.email')];
     }
 
     abstract protected function markdownView(): string;

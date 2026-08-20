@@ -22,7 +22,7 @@ class RunTravelExpenseExtraction implements ShouldQueue
 
     public function __construct(public int $extractionId)
     {
-        $this->onQueue('ai-extraction');
+        $this->onQueue(config('queue.names.ai'));
     }
 
     public function handle(): void
