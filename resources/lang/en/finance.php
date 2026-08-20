@@ -143,4 +143,10 @@ return [
         'heading' => 'No travel expenses yet',
         'description' => 'Record the first participant journey to see it here.',
     ],
+    'ai_suggestion' => [
+        'pending' => 'Reading your document with AI — this only takes a moment.',
+        'found' => 'AI suggestions from your uploads',
+        'apply' => 'Apply to form',
+        'dismiss' => 'Dismiss',
+    ],
 ];

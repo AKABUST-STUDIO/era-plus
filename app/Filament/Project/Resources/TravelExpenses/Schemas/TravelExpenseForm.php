@@ -3,17 +3,21 @@
 namespace App\Filament\Project\Resources\TravelExpenses\Schemas;
 
 use App\Enums\Project\TransportationType;
+use App\Enums\Project\TravelExpense\AiExtractionTarget;
 use App\Enums\Project\TravelType;
+use App\Filament\Project\Resources\ProjectParticipants\Components\CountrySelect;
 use App\Filament\Project\Resources\ProjectParticipants\Components\ParticipableSelect;
 use App\Filament\Project\Resources\ProjectParticipants\Components\SendingOrganizationSelect;
 use App\Filament\Project\Resources\ProjectParticipants\Schemas\ProjectParticipantForm;
 use App\Filament\Project\Resources\TravelExpenses\Components\CurrencySelect;
 use App\Filament\Project\Resources\TravelExpenses\TravelExpenseResource;
+use App\Livewire\Project\TravelExpense\AiSuggestionBanner;
 use App\Models\Project;
 use App\Models\Project\Participant;
 use App\Models\Project\ProjectParticipant;
 use App\Models\Project\TravelExpense;
 use App\Models\User;
+use App\Services\Ai\TravelExpenseExtractionDispatcher;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -23,6 +27,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Livewire as LivewireComponent;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -30,6 +35,7 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class TravelExpenseForm
 {
@@ -110,29 +116,29 @@ class TravelExpenseForm
      */
     public static function participantComponents(): array
     {
+        $canShowNewParticipantInfo = fn (Get $get): bool => TravelExpenseResource::canViewAllExpenses()
+            && is_string($get('participable_id'))
+            && str_starts_with($get('participable_id'), 'pending:');
+
+        $needsOrigin = fn (Get $get): bool => TravelExpenseResource::canViewAllExpenses()
+            && filled($get('participable_id'))
+            && self::participationIdFor($get('participable_id')) === null;
+
         return [
             ParticipableSelect::make(excludeAttached: false)
                 ->required(),
             Hidden::make('_pending_participable'),
             Hidden::make('_pending_source'),
-            Section::make(__('participant.sections.participant_info'))
-                ->icon('lucide-at-sign')
-                ->contained(false)
-                ->columns(4)
-                ->columnSpanFull()
-                ->visible(fn (Get $get): bool => TravelExpenseResource::canViewAllExpenses()
-                    && is_string($get('participable_id'))
-                    && str_starts_with($get('participable_id'), 'pending:'))
-                ->components(ProjectParticipantForm::participantComponents()),
-            Section::make(__('participant.sections.origin'))
-                ->icon('lucide-map-pin-house')
-                ->contained(false)
-                ->columns(4)
-                ->columnSpanFull()
-                ->visible(fn (Get $get): bool => TravelExpenseResource::canViewAllExpenses()
-                    && filled($get('participable_id'))
-                    && self::participationIdFor($get('participable_id')) === null)
-                ->components(ProjectParticipantForm::originComponents()),
+            ...array_map(
+                fn (Component $component): Component => $component->visible($canShowNewParticipantInfo)->columnSpanFull(),
+                ProjectParticipantForm::participantComponents(),
+            ),
+            CountrySelect::make()
+                ->dehydrated($needsOrigin)
+                ->required($needsOrigin),
+            SendingOrganizationSelect::make()
+                ->dehydrated($needsOrigin)
+                ->required($needsOrigin),
         ];
     }
 
@@ -142,6 +148,13 @@ class TravelExpenseForm
     public static function travelComponents(): array
     {
         return [
+            LivewireComponent::make(AiSuggestionBanner::class, fn (\Livewire\Component $livewire): array => [
+                'sessionId' => (string) (self::sessionIdFrom($livewire) ?? ''),
+                'target' => AiExtractionTarget::Journey->value,
+                'fields' => ['date', 'from', 'to', 'travel_type', 'transportation_type'],
+            ])
+                ->columnSpanFull()
+                ->key('ai-banner-journey'),
             Grid::make([])
                 ->columns(4)
                 ->columnSpanFull()
@@ -195,6 +208,13 @@ class TravelExpenseForm
     public static function costComponents(): array
     {
         return [
+            LivewireComponent::make(AiSuggestionBanner::class, fn (\Livewire\Component $livewire): array => [
+                'sessionId' => (string) (self::sessionIdFrom($livewire) ?? ''),
+                'target' => AiExtractionTarget::Payment->value,
+                'fields' => ['cost', 'currency'],
+            ])
+                ->columnSpanFull()
+                ->key('ai-banner-payment'),
             TextInput::make('cost')
                 ->hiddenLabel()
                 ->validationAttribute(__('finance.fields.cost'))
@@ -248,7 +268,9 @@ class TravelExpenseForm
                 ->downloadable()
                 ->acceptedFileTypes(['image/*', 'application/pdf'])
                 ->maxSize(10 * 1024)
-                ->conversion('preview'),
+                ->conversion('preview')
+                ->live()
+                ->afterStateUpdated(fn (mixed $state, \Livewire\Component $livewire) => self::dispatchExtraction(AiExtractionTarget::Payment, $state, $livewire)),
         ];
     }
 
@@ -258,6 +280,9 @@ class TravelExpenseForm
     public static function proofOfJourneyComponents(): array
     {
         return [
+            Hidden::make('_ai_session_id')
+                ->default(fn (): string => TravelExpenseExtractionDispatcher::newSessionId())
+                ->dehydrated(false),
             SpatieMediaLibraryFileUpload::make('proof_of_journey')
                 ->hiddenLabel()
                 ->validationAttribute(__('finance.fields.proof_of_journey'))
@@ -268,8 +293,43 @@ class TravelExpenseForm
                 ->downloadable()
                 ->acceptedFileTypes(['image/*', 'application/pdf'])
                 ->maxSize(10 * 1024)
-                ->conversion('preview'),
+                ->conversion('preview')
+                ->live()
+                ->afterStateUpdated(fn (mixed $state, \Livewire\Component $livewire) => self::dispatchExtraction(AiExtractionTarget::Journey, $state, $livewire)),
         ];
+    }
+
+    public static function dispatchExtraction(AiExtractionTarget $target, mixed $state, \Livewire\Component $livewire): void
+    {
+        $sessionId = self::sessionIdFrom($livewire);
+        $project = Filament::getTenant();
+        $user = Auth::user();
+
+        if (! is_string($sessionId) || ! $project instanceof Project || ! $user instanceof User) {
+            return;
+        }
+
+        TravelExpenseExtractionDispatcher::handleUpload(
+            $sessionId,
+            $target,
+            $project,
+            $user,
+            is_array($state) ? $state : [],
+        );
+    }
+
+    public static function sessionIdFrom(\Livewire\Component $livewire): ?string
+    {
+        foreach ($livewire->mountedActions ?? [] as $mounted) {
+            $value = $mounted['data']['_ai_session_id'] ?? null;
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
+        }
+
+        $direct = data_get($livewire, 'data._ai_session_id');
+
+        return is_string($direct) ? $direct : null;
     }
 
     /**
