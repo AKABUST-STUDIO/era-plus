@@ -8,7 +8,7 @@ use App\Http\Controllers\Settings\ConfirmEmailChangeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect(route('filament.organization.auth.login'));
 });
 
 Route::get('/profile/invoices/{invoice}/download', InvoiceDownloadController::class)
