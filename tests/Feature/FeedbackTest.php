@@ -1,63 +1,47 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Mail\FeedbackReceived;
 use App\Models\Feedback;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use Tests\TestCase;
 
-class FeedbackTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function (): void {
+    $this->user = User::factory()->create();
+    $this->actingAs($this->user);
+});
 
-    private User $user;
+test('observer emails configured recipient on create', function (): void {
+    Mail::fake();
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    config()->set('app.feedback.recipient', 'feedback@era-plus.network');
 
-        $this->user = User::factory()->create();
-        $this->actingAs($this->user);
-    }
+    Feedback::create([
+        'user_id' => $this->user->id,
+        'subject' => 'Love the new sidebar',
+        'rating' => 5,
+        'description' => 'It looks great.',
+    ]);
 
-    public function test_observer_emails_configured_recipient_on_create(): void
-    {
-        Mail::fake();
+    Mail::assertQueued(FeedbackReceived::class, function (FeedbackReceived $mail): bool {
+        return $mail->hasTo('feedback@era-plus.network')
+            && $mail->feedback->subject === 'Love the new sidebar'
+            && $mail->feedback->rating === 5;
+    });
+});
 
-        config()->set('app.feedback.recipient', 'feedback@era-plus.network');
+test('observer only fires on create', function (): void {
+    Mail::fake();
 
-        Feedback::create([
-            'user_id' => $this->user->id,
-            'subject' => 'Love the new sidebar',
-            'rating' => 5,
-            'description' => 'It looks great.',
-        ]);
+    $feedback = Feedback::create([
+        'user_id' => $this->user->id,
+        'subject' => 'Hi',
+        'rating' => 3,
+        'description' => 'Body',
+    ]);
 
-        Mail::assertQueued(FeedbackReceived::class, function (FeedbackReceived $mail): bool {
-            return $mail->hasTo('feedback@era-plus.network')
-                && $mail->feedback->subject === 'Love the new sidebar'
-                && $mail->feedback->rating === 5;
-        });
-    }
+    Mail::assertQueuedCount(1);
 
-    public function test_observer_only_fires_on_create(): void
-    {
-        Mail::fake();
+    $feedback->update(['rating' => 4]);
 
-        $feedback = Feedback::create([
-            'user_id' => $this->user->id,
-            'subject' => 'Hi',
-            'rating' => 3,
-            'description' => 'Body',
-        ]);
-
-        Mail::assertQueuedCount(1);
-
-        $feedback->update(['rating' => 4]);
-
-        Mail::assertQueuedCount(1);
-    }
-}
+    Mail::assertQueuedCount(1);
+});

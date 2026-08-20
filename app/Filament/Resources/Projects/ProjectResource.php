@@ -27,7 +27,7 @@ class ProjectResource extends Resource implements HasOrganizationPermissions, Ha
     public static function getPermissionActions(string $scope): ?array
     {
         return match ($scope) {
-            PermissionRegistry::SCOPE_ORGANIZATION => ['view_any', 'create'],
+            PermissionRegistry::SCOPE_ORGANIZATION => ['view_any', 'create', 'update_any', 'delete_any'],
             PermissionRegistry::SCOPE_PROJECT => ['update', 'delete'],
             default => null,
         };

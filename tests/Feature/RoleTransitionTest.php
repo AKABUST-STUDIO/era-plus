@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
@@ -14,147 +12,126 @@ use App\Models\ProjectUser;
 use App\Models\User;
 use App\Services\ProjectAccess;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
-use Tests\TestCase;
 
-class RoleTransitionTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function (): void {
+    $this->organization = Organization::factory()->create();
+    $this->project = Project::factory()->for($this->organization)->create();
 
-    private Organization $organization;
+    URL::defaults(['organization' => $this->organization->slug]);
+});
 
-    private Project $project;
+test('demoting admin to participant revokes admin permissions', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->organization, OrganizationRole::Member);
+    $user->joinProject($this->project, ProjectRole::Admin);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $access = app(ProjectAccess::class);
+    $this->assertTrue($access->can($user, 'create_project_user', $this->project));
 
-        $this->organization = Organization::factory()->create();
-        $this->project = Project::factory()->for($this->organization)->create();
+    $user->joinProject($this->project, ProjectRole::Participant);
 
-        URL::defaults(['organization' => $this->organization->slug]);
-    }
+    $this->assertFalse($access->can($user->fresh(), 'create_project_user', $this->project));
+});
 
-    public function test_demoting_admin_to_participant_revokes_admin_permissions(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->organization, OrganizationRole::Member);
-        $user->joinProject($this->project, ProjectRole::Admin);
+test('promoting participant to admin grants admin permissions', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->organization, OrganizationRole::Member);
+    $user->joinProject($this->project, ProjectRole::Participant);
 
-        $access = app(ProjectAccess::class);
-        $this->assertTrue($access->can($user, 'create_project_user', $this->project));
+    $access = app(ProjectAccess::class);
+    $this->assertFalse($access->can($user, 'create_project_user', $this->project));
 
-        $user->joinProject($this->project, ProjectRole::Participant);
+    $user->joinProject($this->project, ProjectRole::Admin);
 
-        $this->assertFalse($access->can($user->fresh(), 'create_project_user', $this->project));
-    }
+    $this->assertTrue($access->can($user->fresh(), 'create_project_user', $this->project));
+});
 
-    public function test_promoting_participant_to_admin_grants_admin_permissions(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->organization, OrganizationRole::Member);
-        $user->joinProject($this->project, ProjectRole::Participant);
+test('removing from project revokes all project access', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->organization, OrganizationRole::Member);
+    $user->joinProject($this->project, ProjectRole::Participant);
 
-        $access = app(ProjectAccess::class);
-        $this->assertFalse($access->can($user, 'create_project_user', $this->project));
+    $this->assertTrue($user->canAccessTenant($this->project));
 
-        $user->joinProject($this->project, ProjectRole::Admin);
+    ProjectUser::query()
+        ->where('project_id', $this->project->id)
+        ->where('user_id', $user->id)
+        ->delete();
 
-        $this->assertTrue($access->can($user->fresh(), 'create_project_user', $this->project));
-    }
+    $this->assertFalse($user->fresh()->canAccessTenant($this->project));
+});
 
-    public function test_removing_from_project_revokes_all_project_access(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->organization, OrganizationRole::Member);
-        $user->joinProject($this->project, ProjectRole::Participant);
+test('removing from project makes deep urls return forbidden', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->organization, OrganizationRole::Member);
+    $user->joinProject($this->project, ProjectRole::Participant);
 
-        $this->assertTrue($user->canAccessTenant($this->project));
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
 
-        ProjectUser::query()
-            ->where('project_id', $this->project->id)
-            ->where('user_id', $user->id)
-            ->delete();
+    $url = ProjectMemberResource::getUrl(tenant: $this->project);
+    $this->get($url)->assertSuccessful();
 
-        $this->assertFalse($user->fresh()->canAccessTenant($this->project));
-    }
+    ProjectUser::query()
+        ->where('project_id', $this->project->id)
+        ->where('user_id', $user->id)
+        ->delete();
 
-    public function test_removing_from_project_makes_deep_urls_return_forbidden(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->organization, OrganizationRole::Member);
-        $user->joinProject($this->project, ProjectRole::Participant);
+    $status = $this->get($url)->status();
+    $this->assertTrue(in_array($status, [403, 404], true), "expected 403|404 after removal, got {$status}");
+});
 
-        $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('project'));
+test('removing from org admin no longer manages projects', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->organization, OrganizationRole::Admin);
+    $user->joinProject($this->project, ProjectRole::Admin);
 
-        $url = ProjectMemberResource::getUrl(tenant: $this->project);
-        $this->get($url)->assertSuccessful();
+    $access = app(ProjectAccess::class);
+    $this->assertTrue($access->can($user, 'create_project_user', $this->project));
 
-        ProjectUser::query()
-            ->where('project_id', $this->project->id)
-            ->where('user_id', $user->id)
-            ->delete();
+    OrganizationUser::query()
+        ->where('organization_id', $this->organization->id)
+        ->where('user_id', $user->id)
+        ->delete();
 
-        $status = $this->get($url)->status();
-        $this->assertTrue(in_array($status, [403, 404], true), "expected 403|404 after removal, got {$status}");
-    }
+    $freshUser = $user->fresh();
+    $this->assertFalse($access->administersOrganization($freshUser, $this->organization));
+});
 
-    public function test_removing_from_org_admin_no_longer_manages_projects(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->organization, OrganizationRole::Admin);
-        $user->joinProject($this->project, ProjectRole::Admin);
+test('demoted admin livewire page hides actions', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->organization, OrganizationRole::Member);
+    $user->joinProject($this->project, ProjectRole::Admin);
 
-        $access = app(ProjectAccess::class);
-        $this->assertTrue($access->can($user, 'create_project_user', $this->project));
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($this->project);
 
-        OrganizationUser::query()
-            ->where('organization_id', $this->organization->id)
-            ->where('user_id', $user->id)
-            ->delete();
+    Livewire::test(ListProjectMembers::class)->assertActionVisible('create');
 
-        $freshUser = $user->fresh();
-        $this->assertFalse($access->administersOrganization($freshUser, $this->organization));
-    }
+    $user->joinProject($this->project, ProjectRole::Participant);
 
-    public function test_demoted_admin_livewire_page_hides_actions(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->organization, OrganizationRole::Member);
-        $user->joinProject($this->project, ProjectRole::Admin);
+    $this->actingAs($user->fresh());
 
-        $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('project'));
-        Filament::setTenant($this->project);
+    Livewire::test(ListProjectMembers::class)->assertActionHidden('create');
+});
 
-        Livewire::test(ListProjectMembers::class)->assertActionVisible('create');
+test('org admin demoted to member loses project edit gate', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->organization, OrganizationRole::Admin);
 
-        $user->joinProject($this->project, ProjectRole::Participant);
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
+    Filament::setTenant($this->organization);
 
-        $this->actingAs($user->fresh());
+    $this->assertTrue(ProjectResource::canEdit($this->project));
 
-        Livewire::test(ListProjectMembers::class)->assertActionHidden('create');
-    }
+    $user->joinOrganization($this->organization, OrganizationRole::Member);
 
-    public function test_org_admin_demoted_to_member_loses_project_edit_gate(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->organization, OrganizationRole::Admin);
+    $this->actingAs($user->fresh());
+    Filament::setTenant($this->organization);
 
-        $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-        Filament::setTenant($this->organization);
-
-        $this->assertTrue(ProjectResource::canEdit($this->project));
-
-        $user->joinOrganization($this->organization, OrganizationRole::Member);
-
-        $this->actingAs($user->fresh());
-        Filament::setTenant($this->organization);
-
-        $this->assertFalse(ProjectResource::canEdit($this->project));
-    }
-}
+    $this->assertFalse(ProjectResource::canEdit($this->project));
+});

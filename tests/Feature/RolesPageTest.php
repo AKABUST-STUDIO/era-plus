@@ -1,174 +1,147 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\Organization\OrganizationRole;
 use App\Filament\Organization\Settings\Resources\Roles\Pages\EditRole;
 use App\Filament\Organization\Settings\Resources\Roles\Pages\ListRoles;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
-use Tests\TestCase;
 
-class RolesPageTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function (): void {
+    $this->admin = User::factory()->create();
+    $this->organization = Organization::factory()->create();
+    $this->admin->joinOrganization($this->organization, OrganizationRole::Admin);
 
-    private User $admin;
+    $this->actingAs($this->admin);
+    Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
+    Filament::setTenant($this->organization);
+    URL::defaults(['organization' => $this->organization->slug]);
+});
 
-    private Organization $organization;
+test('admin can load list page', function (): void {
+    Livewire::test(ListRoles::class)->assertSuccessful();
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+test('non admin cannot load list page', function (): void {
+    $member = User::factory()->create();
+    $member->joinOrganization($this->organization, OrganizationRole::Member);
 
-        $this->admin = User::factory()->create();
-        $this->organization = Organization::factory()->create();
-        $this->admin->joinOrganization($this->organization, OrganizationRole::Admin);
+    $this->actingAs($member);
 
-        $this->actingAs($this->admin);
-        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
-        Filament::setTenant($this->organization);
-        URL::defaults(['organization' => $this->organization->slug]);
-    }
+    Livewire::test(ListRoles::class)->assertForbidden();
+});
 
-    public function test_admin_can_load_list_page(): void
-    {
-        Livewire::test(ListRoles::class)->assertSuccessful();
-    }
+test('admin and member roles are seeded', function (): void {
+    $this->assertNotNull($this->organization->roleFor(OrganizationRole::Admin));
+    $this->assertNotNull($this->organization->roleFor(OrganizationRole::Member));
+    $this->assertTrue($this->organization->roleFor(OrganizationRole::Admin)->locked);
+    $this->assertFalse($this->organization->roleFor(OrganizationRole::Member)->locked);
+});
 
-    public function test_non_admin_cannot_load_list_page(): void
-    {
-        $member = User::factory()->create();
-        $member->joinOrganization($this->organization, OrganizationRole::Member);
+test('seeded member role has view permissions', function (): void {
+    $memberRole = $this->organization->roleFor(OrganizationRole::Member);
 
-        $this->actingAs($member);
+    $this->assertTrue($memberRole->hasPermissionTo('view_any_project'));
+    $this->assertTrue($memberRole->hasPermissionTo('view_any_organization_user'));
+    $this->assertTrue($memberRole->hasPermissionTo('view_organization_user'));
+    $this->assertFalse($memberRole->hasPermissionTo('create_project'));
+    $this->assertFalse($memberRole->hasPermissionTo('delete_any_project'));
+});
 
-        Livewire::test(ListRoles::class)->assertForbidden();
-    }
+test('built in admin role is listed', function (): void {
+    Livewire::test(ListRoles::class)
+        ->assertCanSeeTableRecords(
+            $this->organization->roles()->get()->all(),
+        );
+});
 
-    public function test_admin_and_member_roles_are_seeded(): void
-    {
-        $this->assertNotNull($this->organization->roleFor(OrganizationRole::Admin));
-        $this->assertNotNull($this->organization->roleFor(OrganizationRole::Member));
-        $this->assertTrue($this->organization->roleFor(OrganizationRole::Admin)->locked);
-        $this->assertFalse($this->organization->roleFor(OrganizationRole::Member)->locked);
-    }
+test('create role modal persists role and redirects to edit', function (): void {
+    Livewire::test(ListRoles::class)
+        ->callAction('create', data: ['name' => 'coordinator'])
+        ->assertHasNoActionErrors()
+        ->assertRedirect();
 
-    public function test_seeded_member_role_has_view_permissions(): void
-    {
-        $memberRole = $this->organization->roleFor(OrganizationRole::Member);
+    $role = $this->organization->roles()->where('name', 'coordinator')->firstOrFail();
+    $this->assertFalse($role->locked);
+    $this->assertSame('Coordinator', $role->label);
+    $this->assertSame(0, $role->permissions->count());
+});
 
-        $this->assertTrue($memberRole->hasPermissionTo('view_any_project'));
-        $this->assertTrue($memberRole->hasPermissionTo('view_any_organization_user'));
-        $this->assertTrue($memberRole->hasPermissionTo('view_organization_user'));
-        $this->assertFalse($memberRole->hasPermissionTo('create_project'));
-        $this->assertFalse($memberRole->hasPermissionTo('delete_any_project'));
-    }
+test('delete row action is hidden for admin role', function (): void {
+    $adminRole = $this->organization->roleFor(OrganizationRole::Admin);
 
-    public function test_built_in_admin_role_is_listed(): void
-    {
-        Livewire::test(ListRoles::class)
-            ->assertCanSeeTableRecords(
-                $this->organization->roles()->get()->all(),
-            );
-    }
+    Livewire::test(ListRoles::class)
+        ->assertTableActionHidden('delete', $adminRole);
+});
 
-    public function test_create_role_modal_persists_role_and_redirects_to_edit(): void
-    {
-        Livewire::test(ListRoles::class)
-            ->callAction('create', data: ['name' => 'coordinator'])
-            ->assertHasNoActionErrors()
-            ->assertRedirect();
+test('delete role with members shows error and keeps role', function (): void {
+    $role = $this->organization->roles()->create([
+        'name' => 'coordinator',
+        'guard_name' => 'web',
+        'locked' => false,
+    ]);
+    $member = User::factory()->create();
+    $this->organization->users()->attach($member, ['role_id' => $role->id]);
 
-        $role = $this->organization->roles()->where('name', 'coordinator')->firstOrFail();
-        $this->assertFalse($role->locked);
-        $this->assertSame('Coordinator', $role->label);
-        $this->assertSame(0, $role->permissions->count());
-    }
+    Livewire::test(ListRoles::class)
+        ->callTableAction('delete', $role)
+        ->assertNotified(__('settings.roles.notifications.delete_has_members'));
 
-    public function test_delete_row_action_is_hidden_for_admin_role(): void
-    {
-        $adminRole = $this->organization->roleFor(OrganizationRole::Admin);
+    $this->assertDatabaseHas('roles', ['id' => $role->id]);
+});
 
-        Livewire::test(ListRoles::class)
-            ->assertTableActionHidden('delete', $adminRole);
-    }
+test('delete removes empty custom role', function (): void {
+    $role = $this->organization->roles()->create([
+        'name' => 'coordinator',
+        'guard_name' => 'web',
+        'locked' => false,
+    ]);
 
-    public function test_delete_role_with_members_shows_error_and_keeps_role(): void
-    {
-        $role = $this->organization->roles()->create([
-            'name' => 'coordinator',
-            'guard_name' => 'web',
-            'locked' => false,
-        ]);
-        $member = User::factory()->create();
-        $this->organization->users()->attach($member, ['role_id' => $role->id]);
+    Livewire::test(ListRoles::class)
+        ->callTableAction('delete', $role)
+        ->assertHasNoTableActionErrors();
 
-        Livewire::test(ListRoles::class)
-            ->callTableAction('delete', $role)
-            ->assertNotified(__('settings.roles.notifications.delete_has_members'));
+    $this->assertDatabaseMissing('roles', ['id' => $role->id]);
+});
 
-        $this->assertDatabaseHas('roles', ['id' => $role->id]);
-    }
+test('edit role saves label and permissions', function (): void {
+    $role = $this->organization->roles()->create([
+        'name' => 'coordinator',
+        'guard_name' => 'web',
+        'locked' => false,
+    ]);
 
-    public function test_delete_removes_empty_custom_role(): void
-    {
-        $role = $this->organization->roles()->create([
-            'name' => 'coordinator',
-            'guard_name' => 'web',
-            'locked' => false,
-        ]);
+    Livewire::test(EditRole::class, ['record' => $role->id])
+        ->fillForm([
+            'label' => 'Coordinator EU',
+            'permissions' => ['view_any_project', 'create_project'],
+        ])
+        ->call('save');
 
-        Livewire::test(ListRoles::class)
-            ->callTableAction('delete', $role)
-            ->assertHasNoTableActionErrors();
+    $role->refresh();
+    $this->assertSame('Coordinator EU', $role->label);
+    $this->assertTrue($role->hasPermissionTo('view_any_project'));
+    $this->assertTrue($role->hasPermissionTo('create_project'));
+    $this->assertFalse($role->hasPermissionTo('delete_any_project'));
+});
 
-        $this->assertDatabaseMissing('roles', ['id' => $role->id]);
-    }
+test('edit role replaces previous permissions', function (): void {
+    $role = $this->organization->roles()->create([
+        'name' => 'coordinator',
+        'guard_name' => 'web',
+        'locked' => false,
+    ]);
+    $role->syncPermissions(['view_any_project', 'create_project']);
 
-    public function test_edit_role_saves_label_and_permissions(): void
-    {
-        $role = $this->organization->roles()->create([
-            'name' => 'coordinator',
-            'guard_name' => 'web',
-            'locked' => false,
-        ]);
+    Livewire::test(EditRole::class, ['record' => $role->id])
+        ->fillForm([
+            'label' => 'Coordinator',
+            'permissions' => ['view_any_project'],
+        ])
+        ->call('save');
 
-        Livewire::test(EditRole::class, ['record' => $role->id])
-            ->fillForm([
-                'label' => 'Coordinator EU',
-                'permissions_project' => ['view_any_project', 'create_project'],
-            ])
-            ->call('save');
-
-        $role->refresh();
-        $this->assertSame('Coordinator EU', $role->label);
-        $this->assertTrue($role->hasPermissionTo('view_any_project'));
-        $this->assertTrue($role->hasPermissionTo('create_project'));
-        $this->assertFalse($role->hasPermissionTo('delete_any_project'));
-    }
-
-    public function test_edit_role_replaces_previous_permissions(): void
-    {
-        $role = $this->organization->roles()->create([
-            'name' => 'coordinator',
-            'guard_name' => 'web',
-            'locked' => false,
-        ]);
-        $role->syncPermissions(['view_any_project', 'create_project']);
-
-        Livewire::test(EditRole::class, ['record' => $role->id])
-            ->fillForm([
-                'label' => 'Coordinator',
-                'permissions_project' => ['view_any_project'],
-            ])
-            ->call('save');
-
-        $role->refresh();
-        $this->assertSame(['view_any_project'], $role->permissions->pluck('name')->all());
-    }
-}
+    $role->refresh();
+    $this->assertSame(['view_any_project'], $role->permissions->pluck('name')->all());
+});

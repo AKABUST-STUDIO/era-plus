@@ -1,79 +1,61 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Filament\Organization\Pages\Tenancy\CreateOrganization;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Concerns\FakesStripe;
-use Tests\TestCase;
 
-class CreateOrganizationWizardTest extends TestCase
-{
-    use FakesStripe;
-    use RefreshDatabase;
+uses(FakesStripe::class);
 
-    private User $user;
+beforeEach(function (): void {
+    $this->user = User::factory()->create();
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->actingAs($this->user);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
+});
 
-        $this->user = User::factory()->create();
+test('wizard renders', function (): void {
+    Livewire::test(CreateOrganization::class)->assertSuccessful();
+});
 
-        $this->actingAs($this->user);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-    }
+test('register persists organization and attaches user as admin', function (): void {
+    Livewire::test(CreateOrganization::class)
+        ->fillForm(['name' => 'Acme Nordic'])
+        ->call('register');
 
-    public function test_wizard_renders(): void
-    {
-        Livewire::test(CreateOrganization::class)->assertSuccessful();
-    }
+    $organization = Organization::query()->where('name', 'Acme Nordic')->firstOrFail();
 
-    public function test_register_persists_organization_and_attaches_user_as_admin(): void
-    {
-        Livewire::test(CreateOrganization::class)
-            ->fillForm(['name' => 'Acme Nordic'])
-            ->call('register');
+    $this->assertTrue($organization->users()->whereKey($this->user->id)->exists());
+    $this->assertTrue($this->user->fresh()->isOrgAdmin($organization));
+});
 
-        $organization = Organization::query()->where('name', 'Acme Nordic')->firstOrFail();
+test('first organization becomes default', function (): void {
+    Livewire::test(CreateOrganization::class)
+        ->fillForm(['name' => 'First Org'])
+        ->call('register');
 
-        $this->assertTrue($organization->users()->whereKey($this->user->id)->exists());
-        $this->assertTrue($this->user->fresh()->isOrgAdmin($organization));
-    }
+    $organization = Organization::query()->where('name', 'First Org')->firstOrFail();
 
-    public function test_first_organization_becomes_default(): void
-    {
-        Livewire::test(CreateOrganization::class)
-            ->fillForm(['name' => 'First Org'])
-            ->call('register');
+    $this->assertSame($organization->id, $this->user->fresh()->default_organization_id);
+});
 
-        $organization = Organization::query()->where('name', 'First Org')->firstOrFail();
+test('existing default is not overwritten', function (): void {
+    $existing = Organization::factory()->create(['name' => 'Old']);
+    $this->user->joinOrganization($existing);
+    $this->user->update(['default_organization_id' => $existing->id]);
 
-        $this->assertSame($organization->id, $this->user->fresh()->default_organization_id);
-    }
+    Livewire::test(CreateOrganization::class)
+        ->fillForm(['name' => 'Second Org'])
+        ->call('register');
 
-    public function test_existing_default_is_not_overwritten(): void
-    {
-        $existing = Organization::factory()->create(['name' => 'Old']);
-        $this->user->joinOrganization($existing);
-        $this->user->update(['default_organization_id' => $existing->id]);
+    $this->assertSame($existing->id, $this->user->fresh()->default_organization_id);
+});
 
-        Livewire::test(CreateOrganization::class)
-            ->fillForm(['name' => 'Second Org'])
-            ->call('register');
-
-        $this->assertSame($existing->id, $this->user->fresh()->default_organization_id);
-    }
-
-    public function test_name_is_required(): void
-    {
-        Livewire::test(CreateOrganization::class)
-            ->fillForm(['name' => null])
-            ->call('register')
-            ->assertHasFormErrors(['name']);
-    }
-}
+test('name is required', function (): void {
+    Livewire::test(CreateOrganization::class)
+        ->fillForm(['name' => null])
+        ->call('register')
+        ->assertHasFormErrors(['name']);
+});

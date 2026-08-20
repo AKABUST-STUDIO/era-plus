@@ -1,70 +1,52 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Http\Middleware\SetUserLocale;
 use App\Livewire\LanguageSwitcher;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Livewire\Livewire;
 use Symfony\Component\HttpFoundation\Response;
-use Tests\TestCase;
 
-class LanguageSwitcherTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function (): void {
+    $this->user = User::factory()->create();
+    $this->actingAs($this->user);
+});
 
-    private User $user;
+test('switcher persists locale on user and sets app locale', function (): void {
+    Livewire::test(LanguageSwitcher::class)
+        ->call('setLocale', 'es');
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->assertSame('es', $this->user->fresh()->locale);
+    $this->assertSame('es', app()->getLocale());
+});
 
-        $this->user = User::factory()->create();
-        $this->actingAs($this->user);
-    }
+test('switcher ignores unsupported locale', function (): void {
+    Livewire::test(LanguageSwitcher::class)
+        ->call('setLocale', 'zz');
 
-    public function test_switcher_persists_locale_on_user_and_sets_app_locale(): void
-    {
-        Livewire::test(LanguageSwitcher::class)
-            ->call('setLocale', 'es');
+    $this->assertNull($this->user->fresh()->locale);
+});
 
-        $this->assertSame('es', $this->user->fresh()->locale);
-        $this->assertSame('es', app()->getLocale());
-    }
+test('middleware applies user locale', function (): void {
+    $this->user->update(['locale' => 'fr']);
 
-    public function test_switcher_ignores_unsupported_locale(): void
-    {
-        Livewire::test(LanguageSwitcher::class)
-            ->call('setLocale', 'zz');
+    app()->setLocale('en');
 
-        $this->assertNull($this->user->fresh()->locale);
-    }
+    $request = Request::create('/');
+    $request->setUserResolver(fn (): User => $this->user->fresh());
 
-    public function test_middleware_applies_user_locale(): void
-    {
-        $this->user->update(['locale' => 'fr']);
+    (new SetUserLocale)->handle($request, fn (): Response => new Response);
 
-        app()->setLocale('en');
+    $this->assertSame('fr', app()->getLocale());
+});
 
-        $request = Request::create('/');
-        $request->setUserResolver(fn (): User => $this->user->fresh());
+test('middleware ignores missing or invalid locale', function (): void {
+    app()->setLocale('en');
 
-        (new SetUserLocale)->handle($request, fn (): Response => new Response);
+    $request = Request::create('/');
+    $request->setUserResolver(fn (): ?User => null);
 
-        $this->assertSame('fr', app()->getLocale());
-    }
+    (new SetUserLocale)->handle($request, fn (): Response => new Response);
 
-    public function test_middleware_ignores_missing_or_invalid_locale(): void
-    {
-        app()->setLocale('en');
-
-        $request = Request::create('/');
-        $request->setUserResolver(fn (): ?User => null);
-
-        (new SetUserLocale)->handle($request, fn (): Response => new Response);
-
-        $this->assertSame('en', app()->getLocale());
-    }
-}
+    $this->assertSame('en', app()->getLocale());
+});

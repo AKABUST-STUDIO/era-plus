@@ -42,7 +42,6 @@ class Billing extends Page implements HasOrganizationPermissions
     public static function canAccess(): bool
     {
         return false;
-        return Filament::auth()->user()?->can('view', self::class) ?? false;
     }
 
     public static function getNavigationLabel(): string

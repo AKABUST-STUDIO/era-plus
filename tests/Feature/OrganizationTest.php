@@ -1,84 +1,68 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\Organization;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class OrganizationTest extends TestCase
-{
-    use RefreshDatabase;
+test('organization can be created', function (): void {
+    $organization = Organization::factory()->create([
+        'name' => 'Acme Corporation',
+    ]);
 
-    public function test_organization_can_be_created(): void
-    {
-        $organization = Organization::factory()->create([
-            'name' => 'Acme Corporation',
-        ]);
+    $this->assertDatabaseHas('organizations', [
+        'name' => 'Acme Corporation',
+    ]);
+    $this->assertNotNull($organization->slug);
+});
 
-        $this->assertDatabaseHas('organizations', [
-            'name' => 'Acme Corporation',
-        ]);
-        $this->assertNotNull($organization->slug);
-    }
+test('organization slug is generated from name', function (): void {
+    $organization = Organization::factory()->create([
+        'name' => 'Test Organization Name',
+    ]);
 
-    public function test_organization_slug_is_generated_from_name(): void
-    {
-        $organization = Organization::factory()->create([
-            'name' => 'Test Organization Name',
-        ]);
+    $this->assertEquals('test-organization-name', $organization->slug);
+});
 
-        $this->assertEquals('test-organization-name', $organization->slug);
-    }
+test('organization can have users', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->create();
 
-    public function test_organization_can_have_users(): void
-    {
-        $organization = Organization::factory()->create();
-        $user = User::factory()->create();
+    $user->joinOrganization($organization);
 
-        $user->joinOrganization($organization);
+    $this->assertTrue($organization->users->contains($user));
+    $this->assertTrue($user->organizations->contains($organization));
+});
 
-        $this->assertTrue($organization->users->contains($user));
-        $this->assertTrue($user->organizations->contains($organization));
-    }
+test('user can belong to multiple organizations', function (): void {
+    $user = User::factory()->create();
+    $org1 = Organization::factory()->create(['name' => 'Org One']);
+    $org2 = Organization::factory()->create(['name' => 'Org Two']);
 
-    public function test_user_can_belong_to_multiple_organizations(): void
-    {
-        $user = User::factory()->create();
-        $org1 = Organization::factory()->create(['name' => 'Org One']);
-        $org2 = Organization::factory()->create(['name' => 'Org Two']);
+    $user->joinOrganization($org1);
+    $user->joinOrganization($org2);
 
-        $user->joinOrganization($org1);
-        $user->joinOrganization($org2);
+    $this->assertCount(2, $user->fresh()->organizations);
+});
 
-        $this->assertCount(2, $user->fresh()->organizations);
-    }
+test('user can access tenant they belong to', function (): void {
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
 
-    public function test_user_can_access_tenant_they_belong_to(): void
-    {
-        $user = User::factory()->create();
-        $organization = Organization::factory()->create();
+    $user->joinOrganization($organization);
 
-        $user->joinOrganization($organization);
+    $this->assertTrue($user->canAccessTenant($organization));
+});
 
-        $this->assertTrue($user->canAccessTenant($organization));
-    }
+test('user cannot access tenant they do not belong to', function (): void {
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
 
-    public function test_user_cannot_access_tenant_they_do_not_belong_to(): void
-    {
-        $user = User::factory()->create();
-        $organization = Organization::factory()->create();
+    $this->assertFalse($user->canAccessTenant($organization));
+});
 
-        $this->assertFalse($user->canAccessTenant($organization));
-    }
+test('organization uses slug as route key', function (): void {
+    $organization = Organization::factory()->create([
+        'name' => 'My Organization',
+    ]);
 
-    public function test_organization_uses_slug_as_route_key(): void
-    {
-        $organization = Organization::factory()->create([
-            'name' => 'My Organization',
-        ]);
-
-        $this->assertEquals('slug', $organization->getRouteKeyName());
-    }
-}
+    $this->assertEquals('slug', $organization->getRouteKeyName());
+});

@@ -46,7 +46,7 @@ class ProjectMenu extends Component
             'isCurrent' => $currentProject instanceof Project && $project->is($currentProject),
         ]);
 
-        $canCreate = $user->can('create', Project::class) && $organization->canCreateProject();
+        $canCreate = $user->can('create', Project::class);
 
         return view($this->view, [
             'organization' => $organization,

@@ -31,7 +31,9 @@ class TravelExpenseResource extends Resource implements HasOrganizationPermissio
      */
     public static function getPermissionActions(string $scope): ?array
     {
-        return $scope === PermissionRegistry::SCOPE_ORGANIZATION ? ['view'] : null;
+        return $scope === PermissionRegistry::SCOPE_PROJECT
+            ? ['view_any', 'create', 'update', 'update_any', 'delete', 'delete_any', 'import', 'export', 'country_limits']
+            : null;
     }
 
     public static function getNavigationLabel(): string
@@ -64,6 +66,14 @@ class TravelExpenseResource extends Resource implements HasOrganizationPermissio
         return [
             'index' => ListTravelExpenses::route('/'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return parent::canViewAny()
+            || self::userCan(TravelExpensePermission::Create)
+            || self::userCan(TravelExpensePermission::Update)
+            || self::userCan(TravelExpensePermission::Delete);
     }
 
     public static function canManageCountryLimits(): bool

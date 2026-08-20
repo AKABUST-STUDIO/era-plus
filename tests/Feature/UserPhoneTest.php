@@ -1,82 +1,62 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use InvalidArgumentException;
 use Propaganistas\LaravelPhone\PhoneNumber;
-use Tests\TestCase;
 
-class UserPhoneTest extends TestCase
-{
-    use RefreshDatabase;
+test('the phone attribute is cast to a phone number object', function (): void {
+    $user = User::factory()->withPhone()->create();
 
-    public function test_the_phone_attribute_is_cast_to_a_phone_number_object(): void
-    {
-        $user = User::factory()->withPhone()->create();
+    $this->assertInstanceOf(PhoneNumber::class, $user->fresh()->phone);
+});
 
-        $this->assertInstanceOf(PhoneNumber::class, $user->fresh()->phone);
-    }
+test('the raw number is stored exactly as entered', function (): void {
+    $user = User::factory()->withPhone('612 345 678')->create();
 
-    public function test_the_raw_number_is_stored_exactly_as_entered(): void
-    {
-        $user = User::factory()->withPhone('612 345 678')->create();
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'phone' => '612 345 678',
+    ]);
+});
 
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'phone' => '612 345 678',
-        ]);
-    }
+test('a national number is parsed against the default country', function (): void {
+    $user = User::factory()->withPhone('612 345 678')->create()->fresh();
 
-    public function test_a_national_number_is_parsed_against_the_default_country(): void
-    {
-        $user = User::factory()->withPhone('612 345 678')->create()->fresh();
+    $this->assertSame('+34612345678', $user->phone->formatE164());
+    $this->assertSame('ES', $user->phone->getCountry());
+});
 
-        $this->assertSame('+34612345678', $user->phone->formatE164());
-        $this->assertSame('ES', $user->phone->getCountry());
-    }
+test('an international number keeps its own country', function (): void {
+    $user = User::factory()->withPhone('+32 12 34 56 78')->create()->fresh();
 
-    public function test_an_international_number_keeps_its_own_country(): void
-    {
-        $user = User::factory()->withPhone('+32 12 34 56 78')->create()->fresh();
+    $this->assertSame('BE', $user->phone->getCountry());
+    $this->assertSame('+3212345678', $user->phone->formatE164());
+});
 
-        $this->assertSame('BE', $user->phone->getCountry());
-        $this->assertSame('+3212345678', $user->phone->formatE164());
-    }
+test('a null phone stays null', function (): void {
+    $user = User::factory()->create();
 
-    public function test_a_null_phone_stays_null(): void
-    {
-        $user = User::factory()->create();
+    $this->assertNull($user->fresh()->phone);
+});
 
-        $this->assertNull($user->fresh()->phone);
-    }
+test('a number valid in neither form throws on read', function (): void {
+    $this->expectException(InvalidArgumentException::class);
 
-    public function test_a_number_valid_in_neither_form_throws_on_read(): void
-    {
-        $user = User::factory()->withPhone('12345')->create();
+    User::factory()->withPhone('12345')->create();
+});
 
-        $this->expectException(InvalidArgumentException::class);
+test('assigning a phone number object stores its raw value', function (): void {
+    $user = User::factory()->create();
 
-        $user->fresh()->phone;
-    }
+    $user->update(['phone' => new PhoneNumber('612 345 678', 'ES')]);
 
-    public function test_assigning_a_phone_number_object_stores_its_raw_value(): void
-    {
-        $user = User::factory()->create();
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'phone' => '612 345 678',
+    ]);
+});
 
-        $user->update(['phone' => new PhoneNumber('612 345 678', 'ES')]);
+test('the phone serializes to its raw value', function (): void {
+    $user = User::factory()->withPhone('612 345 678')->create()->fresh();
 
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'phone' => '612 345 678',
-        ]);
-    }
-
-    public function test_the_phone_serializes_to_its_raw_value(): void
-    {
-        $user = User::factory()->withPhone('612 345 678')->create()->fresh();
-
-        $this->assertSame('612 345 678', $user->toArray()['phone']);
-    }
-}
+    $this->assertSame('612 345 678', $user->toArray()['phone']);
+});

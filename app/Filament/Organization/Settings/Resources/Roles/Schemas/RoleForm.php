@@ -4,6 +4,7 @@ namespace App\Filament\Organization\Settings\Resources\Roles\Schemas;
 
 use App\Models\Role;
 use App\Services\PermissionRegistry;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\View;
@@ -26,6 +27,9 @@ class RoleForm
                             ->disabled(fn (?Role $record): bool => (bool) $record?->locked)
                             ->helperText(__('settings.roles.form.label_helper')),
                     ]),
+
+                Hidden::make('permissions')
+                    ->default([]),
 
                 View::make('filament.roles.permissions-matrix')
                     ->viewData(fn (?Role $record): array => [

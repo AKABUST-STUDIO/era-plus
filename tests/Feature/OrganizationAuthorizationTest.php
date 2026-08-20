@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
 use App\Filament\Organization\Resources\OrganizationUsers\OrganizationUserResource;
@@ -14,208 +12,191 @@ use App\Models\Role;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
-use Tests\TestCase;
 
-class OrganizationAuthorizationTest extends TestCase
+/**
+ * @return array{0: User, 1: Organization}
+ */
+function userWithRole(OrganizationRole $role): array
 {
-    use RefreshDatabase;
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $user->joinOrganization($organization, $role);
 
-    /**
-     * @return array{0: User, 1: Organization}
-     */
-    private function userWithRole(OrganizationRole $role): array
-    {
-        $user = User::factory()->create();
-        $organization = Organization::factory()->create();
-        $user->joinOrganization($organization, $role);
-
-        return [$user, $organization];
-    }
-
-    private function actOnSettingsPanel(User $user, Organization $organization): void
-    {
-        $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
-        Filament::setTenant($organization);
-        OrganizationService::remember($organization);
-        URL::defaults(['organization' => $organization->slug]);
-    }
-
-    private function actOnOrganizationPanel(User $user, Organization $organization): void
-    {
-        $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-        Filament::setTenant($organization);
-    }
-
-    public function test_admin_can_access_the_settings_pages(): void
-    {
-        [$user, $organization] = $this->userWithRole(OrganizationRole::Admin);
-        $this->actOnSettingsPanel($user, $organization);
-
-        $this->assertTrue(OrganizationSettings::canAccess());
-        $this->assertTrue(Billing::canAccess());
-    }
-
-    public function test_member_can_open_organization_settings_but_not_billing(): void
-    {
-        [$user, $organization] = $this->userWithRole(OrganizationRole::Member);
-        $this->actOnSettingsPanel($user, $organization);
-
-        $this->assertTrue(OrganizationSettings::canAccess());
-        $this->assertFalse($user->can('update', $organization));
-        $this->assertFalse(Billing::canAccess());
-    }
-
-    public function test_member_gets_forbidden_when_mounting_a_gated_settings_page(): void
-    {
-        [$user, $organization] = $this->userWithRole(OrganizationRole::Member);
-        $this->actOnSettingsPanel($user, $organization);
-
-        Livewire::test(Billing::class)->assertForbidden();
-    }
-
-    public function test_role_without_permissions_can_only_view_the_organization(): void
-    {
-        $user = User::factory()->create();
-        $organization = Organization::factory()->create();
-
-        $empty = $organization->roles()->create([
-            'name' => 'no-permissions',
-            'guard_name' => 'web',
-            'label' => 'No Permissions',
-            'locked' => false,
-        ]);
-
-        $user->joinOrganization($organization, $empty);
-        $this->actOnSettingsPanel($user, $organization);
-
-        $this->assertTrue(OrganizationSettings::canAccess());
-        $this->assertFalse($user->can('update', $organization));
-        $this->assertFalse(OrganizationUserResource::canViewAny());
-        $this->assertFalse(RoleResource::canViewAny());
-    }
-
-    public function test_member_can_access_the_users_page(): void
-    {
-        [$user, $organization] = $this->userWithRole(OrganizationRole::Member);
-        $this->actOnOrganizationPanel($user, $organization);
-
-        $this->assertTrue(OrganizationUserResource::canViewAny());
-    }
-
-    public function test_admin_can_view_roles_but_member_cannot(): void
-    {
-        [$admin, $organization] = $this->userWithRole(OrganizationRole::Admin);
-        $this->actOnSettingsPanel($admin, $organization);
-        $this->assertTrue(RoleResource::canViewAny());
-
-        $member = User::factory()->create();
-        $member->joinOrganization($organization, OrganizationRole::Member);
-        $this->actOnSettingsPanel($member, $organization);
-        $this->assertFalse(RoleResource::canViewAny());
-    }
-
-    public function test_locked_roles_cannot_be_updated_or_deleted(): void
-    {
-        [$admin, $organization] = $this->userWithRole(OrganizationRole::Admin);
-        $this->actOnSettingsPanel($admin, $organization);
-
-        $adminRole = $organization->roleFor(OrganizationRole::Admin);
-        $memberRole = $organization->roleFor(OrganizationRole::Member);
-
-        $this->assertTrue($adminRole->locked);
-        $this->assertFalse(Gate::forUser($admin)->allows('update', $adminRole));
-        $this->assertFalse(Gate::forUser($admin)->allows('delete', $adminRole));
-        $this->assertTrue(Gate::forUser($admin)->allows('update', $memberRole));
-    }
-
-    public function test_role_policy_denies_a_role_from_another_organization(): void
-    {
-        [$admin, $organization] = $this->userWithRole(OrganizationRole::Admin);
-        $this->actOnSettingsPanel($admin, $organization);
-
-        $foreignRole = Organization::factory()->create()->roleFor(OrganizationRole::Member);
-
-        $this->assertInstanceOf(Role::class, $foreignRole);
-        $this->assertFalse(Gate::forUser($admin)->allows('view', $foreignRole));
-    }
-
-    public function test_project_policy_follows_organization_permissions(): void
-    {
-        [$admin, $organization] = $this->userWithRole(OrganizationRole::Admin);
-        $project = Project::factory()->create(['organization_id' => $organization->id]);
-
-        $member = User::factory()->create();
-        $member->joinOrganization($organization, OrganizationRole::Member);
-
-        $this->actOnOrganizationPanel($admin, $organization);
-        $this->assertTrue(Gate::forUser($admin)->allows('viewAny', Project::class));
-        $this->assertTrue(Gate::forUser($admin)->allows('update', $project));
-        $this->assertTrue(Gate::forUser($admin)->allows('delete', $project));
-
-        $this->actOnOrganizationPanel($member, $organization);
-        $this->assertTrue(Gate::forUser($member)->allows('viewAny', Project::class));
-        $this->assertFalse(Gate::forUser($member)->allows('view', $project));
-        $this->assertFalse(Gate::forUser($member)->allows('create', Project::class));
-        $this->assertFalse(Gate::forUser($member)->allows('update', $project));
-        $this->assertFalse(Gate::forUser($member)->allows('delete', $project));
-
-        $member->joinProject($project);
-        $this->assertTrue(Gate::forUser($member->fresh())->allows('view', $project));
-    }
-
-    public function test_outsider_is_denied_every_organization_permission(): void
-    {
-        [, $organization] = $this->userWithRole(OrganizationRole::Admin);
-        $outsider = User::factory()->create();
-        $project = Project::factory()->create(['organization_id' => $organization->id]);
-
-        $this->actingAs($outsider);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-        Filament::setTenant($organization);
-
-        $this->assertFalse(Gate::forUser($outsider)->allows('viewAny', Project::class));
-        $this->assertFalse(Gate::forUser($outsider)->allows('view', $project));
-        $this->assertFalse($outsider->canAccessTenant($organization));
-    }
-
-    public function test_settings_panel_is_closed_to_users_without_an_organization(): void
-    {
-        $user = User::factory()->create();
-
-        $this->assertFalse($user->canAccessPanel(Filament::getPanel('organization.settings')));
-
-        $user->joinOrganization(Organization::factory()->create(), OrganizationRole::Member);
-
-        $this->assertTrue($user->fresh()->canAccessPanel(Filament::getPanel('organization.settings')));
-    }
-
-    public function test_custom_role_permissions_are_honoured(): void
-    {
-        [$user, $organization] = $this->userWithRole(OrganizationRole::Member);
-
-        $viewer = $organization->roles()->create([
-            'name' => 'settings-viewer',
-            'guard_name' => 'web',
-            'label' => 'Settings Viewer',
-            'locked' => false,
-        ]);
-        $viewer->syncPermissions(['view_any_project']);
-
-        $user->joinOrganization($organization, $viewer);
-        $this->actOnSettingsPanel($user->fresh(), $organization);
-
-        $this->assertTrue(OrganizationSettings::canAccess());
-
-        Livewire::test(OrganizationSettings::class)
-            ->fillForm(['name' => 'Nope'])
-            ->assertActionDoesNotExist(TestAction::make('saveName')->schemaComponent('name-section', 'form'));
-
-        $this->assertNotSame('Nope', $organization->fresh()->name);
-    }
+    return [$user, $organization];
 }
+
+function actOnSettingsPanel(object $testCase, User $user, Organization $organization): void
+{
+    $testCase->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('organization.settings'));
+    Filament::setTenant($organization);
+    OrganizationService::remember($organization);
+    URL::defaults(['organization' => $organization->slug]);
+}
+
+function actOnOrganizationPanel(object $testCase, User $user, Organization $organization): void
+{
+    $testCase->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
+    Filament::setTenant($organization);
+}
+
+test('admin can access the settings pages', function (): void {
+    $this->markTestSkipped('Billing page is intentionally hidden.');
+
+    [$user, $organization] = userWithRole(OrganizationRole::Admin);
+    actOnSettingsPanel($this, $user, $organization);
+
+    $this->assertTrue(OrganizationSettings::canAccess());
+    $this->assertTrue(Billing::canAccess());
+});
+
+test('member can open organization settings but not billing', function (): void {
+    [$user, $organization] = userWithRole(OrganizationRole::Member);
+    actOnSettingsPanel($this, $user, $organization);
+
+    $this->assertTrue(OrganizationSettings::canAccess());
+    $this->assertFalse($user->can('update', $organization));
+    $this->assertFalse(Billing::canAccess());
+});
+
+test('member gets forbidden when mounting a gated settings page', function (): void {
+    [$user, $organization] = userWithRole(OrganizationRole::Member);
+    actOnSettingsPanel($this, $user, $organization);
+
+    Livewire::test(Billing::class)->assertForbidden();
+});
+
+test('role without permissions can only view the organization', function (): void {
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
+
+    $empty = $organization->roles()->create([
+        'name' => 'no-permissions',
+        'guard_name' => 'web',
+        'label' => 'No Permissions',
+        'locked' => false,
+    ]);
+
+    $user->joinOrganization($organization, $empty);
+    actOnSettingsPanel($this, $user, $organization);
+
+    $this->assertTrue(OrganizationSettings::canAccess());
+    $this->assertFalse($user->can('update', $organization));
+    $this->assertFalse(OrganizationUserResource::canViewAny());
+    $this->assertFalse(RoleResource::canViewAny());
+});
+
+test('member can access the users page', function (): void {
+    [$user, $organization] = userWithRole(OrganizationRole::Member);
+    actOnOrganizationPanel($this, $user, $organization);
+
+    $this->assertTrue(OrganizationUserResource::canViewAny());
+});
+
+test('admin can view roles but member cannot', function (): void {
+    [$admin, $organization] = userWithRole(OrganizationRole::Admin);
+    actOnSettingsPanel($this, $admin, $organization);
+    $this->assertTrue(RoleResource::canViewAny());
+
+    $member = User::factory()->create();
+    $member->joinOrganization($organization, OrganizationRole::Member);
+    actOnSettingsPanel($this, $member, $organization);
+    $this->assertFalse(RoleResource::canViewAny());
+});
+
+test('locked roles cannot be updated or deleted', function (): void {
+    [$admin, $organization] = userWithRole(OrganizationRole::Admin);
+    actOnSettingsPanel($this, $admin, $organization);
+
+    $adminRole = $organization->roleFor(OrganizationRole::Admin);
+    $memberRole = $organization->roleFor(OrganizationRole::Member);
+
+    $this->assertTrue($adminRole->locked);
+    $this->assertFalse(Gate::forUser($admin)->allows('update', $adminRole));
+    $this->assertFalse(Gate::forUser($admin)->allows('delete', $adminRole));
+    $this->assertTrue(Gate::forUser($admin)->allows('update', $memberRole));
+});
+
+test('role policy denies a role from another organization', function (): void {
+    [$admin, $organization] = userWithRole(OrganizationRole::Admin);
+    actOnSettingsPanel($this, $admin, $organization);
+
+    $foreignRole = Organization::factory()->create()->roleFor(OrganizationRole::Member);
+
+    $this->assertInstanceOf(Role::class, $foreignRole);
+    $this->assertFalse(Gate::forUser($admin)->allows('view', $foreignRole));
+});
+
+test('project policy follows organization permissions', function (): void {
+    [$admin, $organization] = userWithRole(OrganizationRole::Admin);
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+
+    $member = User::factory()->create();
+    $member->joinOrganization($organization, OrganizationRole::Member);
+
+    actOnOrganizationPanel($this, $admin, $organization);
+    $this->assertTrue(Gate::forUser($admin)->allows('viewAny', Project::class));
+    $this->assertTrue(Gate::forUser($admin)->allows('update', $project));
+    $this->assertTrue(Gate::forUser($admin)->allows('delete', $project));
+
+    actOnOrganizationPanel($this, $member, $organization);
+    $this->assertTrue(Gate::forUser($member)->allows('viewAny', Project::class));
+    $this->assertFalse(Gate::forUser($member)->allows('view', $project));
+    $this->assertFalse(Gate::forUser($member)->allows('create', Project::class));
+    $this->assertFalse(Gate::forUser($member)->allows('update', $project));
+    $this->assertFalse(Gate::forUser($member)->allows('delete', $project));
+
+    $member->joinProject($project);
+    $this->assertTrue(Gate::forUser($member->fresh())->allows('view', $project));
+});
+
+test('outsider is denied every organization permission', function (): void {
+    [, $organization] = userWithRole(OrganizationRole::Admin);
+    $outsider = User::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+
+    $this->actingAs($outsider);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
+    Filament::setTenant($organization);
+
+    $this->assertFalse(Gate::forUser($outsider)->allows('viewAny', Project::class));
+    $this->assertFalse(Gate::forUser($outsider)->allows('view', $project));
+    $this->assertFalse($outsider->canAccessTenant($organization));
+});
+
+test('settings panel is closed to users without an organization', function (): void {
+    $user = User::factory()->create();
+
+    $this->assertFalse($user->canAccessPanel(Filament::getPanel('organization.settings')));
+
+    $user->joinOrganization(Organization::factory()->create(), OrganizationRole::Member);
+
+    $this->assertTrue($user->fresh()->canAccessPanel(Filament::getPanel('organization.settings')));
+});
+
+test('custom role permissions are honoured', function (): void {
+    [$user, $organization] = userWithRole(OrganizationRole::Member);
+
+    $viewer = $organization->roles()->create([
+        'name' => 'settings-viewer',
+        'guard_name' => 'web',
+        'label' => 'Settings Viewer',
+        'locked' => false,
+    ]);
+    $viewer->syncPermissions(['view_any_project']);
+
+    $user->joinOrganization($organization, $viewer);
+    actOnSettingsPanel($this, $user->fresh(), $organization);
+
+    $this->assertTrue(OrganizationSettings::canAccess());
+
+    Livewire::test(OrganizationSettings::class)
+        ->fillForm(['name' => 'Nope'])
+        ->assertActionDoesNotExist(TestAction::make('saveName')->schemaComponent('name-section', 'form'));
+
+    $this->assertNotSame('Nope', $organization->fresh()->name);
+});

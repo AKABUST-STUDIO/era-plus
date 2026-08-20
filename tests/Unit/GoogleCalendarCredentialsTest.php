@@ -1,38 +1,28 @@
 <?php
 
-namespace Tests\Unit;
-
 use App\Support\GoogleCalendarCredentials;
 use Illuminate\Support\Facades\Config;
-use Tests\TestCase;
 
-class GoogleCalendarCredentialsTest extends TestCase
-{
-    public function test_is_configured_reads_credentials_from_services_config(): void
-    {
-        Config::set('services.google.credentials_b64', base64_encode('{"type":"service_account"}'));
+test('is configured reads credentials from services config', function (): void {
+    Config::set('services.google.credentials_b64', base64_encode('{"type":"service_account"}'));
 
-        $this->assertTrue(GoogleCalendarCredentials::isConfigured());
-    }
+    expect(GoogleCalendarCredentials::isConfigured())->toBeTrue();
+});
 
-    public function test_is_configured_is_false_without_credentials(): void
-    {
-        Config::set('services.google.credentials_b64', null);
+test('is configured is false without credentials', function (): void {
+    Config::set('services.google.credentials_b64', null);
 
-        $this->assertFalse(GoogleCalendarCredentials::isConfigured());
-    }
+    expect(GoogleCalendarCredentials::isConfigured())->toBeFalse();
+});
 
-    public function test_impersonate_reads_email_from_services_config(): void
-    {
-        Config::set('services.google.impersonate', 'owner@example.com');
+test('impersonate reads email from services config', function (): void {
+    Config::set('services.google.impersonate', 'owner@example.com');
 
-        $this->assertSame('owner@example.com', GoogleCalendarCredentials::impersonate());
-    }
+    expect(GoogleCalendarCredentials::impersonate())->toBe('owner@example.com');
+});
 
-    public function test_impersonate_is_null_without_email(): void
-    {
-        Config::set('services.google.impersonate', null);
+test('impersonate is null without email', function (): void {
+    Config::set('services.google.impersonate', null);
 
-        $this->assertNull(GoogleCalendarCredentials::impersonate());
-    }
-}
+    expect(GoogleCalendarCredentials::impersonate())->toBeNull();
+});

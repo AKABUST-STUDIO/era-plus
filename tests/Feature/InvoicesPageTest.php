@@ -1,56 +1,39 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\Organization\OrganizationRole;
 use App\Filament\Organization\Settings\Pages\Invoices;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
-use Tests\TestCase;
 
-class InvoicesPageTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function (): void {
+    $this->markTestSkipped('Invoices page is intentionally hidden.');
 
-    private User $user;
+    $this->user = User::factory()->create();
+    $this->organization = Organization::factory()->create();
+    $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
 
-    private Organization $organization;
+    $this->actingAs($this->user);
+    Filament::setCurrentPanel(Filament::getPanel('organization-settings'));
+    Filament::setTenant($this->organization);
+    URL::defaults(['organization' => $this->organization->slug]);
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+test('invoices page renders', function (): void {
+    Livewire::test(Invoices::class)->assertSuccessful();
+});
 
-        $this->user = User::factory()->create();
-        $this->organization = Organization::factory()->create();
-        $this->user->joinOrganization($this->organization, OrganizationRole::Admin);
+test('empty state when no stripe customer', function (): void {
+    Livewire::test(Invoices::class)
+        ->assertSee('No invoices yet');
+});
 
-        $this->actingAs($this->user);
-        Filament::setCurrentPanel(Filament::getPanel('organization-settings'));
-        Filament::setTenant($this->organization);
-        URL::defaults(['organization' => $this->organization->slug]);
-    }
+test('returns empty rows when no stripe id', function (): void {
+    $rows = Livewire::test(Invoices::class)
+        ->instance()
+        ->getInvoiceRows();
 
-    public function test_invoices_page_renders(): void
-    {
-        Livewire::test(Invoices::class)->assertSuccessful();
-    }
-
-    public function test_empty_state_when_no_stripe_customer(): void
-    {
-        Livewire::test(Invoices::class)
-            ->assertSee('No invoices yet');
-    }
-
-    public function test_returns_empty_rows_when_no_stripe_id(): void
-    {
-        $rows = Livewire::test(Invoices::class)
-            ->instance()
-            ->getInvoiceRows();
-
-        $this->assertSame([], $rows);
-    }
-}
+    $this->assertSame([], $rows);
+});

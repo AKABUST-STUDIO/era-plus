@@ -26,7 +26,9 @@ class OrganizationUserResource extends Resource implements HasOrganizationPermis
      */
     public static function getPermissionActions(string $scope): ?array
     {
-        return $scope === PermissionRegistry::SCOPE_ORGANIZATION ? ['view'] : null;
+        return $scope === PermissionRegistry::SCOPE_ORGANIZATION
+            ? ['view_any', 'view', 'create', 'update', 'update_any', 'delete', 'delete_any']
+            : null;
     }
 
     public static function getNavigationLabel(): string

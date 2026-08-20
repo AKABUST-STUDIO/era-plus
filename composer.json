@@ -41,14 +41,19 @@
         "stijnvanouplines/blade-country-flags": "^1.0"
     },
     "require-dev": {
+        "brianium/paratest": "^7.20",
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.0",
         "laravel/boost": "^2.4",
+        "laravel/dusk": "^8.6",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
-        "larastan/larastan": "^3.0",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "pestphp/pest": "^4.7",
+        "pestphp/pest-plugin-laravel": "^4.1",
+        "pestphp/pest-plugin-livewire": "^4.1",
         "phpunit/phpunit": "^12.0"
     },
     "autoload": {
@@ -81,7 +86,10 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php artisan test"
+            "@php artisan test --parallel"
+        ],
+        "dusk": [
+            "@php artisan dusk"
         ],
         "analyse": [
             "./vendor/bin/phpstan analyse"

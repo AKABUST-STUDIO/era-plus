@@ -30,7 +30,6 @@ class Invoices extends Page implements HasOrganizationPermissions
     public static function canAccess(): bool
     {
         return false;
-        return Filament::auth()->user()?->can('view', self::class) ?? false;
     }
 
     public function mount(): void

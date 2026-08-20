@@ -1,143 +1,123 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\Organization\OrganizationRole;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use LivewireUI\Spotlight\Spotlight;
 use pxlrbt\FilamentSpotlight\SpotlightPlugin;
-use Tests\TestCase;
 
-class SpotlightTest extends TestCase
+beforeEach(function (): void {
+    $this->host = 'app.'.parse_url(config('app.url'), PHP_URL_HOST);
+
+    Spotlight::$commands = [];
+});
+
+function spotlightUrl(string $host, string $path): string
 {
-    use RefreshDatabase;
+    return 'http://'.$host.$path;
+}
 
-    private string $host;
+function spotlightMember(): User
+{
+    $user = User::factory()->create();
+    $user->joinOrganization(Organization::factory()->create(), OrganizationRole::Admin);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    return $user;
+}
 
-        $this->host = 'app.'.parse_url(config('app.url'), PHP_URL_HOST);
+/**
+ * @return array<int, string>
+ */
+function spotlightCommandNames(): array
+{
+    return array_map(
+        fn ($command): string => $command->getName(),
+        array_values(Spotlight::$commands),
+    );
+}
 
-        Spotlight::$commands = [];
-    }
+test('spotlight plugin is registered on every panel', function (): void {
+    $panels = [
+        'organization',
+        'project',
+        'organization.settings',
+        'user',
+    ];
 
-    private function url(string $path): string
-    {
-        return 'http://'.$this->host.$path;
-    }
-
-    private function member(): User
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization(Organization::factory()->create(), OrganizationRole::Admin);
-
-        return $user;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function commandNames(): array
-    {
-        return array_map(
-            fn ($command): string => $command->getName(),
-            array_values(Spotlight::$commands),
+    foreach ($panels as $panel) {
+        $this->assertInstanceOf(
+            SpotlightPlugin::class,
+            Filament::getPanel($panel)->getPlugin(SpotlightPlugin::$name),
+            "Spotlight is not registered on the [{$panel}] panel.",
         );
     }
+});
 
-    public function test_spotlight_plugin_is_registered_on_every_panel(): void
-    {
-        $panels = [
-            'organization',
-            'project',
-            'organization.settings',
-            'user',
-        ];
+test('organization panel renders the spotlight component', function (): void {
+    $user = spotlightMember();
+    $organization = $user->organizations()->sole();
 
-        foreach ($panels as $panel) {
-            $this->assertInstanceOf(
-                SpotlightPlugin::class,
-                Filament::getPanel($panel)->getPlugin(SpotlightPlugin::$name),
-                "Spotlight is not registered on the [{$panel}] panel.",
-            );
-        }
-    }
+    $this->actingAs($user)
+        ->get(spotlightUrl($this->host, '/'.$organization->slug.'/projects'))
+        ->assertSuccessful()
+        ->assertSee('livewire-ui-spotlight');
 
-    public function test_organization_panel_renders_the_spotlight_component(): void
-    {
-        $user = $this->member();
-        $organization = $user->organizations()->sole();
+    $this->assertNotEmpty(Spotlight::$commands);
+});
 
-        $this->actingAs($user)
-            ->get($this->url('/'.$organization->slug.'/projects'))
-            ->assertSuccessful()
-            ->assertSee('livewire-ui-spotlight');
+test('project panel renders the spotlight component', function (): void {
+    $user = spotlightMember();
+    $organization = $user->organizations()->sole();
+    $project = Project::factory()->for($organization)->create();
+    $user->joinProject($project);
 
-        $this->assertNotEmpty(Spotlight::$commands);
-    }
+    $this->actingAs($user)
+        ->get(spotlightUrl($this->host, '/'.$organization->slug.'/'.$project->slug.'/overview'))
+        ->assertSuccessful()
+        ->assertSee('livewire-ui-spotlight');
 
-    public function test_project_panel_renders_the_spotlight_component(): void
-    {
-        $user = $this->member();
-        $organization = $user->organizations()->sole();
-        $project = Project::factory()->for($organization)->create();
-        $user->joinProject($project);
+    $this->assertNotEmpty(Spotlight::$commands);
+});
 
-        $this->actingAs($user)
-            ->get($this->url('/'.$organization->slug.'/'.$project->slug.'/overview'))
-            ->assertSuccessful()
-            ->assertSee('livewire-ui-spotlight');
+test('settings panel renders the spotlight component', function (): void {
+    $user = spotlightMember();
+    $organization = $user->organizations()->sole();
 
-        $this->assertNotEmpty(Spotlight::$commands);
-    }
+    $this->actingAs($user)
+        ->get(spotlightUrl($this->host, '/'.$organization->slug.'/settings/overview'))
+        ->assertSuccessful()
+        ->assertSee('livewire-ui-spotlight');
 
-    public function test_settings_panel_renders_the_spotlight_component(): void
-    {
-        $user = $this->member();
-        $organization = $user->organizations()->sole();
+    $this->assertNotEmpty(Spotlight::$commands);
+});
 
-        $this->actingAs($user)
-            ->get($this->url('/'.$organization->slug.'/settings/overview'))
-            ->assertSuccessful()
-            ->assertSee('livewire-ui-spotlight');
+test('user panel renders the spotlight component', function (): void {
+    $this->actingAs(spotlightMember())
+        ->get(spotlightUrl($this->host, '/profile/settings'))
+        ->assertSuccessful()
+        ->assertSee('livewire-ui-spotlight');
 
-        $this->assertNotEmpty(Spotlight::$commands);
-    }
+    $this->assertNotEmpty(Spotlight::$commands);
+});
 
-    public function test_user_panel_renders_the_spotlight_component(): void
-    {
-        $this->actingAs($this->member())
-            ->get($this->url('/profile/settings'))
-            ->assertSuccessful()
-            ->assertSee('livewire-ui-spotlight');
+test('commands do not leak between panels', function (): void {
+    $user = spotlightMember();
+    $organization = $user->organizations()->sole();
+    $project = Project::factory()->for($organization)->create();
+    $user->joinProject($project);
 
-        $this->assertNotEmpty(Spotlight::$commands);
-    }
+    $this->actingAs($user)
+        ->get(spotlightUrl($this->host, '/'.$organization->slug.'/'.$project->slug.'/overview'))
+        ->assertSuccessful();
 
-    public function test_commands_do_not_leak_between_panels(): void
-    {
-        $user = $this->member();
-        $organization = $user->organizations()->sole();
-        $project = Project::factory()->for($organization)->create();
-        $user->joinProject($project);
+    $projectCommands = spotlightCommandNames();
+    $this->assertNotEmpty($projectCommands);
 
-        $this->actingAs($user)
-            ->get($this->url('/'.$organization->slug.'/'.$project->slug.'/overview'))
-            ->assertSuccessful();
+    $this->actingAs($user)
+        ->get(spotlightUrl($this->host, '/'.$organization->slug.'/settings/overview'))
+        ->assertSuccessful();
 
-        $projectCommands = $this->commandNames();
-        $this->assertNotEmpty($projectCommands);
-
-        $this->actingAs($user)
-            ->get($this->url('/'.$organization->slug.'/settings/overview'))
-            ->assertSuccessful();
-
-        $this->assertNotEmpty(array_diff($projectCommands, $this->commandNames()));
-    }
-}
+    $this->assertNotEmpty(array_diff($projectCommands, spotlightCommandNames()));
+});

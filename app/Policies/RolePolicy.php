@@ -32,7 +32,7 @@ class RolePolicy
 
     public function update(User $user, Role $role): bool
     {
-        return $this->allows($user, RolePermission::Update->value, $role->roleable);
+        return ! $role->locked && $this->allows($user, RolePermission::UpdateAny->value, $role->roleable);
     }
 
     public function updateAny(User $user): bool
@@ -42,7 +42,7 @@ class RolePolicy
 
     public function delete(User $user, Role $role): bool
     {
-        return ! $role->locked && $this->allows($user, RolePermission::Delete->value, $role->roleable);
+        return ! $role->locked && $this->allows($user, RolePermission::DeleteAny->value, $role->roleable);
     }
 
     public function deleteAny(User $user): bool

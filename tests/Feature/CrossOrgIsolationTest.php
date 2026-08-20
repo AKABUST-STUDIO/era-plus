@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Facades\OrganizationService;
@@ -13,124 +11,100 @@ use App\Models\User;
 use App\Services\ProjectAccess;
 use App\Services\ProjectService;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
-use Tests\TestCase;
 
-class CrossOrgIsolationTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function (): void {
+    $this->orgA = Organization::factory()->create(['name' => 'Org A']);
+    $this->orgB = Organization::factory()->create(['name' => 'Org B']);
 
-    private Organization $orgA;
+    $this->projectA = Project::factory()->for($this->orgA)->create(['name' => 'Project A']);
+    $this->projectB = Project::factory()->for($this->orgB)->create(['name' => 'Project B']);
+});
 
-    private Organization $orgB;
+test('admin in org a does not get admin powers in org b', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->orgA, OrganizationRole::Admin);
+    $user->joinOrganization($this->orgB, OrganizationRole::Member);
+    $user->joinProject($this->projectB, ProjectRole::Participant);
 
-    private Project $projectA;
+    $access = app(ProjectAccess::class);
 
-    private Project $projectB;
+    $this->assertTrue($access->can($user, 'create_project_user', $this->projectA), 'admin-in-A must have admin powers in projectA');
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->assertFalse($access->can($user, 'create_project_user', $this->projectB), 'admin-in-A must NOT have admin powers in projectB');
+    $this->assertFalse($access->can($user, 'view_any_participant', $this->projectB));
+});
 
-        $this->orgA = Organization::factory()->create(['name' => 'Org A']);
-        $this->orgB = Organization::factory()->create(['name' => 'Org B']);
+test('participant in org a cannot view projects in org b', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->orgA, OrganizationRole::Member);
+    $user->joinProject($this->projectA, ProjectRole::Participant);
+    $user->joinOrganization($this->orgB, OrganizationRole::Member);
 
-        $this->projectA = Project::factory()->for($this->orgA)->create(['name' => 'Project A']);
-        $this->projectB = Project::factory()->for($this->orgB)->create(['name' => 'Project B']);
-    }
+    $projectsInB = app(ProjectService::class)->projectsFor($user, $this->orgB);
+    $this->assertCount(0, $projectsInB);
 
-    public function test_admin_in_org_a_does_not_get_admin_powers_in_org_b(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->orgA, OrganizationRole::Admin);
-        $user->joinOrganization($this->orgB, OrganizationRole::Member);
-        $user->joinProject($this->projectB, ProjectRole::Participant);
+    $projectsInA = app(ProjectService::class)->projectsFor($user, $this->orgA);
+    $this->assertCount(1, $projectsInA);
+    $this->assertTrue($projectsInA->first()->is($this->projectA));
+});
 
-        $access = app(ProjectAccess::class);
+test('tenant switcher does not leak projects across orgs', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->orgA, OrganizationRole::Member);
+    $user->joinOrganization($this->orgB, OrganizationRole::Member);
+    $user->joinProject($this->projectA, ProjectRole::Participant);
+    $user->joinProject($this->projectB, ProjectRole::Participant);
 
-        $this->assertTrue($access->can($user, 'create_project_user', $this->projectA), 'admin-in-A must have admin powers in projectA');
+    $this->assertTrue($user->canAccessTenant($this->projectA));
+    $this->assertTrue($user->canAccessTenant($this->projectB));
 
-        $this->assertFalse($access->can($user, 'create_project_user', $this->projectB), 'admin-in-A must NOT have admin powers in projectB');
-        $this->assertFalse($access->can($user, 'view_any_participant', $this->projectB));
-    }
+    $inA = app(ProjectService::class)->projectsFor($user, $this->orgA)->pluck('id')->all();
+    $inB = app(ProjectService::class)->projectsFor($user, $this->orgB)->pluck('id')->all();
 
-    public function test_participant_in_org_a_cannot_view_projects_in_org_b(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->orgA, OrganizationRole::Member);
-        $user->joinProject($this->projectA, ProjectRole::Participant);
-        $user->joinOrganization($this->orgB, OrganizationRole::Member);
+    $this->assertSame([$this->projectA->id], $inA);
+    $this->assertSame([$this->projectB->id], $inB);
+});
 
-        $projectsInB = app(ProjectService::class)->projectsFor($user, $this->orgB);
-        $this->assertCount(0, $projectsInB);
+test('url tampering project in wrong org is rejected', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->orgA, OrganizationRole::Admin);
+    $user->joinProject($this->projectA, ProjectRole::Admin);
 
-        $projectsInA = app(ProjectService::class)->projectsFor($user, $this->orgA);
-        $this->assertCount(1, $projectsInA);
-        $this->assertTrue($projectsInA->first()->is($this->projectA));
-    }
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
 
-    public function test_tenant_switcher_does_not_leak_projects_across_orgs(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->orgA, OrganizationRole::Member);
-        $user->joinOrganization($this->orgB, OrganizationRole::Member);
-        $user->joinProject($this->projectA, ProjectRole::Participant);
-        $user->joinProject($this->projectB, ProjectRole::Participant);
+    $url = url("/{$this->orgA->slug}/{$this->projectB->slug}/users");
 
-        $this->assertTrue($user->canAccessTenant($this->projectA));
-        $this->assertTrue($user->canAccessTenant($this->projectB));
+    $status = $this->get($url)->status();
+    $this->assertTrue(in_array($status, [403, 404], true), "cross-org project URL: expected 403|404, got {$status}");
+});
 
-        $inA = app(ProjectService::class)->projectsFor($user, $this->orgA)->pluck('id')->all();
-        $inB = app(ProjectService::class)->projectsFor($user, $this->orgB)->pluck('id')->all();
+test('org admin cannot edit a project in a different org', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->orgA, OrganizationRole::Admin);
 
-        $this->assertSame([$this->projectA->id], $inA);
-        $this->assertSame([$this->projectB->id], $inB);
-    }
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
+    Filament::setTenant($this->orgA);
+    OrganizationService::remember($this->orgA);
+    URL::defaults(['organization' => $this->orgA->slug]);
 
-    public function test_url_tampering_project_in_wrong_org_is_rejected(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->orgA, OrganizationRole::Admin);
-        $user->joinProject($this->projectA, ProjectRole::Admin);
+    $this->assertFalse(ProjectResource::canEdit($this->projectB));
+    $this->assertFalse(ProjectResource::canDelete($this->projectB));
+});
 
-        $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('project'));
+test('participant cannot use project resource in other org', function (): void {
+    $user = User::factory()->create();
+    $user->joinOrganization($this->orgA, OrganizationRole::Member);
+    $user->joinProject($this->projectA, ProjectRole::Participant);
 
-        $url = url("/{$this->orgA->slug}/{$this->projectB->slug}/users");
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($this->projectA);
 
-        $status = $this->get($url)->status();
-        $this->assertTrue(in_array($status, [403, 404], true), "cross-org project URL: expected 403|404, got {$status}");
-    }
+    $this->assertTrue(ProjectMemberResource::canViewAny());
 
-    public function test_org_admin_cannot_edit_a_project_in_a_different_org(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->orgA, OrganizationRole::Admin);
-
-        $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-        Filament::setTenant($this->orgA);
-        OrganizationService::remember($this->orgA);
-        URL::defaults(['organization' => $this->orgA->slug]);
-
-        $this->assertFalse(ProjectResource::canEdit($this->projectB));
-        $this->assertFalse(ProjectResource::canDelete($this->projectB));
-    }
-
-    public function test_participant_cannot_use_project_resource_in_other_org(): void
-    {
-        $user = User::factory()->create();
-        $user->joinOrganization($this->orgA, OrganizationRole::Member);
-        $user->joinProject($this->projectA, ProjectRole::Participant);
-
-        $this->actingAs($user);
-        Filament::setCurrentPanel(Filament::getPanel('project'));
-        Filament::setTenant($this->projectA);
-
-        $this->assertTrue(ProjectMemberResource::canViewAny());
-
-        Filament::setTenant($this->projectB);
-        $this->assertFalse(ProjectMemberResource::canViewAny());
-    }
-}
+    Filament::setTenant($this->projectB);
+    $this->assertFalse(ProjectMemberResource::canViewAny());
+});

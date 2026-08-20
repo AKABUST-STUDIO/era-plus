@@ -14,7 +14,15 @@ class TenantRoleProvisioner
 {
     public function ensurePermissions(): void
     {
-        foreach (PermissionRegistry::all() as $name) {
+        $expected = PermissionRegistry::all();
+        $existing = Permission::query()->where('guard_name', 'web')->pluck('name')->all();
+        $missing = array_diff($expected, $existing);
+
+        if ($missing === []) {
+            return;
+        }
+
+        foreach ($missing as $name) {
             Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
 

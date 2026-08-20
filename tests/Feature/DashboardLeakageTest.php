@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Permissions\ActivityPermission;
 use App\Enums\Project\ProjectRole;
@@ -12,86 +10,67 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
-use Tests\TestCase;
 
-class DashboardLeakageTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function (): void {
+    $this->organization = Organization::factory()->create();
+    $this->project = Project::factory()->for($this->organization)->create();
 
-    private Organization $organization;
+    OrganizationService::remember($this->organization);
+    URL::defaults(['organization' => $this->organization->slug]);
+});
 
-    private Project $project;
+test('activity page denied for bare org member', function (): void {
+    $member = User::factory()->create();
+    $member->joinOrganization($this->organization, OrganizationRole::Member);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->actingAs($member);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
+    Filament::setTenant($this->organization);
 
-        $this->organization = Organization::factory()->create();
-        $this->project = Project::factory()->for($this->organization)->create();
+    $this->assertFalse(Gate::forUser($member)->allows('view', ActivityLog::class));
+    $this->assertFalse(Activity::canAccess());
+});
 
-        OrganizationService::remember($this->organization);
-        URL::defaults(['organization' => $this->organization->slug]);
-    }
+test('activity page denied for project participant', function (): void {
+    $participant = User::factory()->create();
+    $participant->joinOrganization($this->organization, OrganizationRole::Member);
+    $participant->joinProject($this->project, ProjectRole::Participant);
 
-    public function test_activity_page_denied_for_bare_org_member(): void
-    {
-        $member = User::factory()->create();
-        $member->joinOrganization($this->organization, OrganizationRole::Member);
+    $this->actingAs($participant);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
+    Filament::setTenant($this->organization);
 
-        $this->actingAs($member);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-        Filament::setTenant($this->organization);
+    $this->assertFalse(Activity::canAccess());
+});
 
-        $this->assertFalse(Gate::forUser($member)->allows('view', ActivityLog::class));
-        $this->assertFalse(Activity::canAccess());
-    }
+test('activity page allowed for org admin', function (): void {
+    $admin = User::factory()->create();
+    $admin->joinOrganization($this->organization, OrganizationRole::Admin);
 
-    public function test_activity_page_denied_for_project_participant(): void
-    {
-        $participant = User::factory()->create();
-        $participant->joinOrganization($this->organization, OrganizationRole::Member);
-        $participant->joinProject($this->project, ProjectRole::Participant);
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
+    Filament::setTenant($this->organization);
 
-        $this->actingAs($participant);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-        Filament::setTenant($this->organization);
+    $this->assertTrue(Activity::canAccess());
+});
 
-        $this->assertFalse(Activity::canAccess());
-    }
+test('activity url returns forbidden for bare member', function (): void {
+    $member = User::factory()->create();
+    $member->joinOrganization($this->organization, OrganizationRole::Member);
 
-    public function test_activity_page_allowed_for_org_admin(): void
-    {
-        $admin = User::factory()->create();
-        $admin->joinOrganization($this->organization, OrganizationRole::Admin);
+    $this->actingAs($member);
+    Filament::setCurrentPanel(Filament::getPanel('organization'));
 
-        $this->actingAs($admin);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-        Filament::setTenant($this->organization);
+    $url = Activity::getUrl(tenant: $this->organization);
+    $status = $this->get($url)->status();
+    $this->assertTrue(in_array($status, [403, 404], true), "activity URL for bare member: {$status}");
+});
 
-        $this->assertTrue(Activity::canAccess());
-    }
-
-    public function test_activity_url_returns_forbidden_for_bare_member(): void
-    {
-        $member = User::factory()->create();
-        $member->joinOrganization($this->organization, OrganizationRole::Member);
-
-        $this->actingAs($member);
-        Filament::setCurrentPanel(Filament::getPanel('organization'));
-
-        $url = Activity::getUrl(tenant: $this->organization);
-        $status = $this->get($url)->status();
-        $this->assertTrue(in_array($status, [403, 404], true), "activity URL for bare member: {$status}");
-    }
-
-    public function test_member_role_does_not_include_activity_permission(): void
-    {
-        $this->assertNotContains(
-            ActivityPermission::View->value,
-            OrganizationRole::Member->defaultPermissions()
-        );
-    }
-}
+test('member role does not include activity permission', function (): void {
+    $this->assertNotContains(
+        ActivityPermission::View->value,
+        OrganizationRole::Member->defaultPermissions()
+    );
+});
