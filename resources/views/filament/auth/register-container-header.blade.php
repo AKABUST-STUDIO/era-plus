@@ -1,4 +1,5 @@
-<div wire:show="step !== 'code'" @class([
+@if ($this->step !== 'code')
+<div @class([
         "fi-auth-oauth flex flex-col gap-2",
         "pb-6 border-b border-gray-100 dark:border-gray-800" => filled(config('services.google.client_id'))
     ])
@@ -42,3 +43,4 @@
         !!}
     @endif
 </div>
+@endif

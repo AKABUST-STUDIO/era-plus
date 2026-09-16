@@ -1,4 +1,5 @@
-<div wire:show="step !== 'code'" class="fi-auth-oauth flex flex-col gap-2">
+@if ($this->step !== 'code')
+<div class="fi-auth-oauth flex flex-col gap-2">
     @if (filled(config('services.google.client_id')))
         {!!  
             \Filament\Actions\Action::make('oauth_google')
@@ -37,14 +38,13 @@
                 ->toHtml()
         !!}
     @endif
-    @if (request()->route()->getName() === 'filament.organization.auth.login')
-        <p class="text-center justify-center inline-flex items-baseline gap-2 mt-6">
-            {{ __('filament-panels::auth/pages/login.actions.register.before') }}
-            {!! \Filament\Actions\Action::make('register')
-            ->link()
-            ->label(__('filament-panels::auth/pages/login.actions.register.label'))
-            ->url(filament()->getRegistrationUrl())
-            ->toHtml() !!}
-        </p>
-    @endif
+    <p class="text-center justify-center inline-flex items-baseline gap-2 mt-6">
+        {{ __('filament-panels::auth/pages/login.actions.register.before') }}
+        {!! \Filament\Actions\Action::make('register')
+        ->link()
+        ->label(__('filament-panels::auth/pages/login.actions.register.label'))
+        ->url(filament()->getRegistrationUrl())
+        ->toHtml() !!}
+    </p>
 </div>
+@endif
