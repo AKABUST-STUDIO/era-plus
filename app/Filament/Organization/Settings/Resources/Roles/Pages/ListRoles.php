@@ -8,10 +8,12 @@ use App\Models\Role;
 use App\Services\TenantRoleProvisioner;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\Width;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\PermissionRegistrar;
@@ -68,6 +70,27 @@ class ListRoles extends ListRecords
                     'record' => $record->id,
                 ])),
         ];
+    }
+
+    public function openRole(int $recordId): ?RedirectResponse
+    {
+        $role = Role::query()->find($recordId);
+
+        if ($role === null) {
+            return null;
+        }
+
+        if (! auth()->user()?->can('update', $role)) {
+            Notification::make()
+                ->title(__('settings.roles.actions.forbidden_title'))
+                ->body(__('settings.roles.actions.forbidden_body'))
+                ->warning()
+                ->send();
+
+            return null;
+        }
+
+        return redirect(RoleResource::getUrl('edit', ['record' => $role->getKey()]));
     }
 
     private function uniqueRoleNameRule(): ?object

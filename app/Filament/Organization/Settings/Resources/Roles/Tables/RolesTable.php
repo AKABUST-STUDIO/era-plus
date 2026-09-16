@@ -16,7 +16,8 @@ class RolesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->recordUrl(fn (Role $record): string => RoleResource::getUrl('edit', ['record' => $record->id]))
+            ->recordAction('openRole')
+            ->recordClasses('transition-colors duration-150 hover:!bg-gray-100 dark:hover:!bg-white/5 cursor-pointer')
             ->paginated(false)
             ->defaultSort('locked', 'desc')
             ->emptyStateIcon('lucide-shield-check')

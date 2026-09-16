@@ -165,6 +165,8 @@ return [
             'back' => 'Back',
             'locked_tooltip' => 'Built-in Admin role cannot be edited or deleted.',
             'has_members_tooltip' => 'Reassign members off this role before deleting.',
+            'forbidden_title' => 'Access denied',
+            'forbidden_body' => 'You do not have permission to edit this role.',
         ],
 
         'empty' => [

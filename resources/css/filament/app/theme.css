@@ -33,6 +33,42 @@
     @apply text-3xl font-bold tracking-tight;
 }
 
+/* Spotlight: scrollbar color matches component background */
+.fi-spotlight-results {
+    scrollbar-color: var(--color-gray-700) var(--color-gray-900);
+    scrollbar-width: thin;
+}
+
+.fi-spotlight-results::-webkit-scrollbar {
+    width: 8px;
+}
+
+.fi-spotlight-results::-webkit-scrollbar-track {
+    background: var(--color-gray-900);
+}
+
+.fi-spotlight-results::-webkit-scrollbar-thumb {
+    background: var(--color-gray-700);
+    border-radius: 4px;
+}
+
+.fi-spotlight-results::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-600);
+}
+
+/* Custom section: more space between action and content. */
+.fi-section-footer {
+    @apply gap-6;
+}
+
+.fi-section .fi-section-header-actions:not(:empty) {
+    @apply gap-3;
+}
+
+.fi-section .fi-section-header:has(.fi-section-header-actions:not(:empty)) + .fi-section-content-ctn > .fi-section-content {
+    @apply pt-6;
+}
+
 /* Animatable gradient tint — driven by Alpine, interpolated by the browser */
 @property --tier-tint {
     syntax: '<percentage>';

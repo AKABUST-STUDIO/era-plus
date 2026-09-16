@@ -127,7 +127,7 @@
             </div>
 
             <div x-show="filteredItems().length > 0" style="display: none;">
-                <ul x-ref="results" style="max-height: 380px;" class="overflow-y-auto py-2">
+                <ul x-ref="results" style="max-height: 380px;" class="fi-spotlight-results overflow-y-auto py-2">
                     <template x-for="(row, i) in groupedItems()" :key="row.item.id">
                         <li>
                             <div x-show="row.isGroupStart"

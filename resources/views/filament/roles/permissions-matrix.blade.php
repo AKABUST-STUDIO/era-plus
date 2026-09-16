@@ -51,7 +51,7 @@
                     $permissionByAction[$action] = $permission;
                 }
             @endphp
-            <tr class="border-b border-gray-950/5 dark:border-white/5 last:border-b-0">
+            <tr class="border-b border-gray-950/5 last:border-b-0 transition-colors duration-150 hover:bg-gray-100 dark:border-white/5 dark:hover:bg-white/5">
                 <td class="py-4 pr-6 text-gray-950 dark:text-white">
                     {{ $resourceLabels[$resource] ?? $resource }}
                 </td>
