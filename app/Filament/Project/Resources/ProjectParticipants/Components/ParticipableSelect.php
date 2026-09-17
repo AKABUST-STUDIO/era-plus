@@ -78,6 +78,11 @@ class ParticipableSelect
 
         return Select::make($name)
             ->hiddenLabel()
+            ->required()
+            ->extraAttributes([
+                'x-data' => '{}',
+                'x-init' => "setTimeout(() => { const btn = \$el.querySelector('button.fi-select-input-btn'); if (btn && !btn.querySelector('.fi-select-input-value-ctn > :not(.fi-select-input-placeholder)')) btn.click(); }, 50)",
+            ])
             ->validationAttribute(__('participant.fields.participable'))
             ->placeholder(__('participant.add.participable_placeholder'))
             ->helperText(fn (Get $get): ?string => $get('_pending_source') === 'email'

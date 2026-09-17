@@ -33,16 +33,16 @@ class ProjectParticipantForm
                 ->components(self::participableComponents()),
             Section::make(__('participant.sections.participant_info'))
                 ->icon('lucide-at-sign')
-                ->visible(fn (Get $get): bool => is_string($get('participable_id')) && str_starts_with($get('participable_id'), 'pending:'))
                 ->columns(4)
                 ->contained(false)
-                ->components(self::participantComponents()),
+                ->components(self::participantComponents())
+                ->visible(fn (Get $get): bool => is_string($get('participable_id')) && str_starts_with($get('participable_id'), 'pending:')),
             Section::make(__('participant.sections.origin'))
                 ->contained(false)
                 ->icon('lucide-map-pin-house')
-                ->visible(fn (Get $get): bool => filled($get('participable_id')))
                 ->columns(4)
-                ->components(self::originComponents()),
+                ->components(self::originComponents())
+                ->visible(fn (Get $get): bool => filled($get('participable_id'))),
         ];
     }
 
