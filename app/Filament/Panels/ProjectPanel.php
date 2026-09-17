@@ -4,6 +4,7 @@ namespace App\Filament\Panels;
 
 use App\Filament\Project\Pages\Overview;
 use App\Models\Project;
+use App\Providers\Filament\OrganizationPanelProvider;
 use App\Providers\Filament\ProjectPanelProvider;
 use Filament\Facades\Filament;
 use Filament\Panel;
@@ -28,6 +29,6 @@ class ProjectPanel extends Panel
             );
         }
 
-        return parent::getUrl($tenant);
+        return Filament::getPanel(OrganizationPanelProvider::PANEL_ID)->getUrl();
     }
 }
