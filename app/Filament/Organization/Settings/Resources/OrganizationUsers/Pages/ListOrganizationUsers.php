@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Filament\Project\Resources\ProjectMembers\Pages;
+namespace App\Filament\Organization\Settings\Resources\OrganizationUsers\Pages;
 
-use App\Filament\Project\Resources\ProjectMembers\Actions\InviteMemberAction;
-use App\Filament\Project\Resources\ProjectMembers\ProjectMemberResource;
+use App\Filament\Organization\Settings\Resources\OrganizationUsers\Actions\InviteUserAction;
+use App\Filament\Organization\Settings\Resources\OrganizationUsers\OrganizationUserResource;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
-class ListProjectMembers extends ListRecords
+class ListOrganizationUsers extends ListRecords
 {
-    public const TAB_MEMBERS = 'members';
+    public const TAB_USERS = 'users';
 
     public const TAB_INVITATIONS = 'invitations';
 
-    protected static string $resource = ProjectMemberResource::class;
+    protected static string $resource = OrganizationUserResource::class;
 
     public function getTitle(): string
     {
-        return __('member.title');
+        return __('settings.users.title');
     }
 
     /**
@@ -27,7 +27,7 @@ class ListProjectMembers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            InviteMemberAction::make(),
+            InviteUserAction::make(),
         ];
     }
 
@@ -37,14 +37,14 @@ class ListProjectMembers extends ListRecords
     public function getTabs(): array
     {
         return [
-            self::TAB_MEMBERS => Tab::make(__('member.tabs.members'))
-                ->badge(fn (): int => ProjectMemberResource::getEloquentQuery()
+            self::TAB_USERS => Tab::make(__('settings.users.tabs.members'))
+                ->badge(fn (): int => OrganizationUserResource::getEloquentQuery()
                     ->whereHas('user', fn (Builder $query): Builder => $query->whereNotNull('email_verified_at'))
                     ->count())
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query
                     ->whereHas('user', fn (Builder $query): Builder => $query->whereNotNull('email_verified_at'))),
-            self::TAB_INVITATIONS => Tab::make(__('member.tabs.invitations'))
-                ->badge(fn (): int => ProjectMemberResource::getEloquentQuery()
+            self::TAB_INVITATIONS => Tab::make(__('settings.users.tabs.invitations'))
+                ->badge(fn (): int => OrganizationUserResource::getEloquentQuery()
                     ->whereHas('user', fn (Builder $query): Builder => $query->whereNull('email_verified_at'))
                     ->count())
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query

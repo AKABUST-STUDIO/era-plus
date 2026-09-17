@@ -3,8 +3,8 @@
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Filament\Project\Resources\ProjectEvents\ProjectEventResource;
-use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
-use App\Filament\Project\Resources\ProjectMembers\ProjectMemberResource;
+use App\Filament\Project\Settings\Resources\ProjectMembers\Pages\ListProjectMembers;
+use App\Filament\Project\Settings\Resources\ProjectMembers\ProjectMemberResource;
 use App\Filament\Project\Resources\ProjectParticipants\ProjectParticipantResource;
 use App\Filament\Project\Resources\TravelExpenses\TravelExpenseResource;
 use App\Filament\Resources\Projects\ProjectResource;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Organization\Resources\OrganizationUsers\Components;
+namespace App\Filament\Organization\Settings\Resources\OrganizationUsers\Components;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;

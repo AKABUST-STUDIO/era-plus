@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Project\Resources\ProjectMembers\Components;
+namespace App\Filament\Project\Settings\Resources\ProjectMembers\Components;
 
 use App\Enums\Project\ProjectRole;
 use App\Facades\ProjectService;

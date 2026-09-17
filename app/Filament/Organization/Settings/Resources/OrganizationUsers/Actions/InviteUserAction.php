@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Organization\Resources\OrganizationUsers\Actions;
+namespace App\Filament\Organization\Settings\Resources\OrganizationUsers\Actions;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\AuthenticationService;
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Resources\OrganizationUsers\Components\RoleSelect;
+use App\Filament\Organization\Settings\Resources\OrganizationUsers\Components\RoleSelect;
 use App\Models\ActivityLog;
 use App\Models\Organization\OrganizationUser;
 use App\Models\User;

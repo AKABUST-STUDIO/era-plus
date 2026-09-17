@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\Permissions\ProjectUserPermission;
+use App\Facades\ProjectService;
 use App\Models\Project;
 use App\Models\ProjectUser;
 use App\Models\User;
@@ -50,7 +51,7 @@ class ProjectUserPolicy
 
     private function allows(User $user, string $permission): bool
     {
-        $project = Filament::getTenant();
+        $project = ProjectService::current();
 
         return $project instanceof Project
             && app(ProjectAccess::class)->can($user, $permission, $project);

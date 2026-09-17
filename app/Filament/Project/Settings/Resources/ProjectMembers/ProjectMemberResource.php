@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Project\Resources\ProjectMembers;
+namespace App\Filament\Project\Settings\Resources\ProjectMembers;
 
 use App\Filament\Contracts\HasProjectPermissions;
-use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
-use App\Filament\Project\Resources\ProjectMembers\Tables\ProjectMembersTable;
+use App\Filament\Project\Settings\Resources\ProjectMembers\Pages\ListProjectMembers;
+use App\Filament\Project\Settings\Resources\ProjectMembers\Tables\ProjectMembersTable;
 use App\Models\ProjectUser;
 use App\Services\PermissionRegistry;
 use Filament\Resources\Resource;

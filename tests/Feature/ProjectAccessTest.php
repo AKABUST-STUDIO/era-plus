@@ -2,7 +2,7 @@
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
-use App\Filament\Project\Resources\ProjectMembers\ProjectMemberResource;
+use App\Filament\Project\Settings\Resources\ProjectMembers\ProjectMemberResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Project\Participant;

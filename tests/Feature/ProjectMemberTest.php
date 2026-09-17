@@ -4,7 +4,7 @@ use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Facades\OrganizationService;
 use App\Facades\ProjectService;
-use App\Filament\Project\Resources\ProjectMembers\Pages\ListProjectMembers;
+use App\Filament\Project\Settings\Resources\ProjectMembers\Pages\ListProjectMembers;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectUser;

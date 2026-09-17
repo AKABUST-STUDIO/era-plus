@@ -3,7 +3,7 @@
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Facades\OrganizationService;
-use App\Filament\Project\Resources\ProjectMembers\ProjectMemberResource;
+use App\Filament\Project\Settings\Resources\ProjectMembers\ProjectMemberResource;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;

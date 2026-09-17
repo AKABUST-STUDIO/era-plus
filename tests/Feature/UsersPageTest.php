@@ -1,7 +1,7 @@
 <?php
 
 use App\Enums\Organization\OrganizationRole;
-use App\Filament\Organization\Resources\OrganizationUsers\Pages\ListOrganizationUsers as UsersPage;
+use App\Filament\Organization\Settings\Resources\OrganizationUsers\Pages\ListOrganizationUsers as UsersPage;
 use App\Models\Organization;
 use App\Models\Organization\OrganizationUser;
 use App\Models\User;

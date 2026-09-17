@@ -2,7 +2,7 @@
 
 use App\Enums\Organization\OrganizationRole;
 use App\Facades\OrganizationService;
-use App\Filament\Organization\Resources\OrganizationUsers\OrganizationUserResource;
+use App\Filament\Organization\Settings\Resources\OrganizationUsers\OrganizationUserResource;
 use App\Filament\Organization\Settings\Pages\Billing;
 use App\Filament\Organization\Settings\Pages\OrganizationSettings;
 use App\Filament\Organization\Settings\Resources\Roles\RoleResource;

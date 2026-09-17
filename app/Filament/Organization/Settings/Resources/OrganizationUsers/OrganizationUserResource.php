@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Organization\Resources\OrganizationUsers;
+namespace App\Filament\Organization\Settings\Resources\OrganizationUsers;
 
 use App\Facades\OrganizationService;
 use App\Filament\Contracts\HasOrganizationPermissions;
-use App\Filament\Organization\Resources\OrganizationUsers\Pages\ListOrganizationUsers;
-use App\Filament\Organization\Resources\OrganizationUsers\Tables\OrganizationUsersTable;
+use App\Filament\Organization\Settings\Resources\OrganizationUsers\Pages\ListOrganizationUsers;
+use App\Filament\Organization\Settings\Resources\OrganizationUsers\Tables\OrganizationUsersTable;
 use App\Models\Organization;
 use App\Models\Organization\OrganizationUser;
 use App\Services\PermissionRegistry;

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Project\Resources\ProjectMembers\Actions;
+namespace App\Filament\Project\Settings\Resources\ProjectMembers\Actions;
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
 use App\Facades\AuthenticationService;
 use App\Facades\ProjectService;
-use App\Filament\Project\Resources\ProjectMembers\Components\RoleSelect;
+use App\Filament\Project\Settings\Resources\ProjectMembers\Components\RoleSelect;
 use App\Models\ActivityLog;
 use App\Models\Organization\OrganizationUser;
 use App\Models\ProjectUser;
