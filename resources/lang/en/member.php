@@ -9,7 +9,7 @@ return [
         'description' => 'Send an invitation to join this project. Invitees join the organization too.',
         'email' => 'Email address',
         'role' => 'Role',
-        'action' => 'Send invitation',
+        'action' => 'Invite',
     ],
 
     'table' => [

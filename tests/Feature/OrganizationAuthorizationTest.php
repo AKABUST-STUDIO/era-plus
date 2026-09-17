@@ -54,13 +54,23 @@ test('admin can access the settings pages', function (): void {
     $this->assertTrue(Billing::canAccess());
 });
 
-test('member can open organization settings but not billing', function (): void {
+test('member is forbidden from opening organization settings', function (): void {
     [$user, $organization] = userWithRole(OrganizationRole::Member);
     actOnSettingsPanel($this, $user, $organization);
 
-    $this->assertTrue(OrganizationSettings::canAccess());
     $this->assertFalse($user->can('update', $organization));
     $this->assertFalse(Billing::canAccess());
+
+    $this->get(OrganizationSettings::getUrl(['organization' => $organization->slug]))
+        ->assertForbidden();
+});
+
+test('admin can open organization settings via http', function (): void {
+    [$user, $organization] = userWithRole(OrganizationRole::Admin);
+    actOnSettingsPanel($this, $user, $organization);
+
+    $this->get(OrganizationSettings::getUrl(['organization' => $organization->slug]))
+        ->assertSuccessful();
 });
 
 test('member gets forbidden when mounting a gated settings page', function (): void {
@@ -70,7 +80,7 @@ test('member gets forbidden when mounting a gated settings page', function (): v
     Livewire::test(Billing::class)->assertForbidden();
 });
 
-test('role without permissions can only view the organization', function (): void {
+test('role without permissions cannot open the settings page', function (): void {
     $user = User::factory()->create();
     $organization = Organization::factory()->create();
 
@@ -84,7 +94,7 @@ test('role without permissions can only view the organization', function (): voi
     $user->joinOrganization($organization, $empty);
     actOnSettingsPanel($this, $user, $organization);
 
-    $this->assertTrue(OrganizationSettings::canAccess());
+    $this->assertFalse(OrganizationSettings::canAccess());
     $this->assertFalse($user->can('update', $organization));
     $this->assertFalse(OrganizationUserResource::canViewAny());
     $this->assertFalse(RoleResource::canViewAny());

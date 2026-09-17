@@ -134,6 +134,15 @@ class Organization extends Model implements HasAvatar, HasMedia
     }
 
     /**
+     * @return BelongsToMany<User, $this>
+     */
+    public function verifiedUsers(): BelongsToMany
+    {
+        return $this->users()
+            ->whereNotNull('email_verified_at');
+    }
+
+    /**
      * @return MorphMany<Role, $this>
      */
     public function roles(): MorphMany

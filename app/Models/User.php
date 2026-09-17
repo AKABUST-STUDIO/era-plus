@@ -295,8 +295,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasMedia,
             ->get();
     }
 
-    public function hasVerifiedEmail()
+    public function hasVerifiedEmail(): bool
     {
-        return true;
+        return (bool) $this->email_verified_at;
     }
 }

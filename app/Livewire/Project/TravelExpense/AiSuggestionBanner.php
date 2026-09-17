@@ -48,7 +48,7 @@ class AiSuggestionBanner extends Component
 
     public function status(): string
     {
-        return $this->row()?->status ?? 'pending';
+        return $this->row()?->status ?? 'idle';
     }
 
     public function apply(): void
@@ -74,7 +74,9 @@ class AiSuggestionBanner extends Component
             return false;
         }
 
-        return $this->status() === 'pending';
+        $status = $this->status();
+
+        return $status === 'pending' || $status === 'processing';
     }
 
     public function render(): View

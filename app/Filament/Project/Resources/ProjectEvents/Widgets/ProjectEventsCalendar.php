@@ -190,6 +190,8 @@ class ProjectEventsCalendar extends FullCalendarWidget
                     $end = $arguments['end'] ?? null;
 
                     if (! is_string($start) || $start === '') {
+                        $form->fill(['all_participants' => true]);
+
                         return;
                     }
 

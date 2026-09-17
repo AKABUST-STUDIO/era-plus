@@ -1,5 +1,6 @@
 <?php
 
+use App\Facades\AuthenticationService;
 use App\Filament\Organization\Pages\Auth\Register;
 use App\Mail\AccountCreated;
 use App\Models\User;
@@ -76,4 +77,27 @@ test('the welcome email greets by name and links to the panel', function (): voi
 
     $this->assertStringContainsString('Newbie', $rendered);
     $this->assertStringContainsString(e(Filament::getPanel('organization')->getUrl()), $rendered);
+});
+
+test('first-time login (via invitation) also sends the welcome email', function (): void {
+    Mail::fake();
+
+    $invited = User::factory()->unverified()->create(['email' => 'invited@akabust.studio']);
+    $code = $invited->createOneTimePassword()->password;
+
+    AuthenticationService::authenticate('invited@akabust.studio', $code);
+
+    Mail::assertQueued(AccountCreated::class, fn (AccountCreated $mail): bool => $mail->hasTo('invited@akabust.studio'));
+    $this->assertNotNull($invited->fresh()->email_verified_at);
+});
+
+test('logging in as an already verified user does not resend the welcome email', function (): void {
+    Mail::fake();
+
+    $user = User::factory()->create(['email' => 'existing@akabust.studio']);
+    $code = $user->createOneTimePassword()->password;
+
+    AuthenticationService::authenticate('existing@akabust.studio', $code);
+
+    Mail::assertNotQueued(AccountCreated::class);
 });

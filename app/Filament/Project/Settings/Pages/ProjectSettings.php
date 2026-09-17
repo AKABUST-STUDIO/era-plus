@@ -41,7 +41,7 @@ class ProjectSettings extends Page
         $project = ProjectService::current();
 
         return $project instanceof Project
-            && (Filament::auth()->user()?->can('view', $project) ?? false);
+            && (Filament::auth()->user()?->can('update', $project) ?? false);
     }
 
     public static function getNavigationLabel(): string
@@ -253,19 +253,23 @@ class ProjectSettings extends Page
                         TextInput::make('name_confirm')
                             ->label(__('forms.project.settings.delete_name_label', ['name' => $projectName]))
                             ->required()
-                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($projectName): void {
-                                if ((string) $value !== $projectName) {
-                                    $fail(__('forms.project.settings.delete_name_mismatch'));
-                                }
-                            }),
+                            ->rules([
+                                fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($projectName): void {
+                                    if ((string) $value !== $projectName) {
+                                        $fail(__('forms.project.settings.delete_name_mismatch'));
+                                    }
+                                },
+                            ]),
                         TextInput::make('phrase_confirm')
                             ->label(__('forms.project.settings.delete_phrase_label', ['phrase' => $confirmPhrase]))
                             ->required()
-                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($confirmPhrase): void {
-                                if ((string) $value !== $confirmPhrase) {
-                                    $fail(__('forms.project.settings.delete_phrase_mismatch'));
-                                }
-                            }),
+                            ->rules([
+                                fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($confirmPhrase): void {
+                                    if ((string) $value !== $confirmPhrase) {
+                                        $fail(__('forms.project.settings.delete_phrase_mismatch'));
+                                    }
+                                },
+                            ]),
                     ])
                     ->using(function (Project $record): bool {
                         $deleted = (bool) $record->delete();

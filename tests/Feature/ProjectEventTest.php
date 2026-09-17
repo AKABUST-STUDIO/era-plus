@@ -18,6 +18,7 @@ use App\Services\GoogleCalendar\FakeCalendarClient;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     $this->fake = new FakeCalendarClient;
@@ -211,4 +212,48 @@ test('delete activity calls delete event', function (): void {
 
     $deleteCalls = array_filter($this->fake->calls, fn (array $c): bool => $c['type'] === 'deleteEvent');
     expect($deleteCalls)->toHaveCount(1);
+});
+
+test('all_participants toggle defaults to true and hides the participant select', function (): void {
+    bootProjectPanelAs($this->admin, $this->project);
+
+    Livewire::test(ProjectEventsCalendar::class)
+        ->mountAction('create')
+        ->assertActionMounted('create')
+        ->assertSchemaStateSet(['all_participants' => true], 'mountedActionSchema0');
+});
+
+test('switching all_participants off exposes the participant select and requires it', function (): void {
+    bootProjectPanelAs($this->admin, $this->project);
+
+    Livewire::test(ProjectEventsCalendar::class)
+        ->mountAction('create')
+        ->fillForm([
+            'all_participants' => false,
+            'title' => 'Meeting',
+            'starts_at' => now()->addDay()->toDateTimeString(),
+            'ends_at' => now()->addDay()->addHour()->toDateTimeString(),
+        ], 'mountedActionSchema0')
+        ->callMountedAction()
+        ->assertHasFormErrors(['participable_refs'], 'mountedActionSchema0');
+});
+
+test('creating an event with all_participants true attaches every project participant', function (): void {
+    bootProjectPanelAs($this->admin, $this->project);
+
+    $projectParticipant = makeProjectParticipantForEvents($this->project);
+
+    Livewire::test(ProjectEventsCalendar::class)
+        ->callAction('create', data: [
+            'title' => 'All hands',
+            'starts_at' => now()->addDay()->toDateTimeString(),
+            'ends_at' => now()->addDay()->addHour()->toDateTimeString(),
+            'all_participants' => true,
+        ])
+        ->assertHasNoActionErrors();
+
+    $event = ProjectEvent::query()->where('title', 'All hands')->firstOrFail();
+
+    expect(ProjectEventAttendee::query()->where('project_event_id', $event->id)->pluck('project_participant_id')->all())
+        ->toContain($projectParticipant->id);
 });

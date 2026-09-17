@@ -21,7 +21,7 @@ test('project admin sees the invite button on project members page', function ()
         $browser->loginAs($admin)
             ->visit('/'.$organization->slug.'/'.$project->slug.'/users')
             ->waitForText('Users')
-            ->assertSee('Send invitation');
+            ->assertSee('Invite');
     });
 });
 
@@ -36,6 +36,6 @@ test('project participant does not see the invite button', function (): void {
         $browser->loginAs($participant)
             ->visit('/'.$organization->slug.'/'.$project->slug.'/users')
             ->waitForText('Users')
-            ->assertDontSee('Send invitation');
+            ->assertDontSee('Invite');
     });
 });

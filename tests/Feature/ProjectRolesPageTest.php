@@ -41,11 +41,27 @@ test('non admin cannot load list page', function (): void {
     Livewire::test(ListRoles::class)->assertForbidden();
 });
 
-test('admin and participant roles are seeded', function (): void {
+test('admin member and participant roles are seeded and all locked', function (): void {
     $this->assertNotNull($this->project->roleFor(ProjectRole::Admin));
+    $this->assertNotNull($this->project->roleFor(ProjectRole::Member));
     $this->assertNotNull($this->project->roleFor(ProjectRole::Participant));
     $this->assertTrue($this->project->roleFor(ProjectRole::Admin)->locked);
-    $this->assertFalse($this->project->roleFor(ProjectRole::Participant)->locked);
+    $this->assertTrue($this->project->roleFor(ProjectRole::Member)->locked);
+    $this->assertTrue($this->project->roleFor(ProjectRole::Participant)->locked);
+});
+
+test('delete row action is hidden for member role', function (): void {
+    $memberRole = $this->project->roleFor(ProjectRole::Member);
+
+    Livewire::test(ListRoles::class)
+        ->assertTableActionHidden('delete', $memberRole);
+});
+
+test('delete row action is hidden for participant role', function (): void {
+    $participantRole = $this->project->roleFor(ProjectRole::Participant);
+
+    Livewire::test(ListRoles::class)
+        ->assertTableActionHidden('delete', $participantRole);
 });
 
 test('built in admin role is listed', function (): void {

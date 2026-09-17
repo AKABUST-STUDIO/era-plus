@@ -139,6 +139,51 @@ test('sole admin cannot leave the organization', function (): void {
     $this->assertTrue($organization->fresh()->users->contains($user));
 });
 
+test('admin cannot leave if the only other admin is a pending (unverified) invitation', function (): void {
+    [$user, $organization] = memberOfOrganization();
+    User::factory()
+        ->unverified()
+        ->create()
+        ->joinOrganization($organization, OrganizationRole::Admin);
+
+    actingOnSettingsPanel($this, $user, $organization);
+
+    Livewire::test(OrganizationSettings::class)
+        ->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
+
+    $this->assertTrue($organization->fresh()->users->contains($user));
+});
+
+test('admin can leave when another admin has verified', function (): void {
+    [$user, $organization] = memberOfOrganization();
+    User::factory()->create()->joinOrganization($organization, OrganizationRole::Admin);
+    actingOnSettingsPanel($this, $user, $organization);
+
+    Livewire::test(OrganizationSettings::class)
+        ->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'))
+        ->assertNotified()
+        ->assertRedirect();
+
+    $this->assertFalse($organization->fresh()->users->contains($user));
+});
+
+test('admin cannot leave if the only other member is pending', function (): void {
+    [$user, $organization] = memberOfOrganization();
+    User::factory()
+        ->unverified()
+        ->create()
+        ->joinOrganization($organization, OrganizationRole::Admin);
+
+    $this->assertSame(2, $organization->users()->count());
+    $this->assertSame(1, $organization->users()->whereNotNull('email_verified_at')->count());
+    actingOnSettingsPanel($this, $user, $organization);
+
+    Livewire::test(OrganizationSettings::class)
+        ->callAction(TestAction::make('leave')->schemaComponent('leave-section', 'form'));
+
+    $this->assertTrue($organization->fresh()->users->contains($user));
+});
+
 test('admin can delete the organization', function (): void {
     [$user, $organization] = memberOfOrganization();
     actingOnSettingsPanel($this, $user, $organization);
@@ -152,4 +197,38 @@ test('admin can delete the organization', function (): void {
         ->assertRedirect();
 
     $this->assertSoftDeleted('organizations', ['id' => $organization->id]);
+});
+
+test('delete organization rejects a mismatched name confirmation', function (): void {
+    [$user, $organization] = memberOfOrganization();
+    actingOnSettingsPanel($this, $user, $organization);
+
+    Livewire::test(OrganizationSettings::class)
+        ->callAction(TestAction::make('delete')->schemaComponent('delete-section', 'form'), data: [
+            'name_confirm' => 'wrong name',
+            'phrase_confirm' => __('settings.general.delete.confirm_phrase'),
+        ])
+        ->assertHasActionErrors(['name_confirm']);
+
+    $this->assertDatabaseHas('organizations', [
+        'id' => $organization->id,
+        'deleted_at' => null,
+    ]);
+});
+
+test('delete organization rejects a mismatched phrase confirmation', function (): void {
+    [$user, $organization] = memberOfOrganization();
+    actingOnSettingsPanel($this, $user, $organization);
+
+    Livewire::test(OrganizationSettings::class)
+        ->callAction(TestAction::make('delete')->schemaComponent('delete-section', 'form'), data: [
+            'name_confirm' => $organization->name,
+            'phrase_confirm' => 'bad phrase',
+        ])
+        ->assertHasActionErrors(['phrase_confirm']);
+
+    $this->assertDatabaseHas('organizations', [
+        'id' => $organization->id,
+        'deleted_at' => null,
+    ]);
 });

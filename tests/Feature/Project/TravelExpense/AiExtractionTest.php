@@ -53,6 +53,21 @@ class AiExtractionTest extends TestCase
         $this->assertMatchesRegularExpression('/^[0-9a-f-]{36}$/', $a);
     }
 
+    public function test_banner_is_idle_when_no_extraction_row_exists(): void
+    {
+        $sessionId = TravelExpenseExtractionDispatcher::newSessionId();
+
+        $component = Livewire::test(AiSuggestionBanner::class, [
+            'sessionId' => $sessionId,
+            'target' => AiExtractionTarget::Journey->value,
+            'fields' => ['date', 'from', 'to'],
+        ]);
+
+        $this->assertSame('idle', $component->instance()->status());
+        $this->assertFalse($component->instance()->shouldPoll());
+        $component->assertDontSee(__('finance.ai_suggestion.pending'));
+    }
+
     public function test_banner_stays_pending_while_extraction_has_no_result(): void
     {
         $sessionId = TravelExpenseExtractionDispatcher::newSessionId();

@@ -1,7 +1,7 @@
 <div
     @class([
         'fi-ai-suggestion-banner mb-4',
-        'hidden' => $dismissed || $sessionId === '' || ($status === 'pending' && ! $shouldPoll) || $status === 'failed',
+        'hidden' => $dismissed || $sessionId === '' || $status === 'idle' || $status === 'failed',
     ])
     @if ($shouldPoll)
         wire:poll.3s
@@ -18,7 +18,7 @@
     }"
     x-on:ai-suggestion::apply.window="if ($event.detail.target === @js($target)) applyFields($event.detail.fields)"
 >
-    @if ($status === 'pending')
+    @if ($status === 'pending' || $status === 'processing')
         <div class="flex items-center gap-3 rounded-lg border border-primary-200 bg-primary-50 p-3 text-sm text-primary-900 dark:border-primary-800 dark:bg-primary-950 dark:text-primary-100">
             <x-filament::icon icon="lucide-loader-circle" class="h-5 w-5 shrink-0 animate-spin" />
             <span>{{ __('finance.ai_suggestion.pending') }}</span>

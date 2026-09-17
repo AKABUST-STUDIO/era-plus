@@ -98,6 +98,7 @@ return [
         ],
         'roles' => [
             'admin' => 'Project Admin',
+            'member' => 'Project Member',
             'participant' => 'Participant',
         ],
         'statuses' => [

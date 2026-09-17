@@ -46,7 +46,7 @@ class AuthenticationService
         ]);
     }
 
-    public function authenticate(string $email, string $code, bool $shouldSendWelcomeMailable = false): void
+    public function authenticate(string $email, string $code, bool $shouldSendWelcomeMailable = true): void
     {
         try {
             $user = User::query()->where('email', $email)->firstOrFail();

@@ -186,6 +186,48 @@ test('can delete project', function (): void {
     $this->assertNull(ProjectService::selected());
 });
 
+test('delete project rejects a mismatched name confirmation', function (): void {
+    Livewire::test(ProjectSettings::class)
+        ->callAction(TestAction::make('delete')->schemaComponent('danger-section', 'form'), data: [
+            'name_confirm' => 'not the project name',
+            'phrase_confirm' => __('forms.project.settings.delete_confirm_phrase'),
+        ])
+        ->assertHasActionErrors(['name_confirm']);
+
+    $this->assertDatabaseHas('projects', [
+        'id' => $this->project->id,
+        'deleted_at' => null,
+    ]);
+});
+
+test('delete project rejects a mismatched phrase confirmation', function (): void {
+    Livewire::test(ProjectSettings::class)
+        ->callAction(TestAction::make('delete')->schemaComponent('danger-section', 'form'), data: [
+            'name_confirm' => $this->project->name,
+            'phrase_confirm' => 'wrong phrase',
+        ])
+        ->assertHasActionErrors(['phrase_confirm']);
+
+    $this->assertDatabaseHas('projects', [
+        'id' => $this->project->id,
+        'deleted_at' => null,
+    ]);
+});
+
+test('delete project rejects empty confirmations', function (): void {
+    Livewire::test(ProjectSettings::class)
+        ->callAction(TestAction::make('delete')->schemaComponent('danger-section', 'form'), data: [
+            'name_confirm' => '',
+            'phrase_confirm' => '',
+        ])
+        ->assertHasActionErrors(['name_confirm', 'phrase_confirm']);
+
+    $this->assertDatabaseHas('projects', [
+        'id' => $this->project->id,
+        'deleted_at' => null,
+    ]);
+});
+
 test('breadcrumbs link back to the project', function (): void {
     $breadcrumbs = Livewire::test(ProjectSettings::class)
         ->instance()

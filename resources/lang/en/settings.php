@@ -74,7 +74,7 @@ return [
             'description' => 'Send an invitation to join this organization.',
             'email' => 'Email address',
             'role' => 'Role',
-            'action' => 'Send invitation',
+            'action' => 'Invite',
             'wip' => 'Invitations are not available yet.',
         ],
 
@@ -179,6 +179,7 @@ return [
             'updated' => 'Role updated',
             'deleted' => 'Role deleted',
             'delete_has_members' => 'Cannot delete role',
+            'delete_locked' => 'This role is system-defined and cannot be deleted',
         ],
     ],
 

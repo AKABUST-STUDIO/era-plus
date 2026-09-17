@@ -30,8 +30,8 @@ test('admin sees the invite action button', function (): void {
     $this->browse(function (Browser $browser) use ($admin, $organization): void {
         $browser->loginAs($admin)
             ->visit('/'.$organization->slug.'/users')
-            ->waitForText('Send invitation')
-            ->assertSee('Send invitation');
+            ->waitForText('Invite')
+            ->assertSee('Invite');
     });
 });
 
@@ -44,6 +44,6 @@ test('bare member does not see the invite action button', function (): void {
         $browser->loginAs($member)
             ->visit('/'.$organization->slug.'/users')
             ->waitForText('Marge Member')
-            ->assertDontSee('Send invitation');
+            ->assertDontSee('Invite');
     });
 });

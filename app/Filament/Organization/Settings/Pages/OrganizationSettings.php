@@ -42,7 +42,11 @@ class OrganizationSettings extends Page implements HasOrganizationPermissions
 
     public static function canAccess(): bool
     {
-        return OrganizationService::current() instanceof Organization;
+        $organization = OrganizationService::current();
+
+        
+        return $organization instanceof Organization
+            && Filament::auth()->user()?->can('update', $organization) ?? false;
     }
 
     public static function getNavigationLabel(): string
@@ -199,7 +203,7 @@ class OrganizationSettings extends Page implements HasOrganizationPermissions
                             return;
                         }
 
-                        if ($this->organization->users()->count() <= 1) {
+                        if ($this->organization->verifiedUsers()->count() <= 1) {
                             Notification::make()
                                 ->title(__('settings.general.leave.only_member_title'))
                                 ->body(__('settings.general.leave.only_member_body'))
@@ -249,19 +253,23 @@ class OrganizationSettings extends Page implements HasOrganizationPermissions
                         TextInput::make('name_confirm')
                             ->label(__('settings.general.delete.name_label', ['name' => $organizationName]))
                             ->required()
-                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($organizationName): void {
-                                if ((string) $value !== $organizationName) {
-                                    $fail(__('settings.general.delete.name_mismatch'));
-                                }
-                            }),
+                            ->rules([
+                                fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($organizationName): void {
+                                    if ((string) $value !== $organizationName) {
+                                        $fail(__('settings.general.delete.name_mismatch'));
+                                    }
+                                },
+                            ]),
                         TextInput::make('phrase_confirm')
                             ->label(__('settings.general.delete.phrase_label', ['phrase' => $confirmPhrase]))
                             ->required()
-                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($confirmPhrase): void {
-                                if ((string) $value !== $confirmPhrase) {
-                                    $fail(__('settings.general.delete.phrase_mismatch'));
-                                }
-                            }),
+                            ->rules([
+                                fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($confirmPhrase): void {
+                                    if ((string) $value !== $confirmPhrase) {
+                                        $fail(__('settings.general.delete.phrase_mismatch'));
+                                    }
+                                },
+                            ]),
                     ])
                     ->using(function (Organization $record): bool {
                         $record->users()->detach();
@@ -288,7 +296,9 @@ class OrganizationSettings extends Page implements HasOrganizationPermissions
             return false;
         }
 
-        return $this->organization->admins()->count() <= 1;
+        return $this->organization->admins()
+            ->whereNotNull('email_verified_at')
+            ->count() <= 1;
     }
 
     protected function organizationPanelUrl(): string

@@ -3,6 +3,7 @@
 namespace App\Filament\Project\Resources\TravelExpenses\Actions;
 
 use App\Filament\Project\Resources\TravelExpenses\Exporters\TravelExpenseExporter;
+use App\Models\Project\TravelExpense;
 use Filament\Actions\Action;
 use Filament\Actions\ExportAction;
 use Filament\Support\Enums\Alignment;
@@ -20,6 +21,7 @@ class ExportTravelExpensesAction
             ->modalCloseButton(false)
             ->modalSubmitAction(fn (Action $action) => $action->icon('lucide-download'))
             ->extraModalWindowAttributes(['class' => 'export-modal'])
+            ->visible(fn (): bool => TravelExpense::query()->exists())
             ->fileName(fn (): string => 'travel-expenses-'.now()->format('Y-m-d'));
     }
 }

@@ -1214,3 +1214,16 @@ test('deleting a participation removes its expenses', function (): void {
 
     $this->assertSame(0, DB::table('travel_expenses')->count());
 });
+
+test('export action is hidden when there are no travel expenses', function (): void {
+    Livewire::test(ListTravelExpenses::class)
+        ->assertActionHidden('export');
+});
+
+test('export action is visible when there is at least one travel expense', function (): void {
+    $participation = financeParticipation($this->project);
+    TravelExpense::factory()->forParticipant($participation)->create();
+
+    Livewire::test(ListTravelExpenses::class)
+        ->assertActionVisible('export');
+});

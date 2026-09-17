@@ -2,6 +2,8 @@
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
+use App\Filament\Project\Resources\ProjectParticipants\Components\ParticipableSelect;
+use App\Filament\Project\Resources\ProjectParticipants\Pages\ListProjectParticipants;
 use App\Filament\Project\Resources\ProjectParticipants\ProjectParticipantResource;
 use App\Models\Organization;
 use App\Models\Project;
@@ -186,3 +188,118 @@ test('participants list page is served from the participants url', function (): 
 
     $this->get($url)->assertSuccessful();
 });
+
+test('participants export action is hidden when there are no participants', function (): void {
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $user->joinOrganization($organization, OrganizationRole::Admin);
+    $project = Project::factory()->for($organization)->create();
+    $user->joinProject($project, ProjectRole::Admin);
+
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($project);
+    URL::defaults(['organization' => $organization->slug]);
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->assertActionHidden('export');
+});
+
+test('participants export action is visible when there is at least one participant', function (): void {
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $user->joinOrganization($organization, OrganizationRole::Admin);
+    $project = Project::factory()->for($organization)->create();
+    $user->joinProject($project, ProjectRole::Admin);
+
+    $participant = Participant::factory()->create();
+    $project->addParticipant($participant, participantCountryId(), participantSendingOrganization());
+
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($project);
+    URL::defaults(['organization' => $organization->slug]);
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->assertActionVisible('export');
+});
+
+test('add participant creates a fresh participant via quick-add', function (): void {
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $user->joinOrganization($organization, OrganizationRole::Admin);
+    $project = Project::factory()->for($organization)->create();
+    $user->joinProject($project, ProjectRole::Admin);
+
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($project);
+    URL::defaults(['organization' => $organization->slug]);
+
+    $countryId = participantCountryId();
+    $sending = participantSendingOrganization('Erasmus U');
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->callAction('add', data: [
+            'participable_id' => 'pending:abc',
+            '_pending_participable' => ['name' => 'Alicia'],
+            '_pending_source' => 'name',
+            'participable' => [
+                'name' => 'Alicia',
+                'email' => 'alicia@example.com',
+                'phone' => null,
+                'date_of_birth' => null,
+            ],
+            'country_id' => (string) $countryId,
+            'sending_organization_id' => 'po:'.$sending->id,
+        ])
+        ->assertHasNoActionErrors();
+
+    $this->assertDatabaseHas('participants', ['name' => 'Alicia', 'email' => 'alicia@example.com']);
+    $participant = Participant::query()->where('email', 'alicia@example.com')->firstOrFail();
+    $this->assertDatabaseHas('project_participant', [
+        'project_id' => $project->id,
+        'participable_type' => Participant::class,
+        'participable_id' => $participant->id,
+    ]);
+});
+
+test('import participants example xlsx exists', function (): void {
+    $this->assertFileExists(resource_path('xlsx/rasmo_import_participants.xlsx'));
+});
+
+test('add participant attaches an existing participant from another project', function (): void {
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $user->joinOrganization($organization, OrganizationRole::Admin);
+    $projectA = Project::factory()->for($organization)->create();
+    $projectB = Project::factory()->for($organization)->create();
+    $user->joinProject($projectA, ProjectRole::Admin);
+    $user->joinProject($projectB, ProjectRole::Admin);
+
+    $existing = Participant::factory()->create(['name' => 'Kai']);
+    $projectA->addParticipant($existing, participantCountryId(), participantSendingOrganization('Uni A'));
+
+    $this->actingAs($user);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($projectB);
+    URL::defaults(['organization' => $organization->slug]);
+
+    $countryId = participantCountryId();
+    $sending = participantSendingOrganization('Uni B');
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->callAction('add', data: [
+            'participable_id' => 'p:'.$existing->id,
+            'country_id' => (string) $countryId,
+            'sending_organization_id' => 'po:'.$sending->id,
+        ])
+        ->assertHasNoActionErrors();
+
+    $this->assertDatabaseHas('project_participant', [
+        'project_id' => $projectB->id,
+        'participable_type' => Participant::class,
+        'participable_id' => $existing->id,
+    ]);
+});
+

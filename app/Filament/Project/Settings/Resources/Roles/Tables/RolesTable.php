@@ -52,8 +52,18 @@ class RolesTable
                     ->hiddenLabel()
                     ->icon('lucide-trash-2')
                     ->color('danger')
+                    ->hidden(fn (Role $record): bool => (bool) $record->locked)
                     ->requiresConfirmation()
                     ->before(function (DeleteAction $action, Role $record): void {
+                        if ((bool) $record->locked) {
+                            Notification::make()
+                                ->title(__('settings.roles.notifications.delete_locked'))
+                                ->danger()
+                                ->send();
+
+                            $action->cancel();
+                        }
+
                         if (self::memberCount($record) > 0) {
                             Notification::make()
                                 ->title(__('settings.roles.notifications.delete_has_members'))

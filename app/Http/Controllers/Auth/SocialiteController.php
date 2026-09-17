@@ -41,6 +41,7 @@ class SocialiteController extends Controller
 
         if ($user->email_verified_at === null) {
             $user->markEmailAsVerified();
+            $user->sendWelcomeMailable();
         }
 
         Auth::login($user, remember: true);

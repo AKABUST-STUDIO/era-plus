@@ -271,6 +271,13 @@ test('import and export are authorized by their own permissions', function (): v
 
     grantToParticipantRole($this->project, $this->participant, 'import_travel_expense', 'export_travel_expense');
 
+    $participation = $this->project->addParticipant(
+        Participant::factory()->create(),
+        (int) \Illuminate\Support\Facades\DB::table('countries')->value('id'),
+        \App\Models\Project\ParticipantOrganization::create(['name' => 'Uni']),
+    );
+    TravelExpense::factory()->forParticipant($participation)->create();
+
     Livewire::test(ListTravelExpenses::class)
         ->assertActionVisible('export')
         ->assertActionVisible('import');
