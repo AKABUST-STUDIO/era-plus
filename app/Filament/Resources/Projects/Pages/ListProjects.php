@@ -13,6 +13,11 @@ class ListProjects extends Page
 
     public function getTitle(): string
     {
-        return __('navigation.projects');
+        return '';
+    }
+
+    public function getHeading(): string
+    {
+        return '';
     }
 }

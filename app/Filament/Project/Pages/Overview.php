@@ -41,6 +41,11 @@ class Overview extends Page
 
     public function getTitle(): string|Htmlable
     {
-        return static::$title ?? __('filament-panels::pages/dashboard.title');
+        return '';
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return '';
     }
 }
