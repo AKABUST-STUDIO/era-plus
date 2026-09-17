@@ -25,6 +25,12 @@ class SupportTicketsTable
             ->defaultSort('created_at', 'desc')
             ->defaultSortOptionLabel(__('user.support.opened'))
             ->columns([
+                TextColumn::make('status')
+                    ->label(__('user.support.status'))
+                    ->badge()
+                    ->sortable()
+                    ->extraHeaderAttributes(['style' => 'width: 1px'])
+                    ->extraCellAttributes(['class' => 'w-px whitespace-nowrap', 'style' => 'width: 1px']),
                 TextColumn::make('subject')
                     ->label(__('user.support.subject'))
                     ->description(fn (SupportTicket $record): string => (string) str($record->body)->limit(150))
@@ -32,11 +38,6 @@ class SupportTicketsTable
                     ->searchable()
                     ->sortable()
                     ->grow(),
-                TextColumn::make('status')
-                    ->label(__('user.support.status'))
-                    ->badge()
-                    ->sortable()
-                    ->alignCenter(),
                 TextColumn::make('created_at')
                     ->label(__('user.support.opened'))
                     ->since()
