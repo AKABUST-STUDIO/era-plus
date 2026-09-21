@@ -2,6 +2,7 @@
 
 namespace App\Filament\Project\Settings\Resources\ProjectMembers\Pages;
 
+use App\Filament\Project\Settings\Pages\Concerns\HasProjectSettingsBreadcrumbs;
 use App\Filament\Project\Settings\Resources\ProjectMembers\Actions\InviteMemberAction;
 use App\Filament\Project\Settings\Resources\ProjectMembers\ProjectMemberResource;
 use Filament\Resources\Pages\ListRecords;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListProjectMembers extends ListRecords
 {
+    use HasProjectSettingsBreadcrumbs;
+
     public const TAB_MEMBERS = 'members';
 
     public const TAB_INVITATIONS = 'invitations';

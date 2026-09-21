@@ -20,6 +20,11 @@ class ListProjectParticipants extends ListRecords
 {
     protected static string $resource = ProjectParticipantResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     #[On('participants::refresh-tabs')]
     public function refreshTabs(): void
     {
@@ -34,7 +39,7 @@ class ListProjectParticipants extends ListRecords
                 ImportParticipantsAction::make(),
                 ExportParticipantsAction::make(),
             ])
-                ->label(__('participant.actions.tools'))
+                ->hiddenLabel()
                 ->icon('lucide-more-horizontal')
                 ->button()
                 ->color('gray'),

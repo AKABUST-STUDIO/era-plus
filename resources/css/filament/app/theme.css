@@ -108,6 +108,36 @@
     background-color: color-mix(in oklab, var(--gray-500) 30%, transparent);
 }
 
+.fi-sidebar-nav {
+    @apply py-5;
+}
+
+.fi-era-topbar .fi-btn,
+.fi-era-topbar .fi-btn > * {
+    white-space: nowrap;
+}
+
+@media (max-width: 48rem) {
+    .fi-era-topbar .fi-btn {
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        font-size: 0 !important;
+        justify-content: center !important;
+    }
+    .fi-era-topbar .fi-btn > svg {
+        width: 1rem !important;
+        height: 1rem !important;
+    }
+    .fi-era-topbar .fi-tenant-menu,
+    .fi-era-topbar .fi-tenant-menu .fi-dropdown-trigger,
+    .fi-era-topbar .fi-tenant-menu .fi-dropdown-trigger > div,
+    .fi-era-topbar .fi-tenant-menu-trigger {
+        width: 100% !important;
+    }
+}
+
 /* -------------------------------------------------------------------------- */
 /* User menu — icons on the right, profile name + email subtitle              */
 /* -------------------------------------------------------------------------- */

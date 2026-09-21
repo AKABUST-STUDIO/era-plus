@@ -6,12 +6,14 @@ use App\Filament\Organization\Widgets\OrganizationActivityWidget;
 use App\Filament\Organization\Widgets\OrganizationProjectsWidget;
 use App\Filament\Organization\Widgets\OrganizationUsersWidget;
 use App\Filament\Resources\Projects\ProjectResource;
+use App\Models\Project;
+use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\RenderHook;
 use Filament\Schemas\Schema;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets\Widget;
 
 class ListProjects extends Page
 {
@@ -24,14 +26,11 @@ class ListProjects extends Page
         return '';
     }
 
-    public function getHeading(): string
+    public function getBreadcrumbs(): array
     {
-        return '';
+        return [];
     }
 
-    /**
-     * @return array<class-string<Widget>>
-     */
     public function getHeaderWidgets(): array
     {
         return [

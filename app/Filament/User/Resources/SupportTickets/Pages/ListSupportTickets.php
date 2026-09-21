@@ -10,6 +10,11 @@ class ListSupportTickets extends ListRecords
 {
     protected static string $resource = SupportTicketResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

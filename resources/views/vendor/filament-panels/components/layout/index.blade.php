@@ -26,6 +26,10 @@
         'fi-body-has-top-navigation' => $hasTopNavigation,
     ])
 >
+    <a href="#fi-main-content" class="fi-skip-link fi-sr-only">
+        {{ __('filament-panels::layout.skip_to_content.label') }}
+    </a>
+
     @if ($hasTopbar)
         {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::TOPBAR_BEFORE, scopes: $renderHookScopes) }}
 
@@ -74,6 +78,8 @@
             {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::CONTENT_BEFORE, scopes: $renderHookScopes) }}
 
             <main
+                id="fi-main-content"
+                tabindex="-1"
                 @class([
                     'fi-main',
                     ($maxContentWidth instanceof Width) ? "fi-width-{$maxContentWidth->value}" : $maxContentWidth,

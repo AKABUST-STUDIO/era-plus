@@ -54,11 +54,6 @@ class UserPanelProvider extends BasePanelProvider
                 PanelsRenderHook::SIDEBAR_NAV_START,
                 fn (): View => view('livewire.spotlight-search'),
             )
-            ->renderHook(
-                PanelsRenderHook::CONTENT_BEFORE,
-                fn (): View => view('livewire.sidebar-toggle-wrapper'),
-            )
-
             ->middleware(self::persistentMiddleware, isPersistent: true)
             ->authMiddleware(self::authMiddleware);
     }

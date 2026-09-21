@@ -8,12 +8,12 @@ use App\Filament\Project\Widgets\ProjectParticipantsWidget;
 use App\Filament\Project\Widgets\ProjectUsersWidget;
 use App\Filament\Project\Widgets\TravelExpensesWidget;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\RenderHook;
 use Filament\Schemas\Schema;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets\Widget;
 use Illuminate\Contracts\Support\Htmlable;
 
 class Overview extends Page
@@ -24,17 +24,16 @@ class Overview extends Page
 
     protected static BackedEnum|string|null $navigationIcon = null;
 
-    /**
-     * @return int | array<string, ?int>
-     */
+    public function getTitle(): string|Htmlable
+    {
+        return "";
+    }
+
     public function getColumns(): int|array
     {
         return 2;
     }
 
-    /**
-     * @return array<class-string<Widget>>
-     */
     public function getHeaderWidgets(): array
     {
         return [
@@ -46,9 +45,6 @@ class Overview extends Page
         ];
     }
 
-    /**
-     * @return int | array<string, ?int>
-     */
     public function getHeaderWidgetsColumns(): int|array
     {
         return ['default' => 1, 'md' => 2];
@@ -77,15 +73,5 @@ class Overview extends Page
                     ]),
                 RenderHook::make(PanelsRenderHook::PAGE_HEADER_WIDGETS_END),
             ]);
-    }
-
-    public function getTitle(): string|Htmlable
-    {
-        return '';
-    }
-
-    public function getHeading(): string|Htmlable
-    {
-        return '';
     }
 }

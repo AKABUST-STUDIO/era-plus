@@ -28,6 +28,11 @@ class ListProjectEvents extends Page
             : __('events.page.title');
     }
 
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     #[On('calendar-title-changed')]
     public function setCalendarTitle(string $title): void
     {

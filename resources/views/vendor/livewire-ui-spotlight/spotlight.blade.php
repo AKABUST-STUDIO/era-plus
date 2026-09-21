@@ -7,7 +7,7 @@
     $spinnerIcon = $renderIcon('lucide-loader-circle', 'size-5 shrink-0 animate-spin text-gray-400');
     $kindIcons = [
         'page' => $renderIcon('lucide-file-text', 'size-3.5'),
-        'action' => $renderIcon('lucide-shell', 'size-3.5'),
+        'action' => $renderIcon('lucide-corner-down-right', 'size-3.5'),
         'create' => $renderIcon('lucide-plus', 'size-3.5'),
         'edit' => $renderIcon('lucide-pencil', 'size-3.5'),
         'view' => $renderIcon('lucide-eye', 'size-3.5'),

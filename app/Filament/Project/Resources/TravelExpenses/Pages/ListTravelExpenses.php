@@ -28,6 +28,11 @@ class ListTravelExpenses extends ListRecords
 {
     protected static string $resource = TravelExpenseResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     public function getTitle(): string
     {
         return __('finance.title');
@@ -57,15 +62,15 @@ class ListTravelExpenses extends ListRecords
 
                     return TravelExpenseForm::stripParticipableInput($data);
                 }),
-            CountryLimitsAction::make()
-                ->authorize(fn (): bool => (bool) Filament::auth()->user()?->can('update', CountryLimit::class)),
             ActionGroup::make([
+                CountryLimitsAction::make()
+                    ->authorize(fn (): bool => (bool) Filament::auth()->user()?->can('update', CountryLimit::class)),
                 ImportTravelExpensesAction::make()
                     ->authorize(fn (): bool => TravelExpenseResource::canImport()),
                 ExportTravelExpensesAction::make()
                     ->authorize(fn (): bool => TravelExpenseResource::canExport()),
             ])
-                ->label(__('finance.actions.tools'))
+                ->hiddenLabel()
                 ->icon('lucide-more-horizontal')
                 ->button()
                 ->color('gray'),

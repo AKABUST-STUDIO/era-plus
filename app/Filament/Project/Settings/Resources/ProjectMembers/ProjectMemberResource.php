@@ -17,6 +17,8 @@ class ProjectMemberResource extends Resource implements HasProjectPermissions
 
     protected static ?string $slug = 'users';
 
+    protected static ?int $navigationSort = 20;
+
     /**
      * @return list<string>|null
      */
