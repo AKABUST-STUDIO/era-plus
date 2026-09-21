@@ -4,11 +4,13 @@
     </p>
 
     @forelse ($users as $user)
-        <x-login-link
-            :email="$user->email"
-            :label="filled($user->name) ? $user->name.' · '.$user->email : $user->email"
-            class="w-full cursor-pointer truncate rounded-lg px-3 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/5"
-        />
+        {!! \Illuminate\Support\Facades\Blade::render(
+            '<x-login-link :email="$email" :label="$label" class="w-full cursor-pointer truncate rounded-lg px-3 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/5" />',
+            [
+                'email' => $user->email,
+                'label' => filled($user->name) ? $user->name.' · '.$user->email : $user->email,
+            ],
+        ) !!}
     @empty
         <p class="text-sm text-gray-500 dark:text-gray-400">
             No users in the database yet.
