@@ -19,3 +19,20 @@ if (! function_exists('country_flag_emoji')) {
             ->implode('');
     }
 }
+
+if (! function_exists('initials')) {
+    function initials(?string $name, string $fallback = '·'): string
+    {
+        if (blank($name)) {
+            return $fallback;
+        }
+
+        $parts = preg_split('/\s+/', trim($name)) ?: [];
+
+        return collect($parts)
+            ->filter()
+            ->take(2)
+            ->map(fn (string $part): string => mb_strtoupper(mb_substr($part, 0, 1)))
+            ->implode('');
+    }
+}

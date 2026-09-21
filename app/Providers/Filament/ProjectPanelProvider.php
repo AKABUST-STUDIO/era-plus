@@ -54,6 +54,10 @@ class ProjectPanelProvider extends BasePanelProvider
                 in: app_path('Filament/Project/Pages'),
                 for: 'App\\Filament\\Project\\Pages',
             )
+            ->discoverWidgets(
+                in: app_path('Filament/Project/Widgets'),
+                for: 'App\\Filament\\Project\\Widgets',
+            )
 
             ->tenantMenu(false)
             ->tenant(Project::class, slugAttribute: 'slug')

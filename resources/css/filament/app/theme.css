@@ -276,9 +276,6 @@
     @apply flex-none;
 }
 
-.fi-section-content-ctn > .fi-section-content {
-    @apply pt-3;
-}
 /* -------------------------------------------------------------------------- */
 /* Filters — icon triggers size to content, not a full grid track             */
 /* -------------------------------------------------------------------------- */

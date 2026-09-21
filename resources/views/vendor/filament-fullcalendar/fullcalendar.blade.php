@@ -5,7 +5,7 @@
     $config['datesSet'] = '__DATES_SET__';
     $configJson = str_replace(
         '"__DATES_SET__"',
-        '(info) => Livewire.dispatch("calendar-title-changed", { title: info.view.title })',
+        '(info) => Livewire.dispatch("calendar-title-changed", { title: info.view.title.replace(new RegExp(",? " + new Date().getFullYear() + "\\\\b"), "") })',
         json_encode($config, JSON_UNESCAPED_SLASHES),
     );
 @endphp

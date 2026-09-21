@@ -2,8 +2,16 @@
 
 namespace App\Filament\Resources\Projects\Pages;
 
+use App\Filament\Organization\Widgets\OrganizationActivityWidget;
+use App\Filament\Organization\Widgets\OrganizationProjectsWidget;
+use App\Filament\Organization\Widgets\OrganizationUsersWidget;
 use App\Filament\Resources\Projects\ProjectResource;
 use Filament\Resources\Pages\Page;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\RenderHook;
+use Filament\Schemas\Schema;
+use Filament\View\PanelsRenderHook;
+use Filament\Widgets\Widget;
 
 class ListProjects extends Page
 {
@@ -19,5 +27,40 @@ class ListProjects extends Page
     public function getHeading(): string
     {
         return '';
+    }
+
+    /**
+     * @return array<class-string<Widget>>
+     */
+    public function getHeaderWidgets(): array
+    {
+        return [
+            OrganizationUsersWidget::class,
+            OrganizationActivityWidget::class,
+            OrganizationProjectsWidget::class,
+        ];
+    }
+
+    public function headerWidgets(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                RenderHook::make(PanelsRenderHook::PAGE_HEADER_WIDGETS_START),
+                Grid::make(['default' => 1, 'md' => 2])
+                    ->schema([
+                        Grid::make(1)
+                            ->columnSpan(1)
+                            ->schema(fn (): array => $this->getWidgetsSchemaComponents([
+                                OrganizationUsersWidget::class,
+                                OrganizationActivityWidget::class,
+                            ])),
+                        Grid::make(1)
+                            ->columnSpan(1)
+                            ->schema(fn (): array => $this->getWidgetsSchemaComponents([
+                                OrganizationProjectsWidget::class,
+                            ])),
+                    ]),
+                RenderHook::make(PanelsRenderHook::PAGE_HEADER_WIDGETS_END),
+            ]);
     }
 }

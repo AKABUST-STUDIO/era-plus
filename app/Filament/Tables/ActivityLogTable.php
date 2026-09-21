@@ -6,19 +6,15 @@ use App\Filament\Tables\Filters\DateFilter;
 use App\Filament\Tables\Filters\FilterGroup;
 use App\Filament\Tables\Filters\SearchFilter;
 use App\Models\ActivityLog;
-use App\Models\User;
 use Filament\Schemas\Components\Grid;
 use Filament\Support\Enums\Width;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\Layout\Split;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Enums\PaginationMode;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
-use Illuminate\Support\HtmlString;
 
 class ActivityLogTable
 {
@@ -27,7 +23,10 @@ class ActivityLogTable
         return $table
             ->extraAttributes(['class' => 'fi-ta-activity'])
             ->query(fn (): Builder => $query->with(['causer', 'subject']))
-            ->paginated(fn (HasTable $livewire): bool => ($livewire->getFilteredTableQuery()?->count() ?? 0) > 10)
+            ->paginated(fn (HasTable $livewire): bool => ($livewire->getFilteredTableQuery()?->count() ?? 0) > 50)
+            ->paginationMode(PaginationMode::Simple)
+            ->paginationPageOptions([50])
+            ->defaultPaginationPageOption(50)
             ->defaultSort('created_at', 'desc')
             ->defaultGroup(
                 Group::make('month')
@@ -37,24 +36,9 @@ class ActivityLogTable
                     ->orderQueryUsing(fn (Builder $q, string $direction): Builder => $q->orderBy('created_at', $direction)),
             )
             ->columns([
-                Split::make([
-                    ImageColumn::make('causer_avatar')
-                        ->state(fn (ActivityLog $record): string => self::avatarFor($record))
-                        ->circular()
-                        ->size(28)
-                        ->grow(false),
-                    TextColumn::make('description')
-                        ->state(fn (ActivityLog $record): HtmlString => self::fluent($record))
-                        ->html()
-                        ->wrap()
-                        ->searchable(),
-                    TextColumn::make('created_at')
-                        ->date('M j')
-                        ->color('gray')
-                        ->size('xs')
-                        ->alignEnd()
-                        ->grow(false),
-                ]),
+                ViewColumn::make('row')
+                    ->label('')
+                    ->view('filament.tables.columns.activity-log-row'),
             ])
             ->filtersLayout(FiltersLayout::AboveContent)
             ->searchable(false)
@@ -80,55 +64,5 @@ class ActivityLogTable
                     width: Width::Medium)
                     ->columnStart(3),
             ]);
-    }
-
-    private static function fluent(ActivityLog $record): HtmlString
-    {
-        $causer = $record->causer;
-        $actor = $causer instanceof User && $causer->getKey() === auth()->id()
-            ? __('activity.you')
-            : ($causer?->name ?? __('activity.system'));
-
-        $raw = (string) $record->description;
-        $description = $raw;
-        $properties = $record->properties instanceof Collection
-            ? $record->properties->all()
-            : (array) $record->properties;
-
-        foreach ($properties as $key => $value) {
-            if (is_scalar($value) && str_contains($description, ':'.$key)) {
-                $description = str_replace(':'.$key, '<strong>'.e((string) $value).'</strong>', $description);
-            }
-        }
-
-        if ($description === $raw) {
-            $description = e($raw);
-            $subject = $record->subject;
-
-            if (filled($record->subject_type)) {
-                $type = class_basename((string) $record->subject_type);
-                $name = $subject?->name
-                    ?? $subject?->title
-                    ?? $subject?->slug
-                    ?? ($record->subject_id !== null ? '#'.$record->subject_id : null);
-
-                $description .= $name === null
-                    ? ' <strong>'.e($type).'</strong>'
-                    : ' '.e($type).' <strong>'.e((string) $name).'</strong>';
-            }
-        }
-
-        return new HtmlString('<span class="fi-activity-subject">'.e($actor).'</span> '.$description);
-    }
-
-    private static function avatarFor(ActivityLog $record): string
-    {
-        $causer = $record->causer;
-
-        if ($causer !== null && method_exists($causer, 'avatarUrl')) {
-            return $causer->avatarUrl();
-        }
-
-        return 'https://ui-avatars.com/api/?name=System&size=64';
     }
 }
