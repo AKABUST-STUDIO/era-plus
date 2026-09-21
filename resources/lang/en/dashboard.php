@@ -8,9 +8,9 @@ return [
     ],
 
     'organization' => [
-        'users_heading' => 'Members',
+        'users_heading' => 'Users',
         'users_subtitle' => ':count people in this organization',
-        'users_empty_subtitle' => 'No members yet',
+        'users_empty_subtitle' => 'No users yet',
         'users_empty_body' => 'Invited colleagues appear here once they accept.',
 
         'projects_heading' => 'Projects',
@@ -27,10 +27,10 @@ return [
     ],
 
     'project' => [
-        'members_heading' => 'Members',
-        'members_subtitle' => ':count people with access to this project',
-        'members_empty_subtitle' => 'No members yet',
-        'members_empty_body' => 'People from the organization appear here once they are given access.',
+        'users_heading' => 'Users',
+        'users_subtitle' => ':count people with access to this project',
+        'users_empty_subtitle' => 'No users yet',
+        'users_empty_body' => 'People from the organization appear here once they are given access.',
 
         'participants_heading' => 'Participants',
         'participants_subtitle' => '{1} 1 participant on this project|[2,*] :count participants on this project',

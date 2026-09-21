@@ -2,6 +2,7 @@
 
 namespace App\Filament\Organization\Settings\Resources\OrganizationUsers\Pages;
 
+use App\Filament\Organization\Settings\Pages\Concerns\HasOrgSettingsBreadcrumbs;
 use App\Filament\Organization\Settings\Resources\OrganizationUsers\Actions\InviteUserAction;
 use App\Filament\Organization\Settings\Resources\OrganizationUsers\OrganizationUserResource;
 use Filament\Resources\Pages\ListRecords;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListOrganizationUsers extends ListRecords
 {
+    use HasOrgSettingsBreadcrumbs;
+
     public const TAB_USERS = 'users';
 
     public const TAB_INVITATIONS = 'invitations';

@@ -4,8 +4,8 @@ namespace App\Filament\Project\Pages;
 
 use App\Filament\Project\Widgets\DashboardCalendarWidget;
 use App\Filament\Project\Widgets\ProjectActivityWidget;
-use App\Filament\Project\Widgets\ProjectMembersWidget;
 use App\Filament\Project\Widgets\ProjectParticipantsWidget;
+use App\Filament\Project\Widgets\ProjectUsersWidget;
 use App\Filament\Project\Widgets\TravelExpensesWidget;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -38,7 +38,7 @@ class Overview extends Page
     public function getHeaderWidgets(): array
     {
         return [
-            ProjectMembersWidget::class,
+            ProjectUsersWidget::class,
             ProjectParticipantsWidget::class,
             TravelExpensesWidget::class,
             ProjectActivityWidget::class,
@@ -64,7 +64,7 @@ class Overview extends Page
                         Grid::make(1)
                             ->columnSpan(1)
                             ->schema(fn (): array => $this->getWidgetsSchemaComponents([
-                                ProjectMembersWidget::class,
+                                ProjectUsersWidget::class,
                                 ProjectParticipantsWidget::class,
                                 TravelExpensesWidget::class,
                                 ProjectActivityWidget::class,

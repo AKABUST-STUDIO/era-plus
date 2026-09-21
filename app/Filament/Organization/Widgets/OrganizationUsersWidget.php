@@ -2,7 +2,7 @@
 
 namespace App\Filament\Organization\Widgets;
 
-use App\Filament\Organization\Resources\OrganizationUsers\OrganizationUserResource;
+use App\Filament\Organization\Settings\Resources\OrganizationUsers\OrganizationUserResource;
 use App\Models\Organization\OrganizationUser;
 use Filament\Widgets\Widget;
 
@@ -51,7 +51,7 @@ class OrganizationUsersWidget extends Widget
             'emptyMessage' => __('dashboard.organization.users_empty_body'),
             'viewAllLabel' => __('dashboard.common.view_all'),
             'viewAllUrl' => OrganizationUserResource::canViewAny()
-                ? OrganizationUserResource::getUrl()
+                ? OrganizationUserResource::getUrl(panel: 'organization.settings')
                 : null,
             'rows' => $rows,
             'isEmpty' => $isEmpty,

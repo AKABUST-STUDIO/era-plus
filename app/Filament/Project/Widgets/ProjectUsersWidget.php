@@ -2,13 +2,13 @@
 
 namespace App\Filament\Project\Widgets;
 
-use App\Filament\Project\Resources\ProjectMembers\ProjectMemberResource;
+use App\Filament\Project\Settings\Resources\ProjectMembers\ProjectMemberResource;
 use App\Models\ProjectUser;
 use Filament\Widgets\Widget;
 
-class ProjectMembersWidget extends Widget
+class ProjectUsersWidget extends Widget
 {
-    protected string $view = 'filament.project.widgets.project-members-widget';
+    protected string $view = 'filament.project.widgets.project-users-widget';
 
     protected int|string|array $columnSpan = 1;
 
@@ -44,14 +44,14 @@ class ProjectMembersWidget extends Widget
         $isEmpty = $rows === [];
 
         return [
-            'heading' => __('dashboard.project.members_heading'),
+            'heading' => __('dashboard.project.users_heading'),
             'subtitle' => $isEmpty
-                ? __('dashboard.project.members_empty_subtitle')
-                : __('dashboard.project.members_subtitle', ['count' => $totalCount]),
-            'emptyMessage' => __('dashboard.project.members_empty_body'),
+                ? __('dashboard.project.users_empty_subtitle')
+                : __('dashboard.project.users_subtitle', ['count' => $totalCount]),
+            'emptyMessage' => __('dashboard.project.users_empty_body'),
             'viewAllLabel' => __('dashboard.common.view_all'),
             'viewAllUrl' => ProjectMemberResource::canViewAny()
-                ? ProjectMemberResource::getUrl()
+                ? ProjectMemberResource::getUrl(panel: 'project.settings')
                 : null,
             'rows' => $rows,
             'isEmpty' => $isEmpty,
