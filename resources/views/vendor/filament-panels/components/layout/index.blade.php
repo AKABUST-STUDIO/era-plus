@@ -80,10 +80,7 @@
             <main
                 id="fi-main-content"
                 tabindex="-1"
-                @class([
-                    'fi-main',
-                    ($maxContentWidth instanceof Width) ? "fi-width-{$maxContentWidth->value}" : $maxContentWidth,
-                ])
+                class="fi-main fi-width-full px-0"
             >
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::CONTENT_START, scopes: $renderHookScopes) }}
 

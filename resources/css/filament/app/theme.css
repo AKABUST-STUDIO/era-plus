@@ -109,7 +109,7 @@
 }
 
 .fi-sidebar-nav {
-    @apply py-5;
+    @apply py-6;
 }
 
 .fi-era-topbar .fi-btn,

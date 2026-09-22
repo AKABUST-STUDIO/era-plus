@@ -25,7 +25,7 @@
 
     @include('components.era.topbar.index')
 
-    <div class="fi-page-header-main-ctn">
+    <div class="fi-page-header-main-ctn mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         @if ($subNavigation)
             <div
                 class="fi-page-main-sub-navigation-mobile-menu-render-hook-ctn"

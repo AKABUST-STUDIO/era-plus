@@ -14,7 +14,7 @@
 @endphp
 
 <header class="fi-era-topbar sticky top-0 z-20 flex flex-col border-b border-gray-950/5 bg-gray-50 dark:border-white/10 dark:bg-gray-950">
-    <div class="flex h-14 items-center gap-3 px-4 md:hidden">
+    <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-3 px-4 md:hidden">
         @livewire('sidebar-toggle')
 
         @if ($showSelector)
@@ -24,7 +24,7 @@
         @endif
     </div>
 
-    <div class="grid h-13 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 md:h-16 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:px-6 lg:px-8">
+    <div class="mx-auto grid h-13 w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 md:h-16 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:px-6 lg:px-8">
         <div class="hidden min-w-0 items-center gap-3 justify-self-start md:flex">
             @livewire('sidebar-toggle')
 
