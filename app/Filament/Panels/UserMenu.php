@@ -25,8 +25,8 @@ class UserMenu
                     $user = filament()->auth()->user();
 
                     return new HtmlString(
-                        '<span class="fi-user-menu-profile-name">'.e(filament()->getUserName($user)).'</span>'
-                        .'<span class="fi-user-menu-profile-email">'.e($user->email).'</span>'
+                        '<span class="block font-semibold">'.e(filament()->getUserName($user)).'</span>'
+                        .'<span class="block text-xs leading-4 text-gray-500">'.e($user->email).'</span>'
                     );
                 })
                 ->url(fn (): string => Settings::getUrl(panel: UserPanelProvider::PANEL_ID)),

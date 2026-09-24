@@ -2,7 +2,6 @@
 
 use App\Enums\Organization\OrganizationRole;
 use App\Enums\Project\ProjectRole;
-use App\Filament\Project\Resources\ProjectParticipants\Components\ParticipableSelect;
 use App\Filament\Project\Resources\ProjectParticipants\Pages\ListProjectParticipants;
 use App\Filament\Project\Resources\ProjectParticipants\ProjectParticipantResource;
 use App\Models\Organization;
@@ -268,6 +267,286 @@ test('import participants example xlsx exists', function (): void {
     $this->assertFileExists(resource_path('xlsx/rasmo_import_participants.xlsx'));
 });
 
+test('add participant attaches a verified user picked from combobox', function (): void {
+    $admin = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $admin->joinOrganization($organization, OrganizationRole::Admin);
+    $project = Project::factory()->for($organization)->create();
+    $admin->joinProject($project, ProjectRole::Admin);
+
+    $verified = User::factory()->create([
+        'name' => 'Verified Vera',
+        'email' => 'vera@example.com',
+        'email_verified_at' => now(),
+    ]);
+
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($project);
+    URL::defaults(['organization' => $organization->slug]);
+
+    $countryId = participantCountryId();
+    $sending = participantSendingOrganization('Verified Uni');
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->callAction('add', data: [
+            '_participant_link' => json_encode([
+                'ref' => 'u:'.$verified->id,
+                'snapshot' => [
+                    'participable.name' => $verified->name,
+                    'participable.email' => $verified->email,
+                    'participable.phone' => null,
+                    'participable.date_of_birth' => null,
+                    'participable_avatar_url' => $verified->avatarUrl(),
+                ],
+            ]),
+            'participable' => [
+                'name' => $verified->name,
+                'email' => $verified->email,
+                'phone' => null,
+                'date_of_birth' => null,
+            ],
+            'country_id' => (string) $countryId,
+            'sending_organization_id' => 'po:'.$sending->id,
+        ])
+        ->assertHasNoActionErrors();
+
+    $this->assertDatabaseHas('project_participant', [
+        'project_id' => $project->id,
+        'participable_type' => $verified->getMorphClass(),
+        'participable_id' => $verified->id,
+    ]);
+    $this->assertDatabaseMissing('participants', ['email' => $verified->email]);
+});
+
+test('add participant attaches an unverified participant picked from combobox', function (): void {
+    $admin = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $admin->joinOrganization($organization, OrganizationRole::Admin);
+    $projectA = Project::factory()->for($organization)->create();
+    $projectB = Project::factory()->for($organization)->create();
+    $admin->joinProject($projectB, ProjectRole::Admin);
+
+    $existing = Participant::factory()->create([
+        'name' => 'Unverified Uma',
+        'email' => 'uma@example.com',
+    ]);
+    $projectA->addParticipant($existing, participantCountryId(), participantSendingOrganization('Uni A'));
+
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($projectB);
+    URL::defaults(['organization' => $organization->slug]);
+
+    $countryId = participantCountryId();
+    $sending = participantSendingOrganization('Uni B');
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->callAction('add', data: [
+            '_participant_link' => json_encode([
+                'ref' => 'p:'.$existing->id,
+                'snapshot' => [
+                    'participable.name' => $existing->name,
+                    'participable.email' => $existing->email,
+                    'participable.phone' => null,
+                    'participable.date_of_birth' => null,
+                    'participable_avatar_url' => $existing->avatarUrl(),
+                ],
+            ]),
+            'participable' => [
+                'name' => $existing->name,
+                'email' => $existing->email,
+                'phone' => null,
+                'date_of_birth' => null,
+            ],
+            'country_id' => (string) $countryId,
+            'sending_organization_id' => 'po:'.$sending->id,
+        ])
+        ->assertHasNoActionErrors();
+
+    $this->assertDatabaseHas('project_participant', [
+        'project_id' => $projectB->id,
+        'participable_type' => $existing->getMorphClass(),
+        'participable_id' => $existing->id,
+    ]);
+    $this->assertSame(1, Participant::query()->where('email', $existing->email)->count());
+});
+
+test('add participant creates a new participant when picked user is modified before submit', function (): void {
+    $admin = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $admin->joinOrganization($organization, OrganizationRole::Admin);
+    $project = Project::factory()->for($organization)->create();
+    $admin->joinProject($project, ProjectRole::Admin);
+
+    $verified = User::factory()->create([
+        'name' => 'Verified Vera',
+        'email' => 'vera@example.com',
+        'email_verified_at' => now(),
+    ]);
+
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($project);
+    URL::defaults(['organization' => $organization->slug]);
+
+    $countryId = participantCountryId();
+    $sending = participantSendingOrganization('Uni C');
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->callAction('add', data: [
+            '_participant_link' => null,
+            'participable' => [
+                'name' => 'Vera Edited',
+                'email' => 'vera.edited@example.com',
+                'phone' => '+31 6 00 00 00 00',
+                'date_of_birth' => null,
+            ],
+            'country_id' => (string) $countryId,
+            'sending_organization_id' => 'po:'.$sending->id,
+        ])
+        ->assertHasNoActionErrors();
+
+    $this->assertDatabaseHas('participants', [
+        'name' => 'Vera Edited',
+        'email' => 'vera.edited@example.com',
+    ]);
+    $created = Participant::query()->where('email', 'vera.edited@example.com')->firstOrFail();
+    $this->assertDatabaseHas('project_participant', [
+        'project_id' => $project->id,
+        'participable_type' => $created->getMorphClass(),
+        'participable_id' => $created->id,
+    ]);
+    $this->assertDatabaseMissing('project_participant', [
+        'project_id' => $project->id,
+        'participable_type' => $verified->getMorphClass(),
+        'participable_id' => $verified->id,
+    ]);
+});
+
+test('add participant validates required fields on submit', function (): void {
+    $admin = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $admin->joinOrganization($organization, OrganizationRole::Admin);
+    $project = Project::factory()->for($organization)->create();
+    $admin->joinProject($project, ProjectRole::Admin);
+
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($project);
+    URL::defaults(['organization' => $organization->slug]);
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->callAction('add', data: [
+            'participable' => [
+                'name' => null,
+                'email' => null,
+                'phone' => null,
+                'date_of_birth' => null,
+            ],
+            'country_id' => null,
+            'sending_organization_id' => null,
+        ])
+        ->assertHasActionErrors([
+            'participable.name' => 'required',
+            'participable.email' => 'required',
+            'country_id' => 'required',
+            'sending_organization_id' => 'required',
+        ]);
+});
+
+test('add participant halts and dispatches event when picked participant is already attached', function (): void {
+    $admin = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $admin->joinOrganization($organization, OrganizationRole::Admin);
+    $project = Project::factory()->for($organization)->create();
+    $admin->joinProject($project, ProjectRole::Admin);
+
+    $existing = Participant::factory()->create([
+        'name' => 'Already Aya',
+        'email' => 'aya@example.com',
+    ]);
+    $project->addParticipant($existing, participantCountryId(), participantSendingOrganization('Uni First'));
+
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($project);
+    URL::defaults(['organization' => $organization->slug]);
+
+    $countryId = participantCountryId();
+    $sending = participantSendingOrganization('Uni Second');
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->callAction('add', data: [
+            '_participant_link' => json_encode(['ref' => 'p:'.$existing->id]),
+            'participable' => [
+                'name' => $existing->name,
+                'email' => $existing->email,
+                'phone' => null,
+                'date_of_birth' => null,
+            ],
+            'country_id' => (string) $countryId,
+            'sending_organization_id' => 'po:'.$sending->id,
+        ])
+        ->assertDispatched('participant-already-attached', name: $existing->name);
+
+    $this->assertSame(1, ProjectParticipant::query()
+        ->where('project_id', $project->id)
+        ->where('participable_type', $existing->getMorphClass())
+        ->where('participable_id', $existing->id)
+        ->count());
+});
+
+test('add participant creates a new participant when picked participant is modified before submit', function (): void {
+    $admin = User::factory()->create();
+    $organization = Organization::factory()->create();
+    $admin->joinOrganization($organization, OrganizationRole::Admin);
+    $projectA = Project::factory()->for($organization)->create();
+    $projectB = Project::factory()->for($organization)->create();
+    $admin->joinProject($projectB, ProjectRole::Admin);
+
+    $existing = Participant::factory()->create([
+        'name' => 'Unverified Uma',
+        'email' => 'uma@example.com',
+    ]);
+    $projectA->addParticipant($existing, participantCountryId(), participantSendingOrganization('Uni A'));
+
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('project'));
+    Filament::setTenant($projectB);
+    URL::defaults(['organization' => $organization->slug]);
+
+    $countryId = participantCountryId();
+    $sending = participantSendingOrganization('Uni D');
+
+    Livewire\Livewire::test(ListProjectParticipants::class)
+        ->callAction('add', data: [
+            '_participant_link' => null,
+            'participable' => [
+                'name' => 'Uma Edited',
+                'email' => 'uma.edited@example.com',
+                'phone' => null,
+                'date_of_birth' => null,
+            ],
+            'country_id' => (string) $countryId,
+            'sending_organization_id' => 'po:'.$sending->id,
+        ])
+        ->assertHasNoActionErrors();
+
+    $created = Participant::query()->where('email', 'uma.edited@example.com')->firstOrFail();
+    $this->assertNotSame($existing->id, $created->id);
+    $this->assertDatabaseHas('project_participant', [
+        'project_id' => $projectB->id,
+        'participable_type' => $created->getMorphClass(),
+        'participable_id' => $created->id,
+    ]);
+    $this->assertDatabaseMissing('project_participant', [
+        'project_id' => $projectB->id,
+        'participable_type' => $existing->getMorphClass(),
+        'participable_id' => $existing->id,
+    ]);
+});
+
 test('add participant attaches an existing participant from another project', function (): void {
     $user = User::factory()->create();
     $organization = Organization::factory()->create();
@@ -277,7 +556,7 @@ test('add participant attaches an existing participant from another project', fu
     $user->joinProject($projectA, ProjectRole::Admin);
     $user->joinProject($projectB, ProjectRole::Admin);
 
-    $existing = Participant::factory()->create(['name' => 'Kai']);
+    $existing = Participant::factory()->create(['name' => 'Kai', 'email' => 'kai@example.com']);
     $projectA->addParticipant($existing, participantCountryId(), participantSendingOrganization('Uni A'));
 
     $this->actingAs($user);
@@ -290,7 +569,22 @@ test('add participant attaches an existing participant from another project', fu
 
     Livewire\Livewire::test(ListProjectParticipants::class)
         ->callAction('add', data: [
-            'participable_id' => 'p:'.$existing->id,
+            '_participant_link' => json_encode([
+                'ref' => 'p:'.$existing->id,
+                'snapshot' => [
+                    'participable.name' => $existing->name,
+                    'participable.email' => $existing->email,
+                    'participable.phone' => null,
+                    'participable.date_of_birth' => null,
+                    'participable_avatar_url' => $existing->avatarUrl(),
+                ],
+            ]),
+            'participable' => [
+                'name' => $existing->name,
+                'email' => $existing->email,
+                'phone' => null,
+                'date_of_birth' => null,
+            ],
             'country_id' => (string) $countryId,
             'sending_organization_id' => 'po:'.$sending->id,
         ])
@@ -302,4 +596,3 @@ test('add participant attaches an existing participant from another project', fu
         'participable_id' => $existing->id,
     ]);
 });
-

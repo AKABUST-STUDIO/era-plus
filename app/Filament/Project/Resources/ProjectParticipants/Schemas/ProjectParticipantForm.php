@@ -2,16 +2,20 @@
 
 namespace App\Filament\Project\Resources\ProjectParticipants\Schemas;
 
+use App\Filament\Forms\Components\ParticipantCombobox;
 use App\Filament\Project\Resources\ProjectParticipants\Components\CountrySelect;
-use App\Filament\Project\Resources\ProjectParticipants\Components\ParticipableSelect;
 use App\Filament\Project\Resources\ProjectParticipants\Components\SendingOrganizationSelect;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\IconSize;
 
 class ProjectParticipantForm
 {
@@ -26,84 +30,99 @@ class ProjectParticipantForm
     public static function sections(): array
     {
         return [
-            Section::make(__('participant.sections.participable'))
-                ->icon('lucide-circle-user-round')
-                ->columns(4)
-                ->contained(false)
-                ->components(self::participableComponents()),
-            Section::make(__('participant.sections.participant_info'))
-                ->icon('lucide-at-sign')
-                ->columns(4)
-                ->contained(false)
-                ->components(self::participantComponents())
-                ->visible(fn (Get $get): bool => is_string($get('participable_id')) && str_starts_with($get('participable_id'), 'pending:')),
-            Section::make(__('participant.sections.origin'))
-                ->contained(false)
-                ->icon('lucide-map-pin-house')
-                ->columns(4)
-                ->components(self::originComponents())
-                ->visible(fn (Get $get): bool => filled($get('participable_id'))),
+            Hidden::make('participable_avatar_url')->dehydrated(false),
+            Hidden::make('_participant_link'),
+
+            View::make('filament.forms.components.participant-link-watcher'),
+
+            self::personSection(),
+            self::sendingOrgSection(),
         ];
     }
 
-    /**
-     * @return array<int, Component>
-     */
-    public static function participableComponents(): array
+    protected static function personSection(): Component
     {
-        return [
-            ParticipableSelect::make(),
-            Hidden::make('_pending_participable'),
-            Hidden::make('_pending_source'),
-        ];
+        return Section::make(__('participant.sections.participant'))
+            ->label(__('participant.sections.participant_description'))
+            ->icon('lucide-circle-user-round')
+            ->iconSize(IconSize::Medium)
+            ->contained(false)
+            ->components([
+                Grid::make(['default' => 4])
+                    ->components([
+                        Group::make([
+                            View::make('components.participant-avatar')
+                                ->viewData(fn (Get $get): array => [
+                                    'url' => (string) $get('participable_avatar_url'),
+                                    'tooltip' => __('participant.fields.avatar_readonly_tooltip'),
+                                ]),
+                        ])->columnSpan(['default' => 1])
+                            ->extraAttributes(['class' => '!flex h-full items-center justify-center']),
+
+                        Group::make([
+                            ParticipantCombobox::make('participable.name')
+                                ->autofocus()
+                                ->label(__('participant.fields.name'))
+                                ->placeholder(__('participant.fields.name_placeholder'))
+                                ->searchColumn('name')
+                                ->valueAttribute('name')
+                                ->confirmWhenAnyFilled([
+                                    'participable.email',
+                                    'participable.phone',
+                                    'participable.date_of_birth',
+                                    'participable_avatar_url',
+                                ])
+                                ->required(),
+
+                            ParticipantCombobox::make('participable.email')
+                                ->label(__('participant.fields.email'))
+                                ->placeholder(__('participant.fields.email_placeholder'))
+                                ->searchColumn('email')
+                                ->valueAttribute('email')
+                                ->confirmWhenAnyFilled([
+                                    'participable.name',
+                                    'participable.phone',
+                                    'participable.date_of_birth',
+                                    'participable_avatar_url',
+                                ])
+                                ->required(),
+                        ])->columnSpan(['default' => 3]),
+                    ]),
+
+                Grid::make(['default' => 2])
+                    ->components([
+                        TextInput::make('participable.phone')
+                            ->label(__('participant.fields.phone'))
+                            ->placeholder(__('participant.fields.phone_placeholder'))
+                            ->tel()
+                            ->maxLength(40)
+                            ->live(onBlur: true),
+                        DatePicker::make('participable.date_of_birth')
+                            ->label(__('participant.fields.date_of_birth'))
+                            ->placeholder(__('participant.fields.date_of_birth_placeholder'))
+                            ->native(false)
+                            ->live(),
+                    ]),
+            ]);
     }
 
-    /**
-     * @return array<int, Component>
-     */
-    public static function participantComponents(): array
+    protected static function sendingOrgSection(): Component
     {
-        return [
-            TextInput::make('participable.name')
-                ->hiddenLabel()
-                ->placeholder(__('forms.common.name'))
-                ->required()
-                ->columnSpan(3)
-                ->visible(fn (Get $get): bool => $get('_pending_source') !== 'name')
-                ->maxLength(255),
-            TextInput::make('participable.email')
-                ->hiddenLabel()
-                ->placeholder(__('forms.common.email'))
-                ->email()
-                ->live()
-                ->helperText(fn ($state): ?string => filled($state)
-                    ? __('participant.add.invite_helper')
-                    : null)
-                ->columnSpan(3)
-                ->visible(fn (Get $get): bool => $get('_pending_source') !== 'email')
-                ->maxLength(255),
-            TextInput::make('participable.phone')
-                ->hiddenLabel()
-                ->placeholder(__('participant.fields.phone'))
-                ->columnSpan(2)
-                ->tel()
-                ->maxLength(40),
-            DatePicker::make('participable.date_of_birth')
-                ->hiddenLabel()
-                ->columnSpan(2)
-                ->placeholder(__('participant.fields.date_of_birth'))
-                ->native(false),
-        ];
-    }
+        return Section::make(__('participant.sections.sending'))
+            ->label(__('participant.sections.sending_description'))
+            ->icon('lucide-clipboard-list')
+            ->contained(false)
+            ->iconSize(IconSize::Medium)
+            ->components([
+                CountrySelect::make()
+                    ->label(__('participant.fields.country'))
+                    ->required()
+                    ->columnSpanFull(),
 
-    /**
-     * @return array<int, Component>
-     */
-    public static function originComponents(): array
-    {
-        return [
-            CountrySelect::make(),
-            SendingOrganizationSelect::make(),
-        ];
+                SendingOrganizationSelect::make()
+                    ->hiddenLabel(false)
+                    ->label(__('participant.fields.sending_organization'))
+                    ->required(),
+            ]);
     }
 }

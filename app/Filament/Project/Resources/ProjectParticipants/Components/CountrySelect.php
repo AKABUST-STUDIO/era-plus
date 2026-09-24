@@ -18,7 +18,6 @@ class CountrySelect
             ->all();
 
         return Select::make($name)
-            ->hiddenLabel()
             ->validationAttribute(__('participant.fields.country'))
             ->placeholder(__('participant.fields.country'))
             ->searchPrompt(__('participant.fields.country_search_prompt'))
