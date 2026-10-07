@@ -9,3 +9,12 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# GitHub Linguist — keep language stats focused on first-party PHP code.
+.vite/** linguist-generated
+public/build/** linguist-generated
+public/vendor/** linguist-vendored
+public/js/** linguist-vendored
+resources/views/vendor/** linguist-vendored
+*.lock linguist-generated
+package-lock.json linguist-generated
